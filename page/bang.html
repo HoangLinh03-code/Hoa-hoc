@@ -33,12 +33,15 @@
       .element-symbol {
         font-size: 1.2rem;
         font-weight: bold;
+        line-height: 1.3rem; /* Tăng nhẹ */
       }
       .element-name {
-        font-size: 0.5rem;
+        font-size: 0.75rem; /* Tăng từ 0.65rem */
+        line-height: 0.85rem; /* Tăng từ 0.75rem */
       }
       .element-mass {
-        font-size: 0.5rem;
+        font-size: 0.75rem; /* Tăng từ 0.65rem */
+        line-height: 0.85rem; /* Tăng từ 0.75rem */
       }
       .modal {
         display: none;
@@ -246,7 +249,8 @@
       </div>
 
       <!-- Periodic Table -->
-      <div class="bg-white rounded-lg shadow-lg p-4 overflow-x-auto">
+      <div
+        class="bg-white rounded-lg shadow-lg p-4 overflow-x-auto text-center">
         <div id="periodicTable" class="inline-block"></div>
       </div>
 
@@ -1856,11 +1860,11 @@
         table.innerHTML = "";
         layout.forEach((row, rowIndex) => {
           const rowDiv = document.createElement("div");
-          rowDiv.className = "flex gap-0.5";
+          rowDiv.className = "flex gap-1";
           row.forEach((z) => {
             if (z === 0) {
               const empty = document.createElement("div");
-              empty.className = "w-12 h-16";
+              empty.className = "w-16 h-20";
               rowDiv.appendChild(empty);
             } else {
               const element = elements.find((el) => el.z === z);
@@ -1877,7 +1881,7 @@
       function createElementCell(element) {
         const cell = document.createElement("div");
         cell.className =
-          "element-cell w-12 h-16 flex flex-col items-center justify-center text-xs relative rounded";
+          "element-cell w-16 h-20 flex flex-col items-center justify-center text-xs relative rounded";
         cell.style.backgroundColor = element.color;
         cell.setAttribute("data-period", element.period);
         cell.setAttribute("data-group", element.group);
@@ -1907,7 +1911,7 @@
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
                         <h3 class="text-xl font-semibold mb-3 text-purple-700">Thông tin cơ bản</h3>
-                        <div class="space-y-2 text-sm">
+                        <div class="space-y-7 text-sm">
                             <p><strong>Số hiệu nguyên tử:</strong> ${
                               element.z
                             }</p>

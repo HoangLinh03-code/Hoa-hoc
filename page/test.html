@@ -104,10 +104,10 @@
           #b0b0b0 100%
         );
         border-radius: 10px 10px 3px 3px;
-        top: 15%;
+        top: -200px; /* <-- Đã sửa: Di chuyển ra khỏi màn hình */
         z-index: 10;
         box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-        transition: background 1s ease;
+        transition: top 1s ease-in, background 1s ease;
       }
 
       .iron-nail::before {
@@ -710,58 +710,73 @@
       }
 
       function startReaction() {
-        if (animationInterval) return;
+        // 1. Kiểm tra xem phản ứng đã chạy hoặc đã kết thúc chưa
+        if (animationInterval || cuPercentage <= 0) {
+          return;
+        }
 
+        // 2. Đảm bảo trạng thái không phải là "Tạm dừng"
         isPaused = false;
-        const speed = parseFloat(speedSlider.value);
-        const temp = parseFloat(tempSlider.value);
-        const conc = parseFloat(concSlider.value);
+        document.querySelector(".pause-btn").textContent = "⏸️ Tạm dừng";
 
-        // Tốc độ phản ứng phụ thuộc vào nhiệt độ và nồng độ
-        const reactionRate = speed * (1 + (temp - 25) / 100) * conc;
+        // 3. Kích hoạt animation thả đinh sắt
+        // (Nó sẽ mất 1 giây để rơi xuống, như đã định nghĩa trong CSS)
+        ironNail.style.top = "15%";
 
-        animationInterval = setInterval(() => {
-          if (isPaused) return;
+        // 4. Chờ 1 giây (1000ms) cho đinh sắt rơi xong MỚI bắt đầu phản ứng
+        setTimeout(() => {
+          // Lấy các giá trị điều khiển NGAY TRƯỚC KHI bắt đầu vòng lặp
+          const speed = parseFloat(speedSlider.value);
+          const temp = parseFloat(tempSlider.value);
+          const conc = parseFloat(concSlider.value);
 
-          elapsedTime += 0.1;
-          document.getElementById("timeValue").textContent =
-            elapsedTime.toFixed(1) + "s";
+          // Tốc độ phản ứng phụ thuộc vào nhiệt độ và nồng độ
+          const reactionRate = speed * (1 + (temp - 25) / 100) * conc;
 
-          // Giảm Cu²⁺ và tăng Cu kim loại
-          if (cuPercentage > 0) {
-            cuPercentage -= 0.5 * reactionRate;
-            cuDepositPercentage += 0.5 * reactionRate;
+          // 5. Bắt đầu vòng lặp phản ứng (đây là code gốc của bạn)
+          animationInterval = setInterval(() => {
+            if (isPaused) return; // Logic tạm dừng vẫn hoạt động
 
-            if (cuPercentage < 0) cuPercentage = 0;
-            if (cuDepositPercentage > 100) cuDepositPercentage = 100;
+            elapsedTime += 0.1;
+            document.getElementById("timeValue").textContent =
+              elapsedTime.toFixed(1) + "s";
 
-            document.getElementById("cuIons").textContent =
-              cuPercentage.toFixed(1) + "%";
-            document.getElementById("cuDeposit").textContent =
-              cuDepositPercentage.toFixed(1) + "%";
+            // Giảm Cu²⁺ và tăng Cu kim loại
+            if (cuPercentage > 0) {
+              cuPercentage -= 0.5 * reactionRate;
+              cuDepositPercentage += 0.5 * reactionRate;
 
-            updateSolutionColor();
+              if (cuPercentage < 0) cuPercentage = 0;
+              if (cuDepositPercentage > 100) cuDepositPercentage = 100;
 
-            // Tạo hiệu ứng ngẫu nhiên
-            if (Math.random() < 0.3 * reactionRate) {
-              createElectron();
+              document.getElementById("cuIons").textContent =
+                cuPercentage.toFixed(1) + "%";
+              document.getElementById("cuDeposit").textContent =
+                cuDepositPercentage.toFixed(1) + "%";
+
+              updateSolutionColor();
+
+              // Tạo hiệu ứng ngẫu nhiên
+              if (Math.random() < 0.3 * reactionRate) {
+                createElectron();
+              }
+
+              if (Math.random() < 0.2 * reactionRate) {
+                createIon("cu");
+              }
+
+              if (Math.random() < 0.15 * reactionRate) {
+                createIon("fe");
+              }
+            } else {
+              clearInterval(animationInterval);
+              animationInterval = null;
+              alert(
+                "Phản ứng hoàn tất! Tất cả Cu²⁺ đã được khử thành Cu kim loại."
+              );
             }
-
-            if (Math.random() < 0.2 * reactionRate) {
-              createIon("cu");
-            }
-
-            if (Math.random() < 0.15 * reactionRate) {
-              createIon("fe");
-            }
-          } else {
-            clearInterval(animationInterval);
-            animationInterval = null;
-            alert(
-              "Phản ứng hoàn tất! Tất cả Cu²⁺ đã được khử thành Cu kim loại."
-            );
-          }
-        }, 100);
+          }, 100);
+        }, 1000); // <-- Chờ 1000ms (1 giây)
       }
 
       function pauseReaction() {
@@ -798,6 +813,9 @@
         updateSolutionColor();
         ironNail.style.background =
           "linear-gradient(90deg, #B0B0B0 0%, #DCDCDC 50%, #B0B0B0 100%)";
+
+        // Thêm dòng này:
+        ironNail.style.top = "-200px"; // Nhấc đinh sắt trở lại vị trí ban đầu
       }
 
       // Khởi tạo màu ban đầu
