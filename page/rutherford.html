@@ -1,0 +1,1091 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô phỏng Thí nghiệm Rutherford - Tương tác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #e6eef8;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      canvas {
+        display: block;
+        margin: auto;
+        border-radius: 1rem;
+        background: linear-gradient(to bottom, #1e293b, #0f172a);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        border: 2px solid #334155;
+      }
+      .btn {
+        @apply px-6 py-3 rounded-xl font-semibold text-slate-900 bg-gradient-to-r from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+      }
+      .btn-red {
+        @apply px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 transition-all duration-300 shadow-lg;
+      }
+      .card {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-top: 1.5rem;
+        border: 2px solid #334155;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.5s ease-out;
+      }
+      .stat-box {
+        @apply bg-gradient-to-br from-slate-700 to-slate-800 p-4 rounded-xl border border-slate-600 shadow-lg;
+      }
+      .formula-box {
+        @apply bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-6 rounded-xl border-2 border-purple-500/30 my-4;
+      }
+      .info-badge {
+        @apply inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 mr-2 mb-2;
+      }
+      .glow {
+        animation: pulse 2s infinite;
+      }
+      input[type="range"] {
+        @apply w-32 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        @apply appearance-none w-4 h-4 bg-teal-400 rounded-full cursor-pointer hover:bg-teal-300;
+      }
+      .tab-btn {
+        @apply px-4 py-2 rounded-t-lg font-semibold transition-all duration-300;
+      }
+      .tab-active {
+        @apply bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900;
+      }
+      .tab-inactive {
+        @apply bg-slate-700 text-slate-300 hover:bg-slate-600;
+      }
+    </style>
+  </head>
+  <body class="p-6">
+    <header class="text-center mb-8">
+      <h1
+        class="text-5xl font-bold bg-gradient-to-r from-teal-300 via-cyan-300 to-blue-400 bg-clip-text text-transparent mb-2">
+        Thí nghiệm Rutherford
+      </h1>
+      <p class="text-slate-300 text-lg mt-2">
+        Khám phá cấu trúc nguyên tử qua mô phỏng tương tác
+      </p>
+      <div class="flex justify-center gap-2 mt-4 flex-wrap">
+        <span class="info-badge">🎯 Kéo thả hạt alpha</span>
+        <span class="info-badge">⚡ Lực Coulomb động</span>
+        <span class="info-badge">📊 Thống kê thời gian thực</span>
+      </div>
+    </header>
+
+    <section class="flex flex-wrap justify-center mb-6 gap-4">
+      <button id="shootBtn" class="btn">🚀 Bắn hạt alpha</button>
+      <button id="zoomBtn" class="btn">🔬 Xem nguyên tử</button>
+      <button id="resetBtn" class="btn-red">🔄 Reset mô phỏng</button>
+      <button id="resetStatsBtn" class="btn-red">📊 Reset số liệu</button>
+    </section>
+
+    <section class="flex flex-wrap justify-center mb-6 gap-6">
+      <label
+        class="text-slate-300 flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl">
+        <span class="font-semibold"
+          >Số hạt/giây: <span id="rateValue">5</span></span
+        >
+        <input id="rateSlider" type="range" min="1" max="20" value="5" />
+      </label>
+      <label
+        class="text-slate-300 flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl">
+        <span class="font-semibold"
+          >Tốc độ: <span id="speedValue">1.0</span>x</span
+        >
+        <input
+          id="speedSlider"
+          type="range"
+          min="0.25"
+          max="4"
+          step="0.25"
+          value="1" />
+      </label>
+      <label
+        class="text-slate-300 flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl">
+        <span class="font-semibold"
+          >Độ lớn lực: <span id="forceValue">1.0</span>x</span
+        >
+        <input
+          id="forceSlider"
+          type="range"
+          min="0.5"
+          max="3"
+          step="0.1"
+          value="1" />
+      </label>
+    </section>
+
+    <div class="max-w-6xl mx-auto">
+      <canvas id="experimentCanvas" width="1000" height="500"></canvas>
+    </div>
+
+    <section class="max-w-6xl mx-auto mt-8 card">
+      <h2 class="font-bold text-2xl text-teal-300 mb-4 flex items-center gap-2">
+        📊 Thống kê hạt alpha
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="stat-box">
+          <div class="text-cyan-400 text-3xl font-bold" id="straightCount">
+            0
+          </div>
+          <div class="text-slate-300 mt-1">Đi thẳng</div>
+          <div class="text-xs text-slate-400 mt-1">Không tương tác</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-yellow-400 text-3xl font-bold" id="deflectCount">
+            0
+          </div>
+          <div class="text-slate-300 mt-1">Bị lệch</div>
+          <div class="text-xs text-slate-400 mt-1">Tương tác yếu</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-red-400 text-3xl font-bold" id="bounceCount">0</div>
+          <div class="text-slate-300 mt-1">Bật ngược</div>
+          <div class="text-xs text-slate-400 mt-1">Va chạm trực tiếp</div>
+        </div>
+      </div>
+      <canvas id="statsChart" height="100"></canvas>
+      <div class="mt-4 p-4 bg-slate-800/50 rounded-xl">
+        <p class="text-sm text-slate-300">
+          <strong>Tỷ lệ lý thuyết:</strong> ~70% đi thẳng, ~25% bị lệch, ~5% bật
+          ngược
+        </p>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto mt-6">
+      <div class="flex gap-2 mb-4">
+        <button class="tab-btn tab-active" id="tabTheory">📚 Lý thuyết</button>
+        <button class="tab-btn tab-inactive" id="tabFormula">
+          🧮 Công thức
+        </button>
+        <button class="tab-btn tab-inactive" id="tabExample">💡 Ví dụ</button>
+        <button class="tab-btn tab-inactive" id="tabHistory">🏛️ Lịch sử</button>
+      </div>
+
+      <div id="contentTheory" class="card">
+        <h2 class="font-bold text-2xl text-teal-300 mb-4">
+          Giải thích thí nghiệm Rutherford
+        </h2>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            🎯 Bố trí thí nghiệm
+          </h3>
+          <p class="text-slate-200 leading-relaxed mb-3">
+            Năm 1909, Ernest Rutherford và học trò (Geiger, Marsden) tiến hành
+            thí nghiệm lịch sử: bắn chùm hạt alpha (He²⁺) vào lá vàng mỏng
+            (~0.0004mm) và quan sát sự tán xạ.
+          </p>
+          <div class="bg-slate-800/50 p-4 rounded-lg">
+            <ul class="space-y-2 text-slate-300">
+              <li>
+                🔸 <strong>Nguồn phát:</strong> Chất phóng xạ (Radium hoặc
+                Polonium)
+              </li>
+              <li>
+                🔸 <strong>Mục tiêu:</strong> Lá vàng siêu mỏng (nguyên tử vàng
+                có hạt nhân nặng)
+              </li>
+              <li>
+                🔸 <strong>Màn huỳnh quang:</strong> Phát hiện hạt alpha sau khi
+                đi qua lá vàng
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            📈 Kết quả quan sát
+          </h3>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div
+              class="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 p-4 rounded-xl border border-cyan-500/30">
+              <div class="text-3xl mb-2">➡️</div>
+              <h4 class="font-bold text-cyan-400 mb-2">Hạt đi thẳng (~70%)</h4>
+              <p class="text-sm text-slate-300">
+                Hầu hết hạt alpha đi xuyên qua lá vàng mà không bị lệch đáng kể.
+                Điều này chứng tỏ nguyên tử chủ yếu là khoảng trống.
+              </p>
+            </div>
+            <div
+              class="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 p-4 rounded-xl border border-yellow-500/30">
+              <div class="text-3xl mb-2">↗️</div>
+              <h4 class="font-bold text-yellow-400 mb-2">Hạt bị lệch (~25%)</h4>
+              <p class="text-sm text-slate-300">
+                Một số hạt bị lệch hướng do đi gần hạt nhân. Lực đẩy Coulomb
+                giữa điện tích dương làm cong quỹ đạo.
+              </p>
+            </div>
+            <div
+              class="bg-gradient-to-br from-red-900/30 to-pink-900/30 p-4 rounded-xl border border-red-500/30">
+              <div class="text-3xl mb-2">↩️</div>
+              <h4 class="font-bold text-red-400 mb-2">Hạt bật ngược (~5%)</h4>
+              <p class="text-sm text-slate-300">
+                Rất ít hạt bật ngược (~1/8000), xảy ra khi va chạm gần trực diện
+                với hạt nhân. Rutherford: "Như bắn đạn vào giấy mà bị bật lại!"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-gradient-to-r from-purple-900/20 to-pink-900/20 p-6 rounded-xl border-2 border-purple-500/30">
+          <h3 class="text-xl font-semibold text-purple-300 mb-3">
+            🎓 Kết luận lịch sử
+          </h3>
+          <p class="text-slate-200 leading-relaxed mb-3">
+            Thí nghiệm này đã lật đổ mô hình "bánh pudding nho khô" của Thomson
+            và dẫn đến
+            <strong class="text-teal-300">mô hình hành tinh nguyên tử</strong>
+            của Rutherford:
+          </p>
+          <ul class="space-y-2 text-slate-300 ml-4">
+            <li>
+              ✅ Nguyên tử có <strong>hạt nhân cực nhỏ, cực nặng</strong> ở
+              trung tâm (điện tích dương)
+            </li>
+            <li>✅ Electron quay xung quanh hạt nhân ở khoảng cách xa</li>
+            <li>
+              ✅ Hầu hết thể tích nguyên tử là <strong>khoảng trống</strong>
+            </li>
+            <li>
+              ✅ Kích thước hạt nhân ~10⁻¹⁵m, nguyên tử ~10⁻¹⁰m (tỷ lệ
+              1:100,000)
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="contentFormula" class="card hidden">
+        <h2 class="font-bold text-2xl text-teal-300 mb-4">
+          🧮 Công thức Lực Coulomb
+        </h2>
+
+        <div class="formula-box">
+          <div class="text-center mb-4">
+            <div class="text-3xl font-bold text-white mb-2">
+              F = k · (q₁ · q₂) / r²
+            </div>
+            <div class="text-sm text-slate-300">
+              Định luật Coulomb - Lực tương tác giữa hai điện tích
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <h4 class="font-semibold text-purple-300 mb-2">
+                📌 Ý nghĩa các đại lượng:
+              </h4>
+              <ul class="space-y-2 text-slate-300 text-sm">
+                <li><strong>F:</strong> Độ lớn lực (Newton)</li>
+                <li><strong>k:</strong> Hằng số Coulomb ≈ 9×10⁹ N·m²/C²</li>
+                <li><strong>q₁, q₂:</strong> Điện tích (Coulomb)</li>
+                <li><strong>r:</strong> Khoảng cách giữa hai điện tích (m)</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-purple-300 mb-2">⚡ Đặc điểm:</h4>
+              <ul class="space-y-2 text-slate-300 text-sm">
+                <li>
+                  ✓ Tỷ lệ nghịch với <strong>bình phương</strong> khoảng cách
+                </li>
+                <li>✓ Cùng dấu → đẩy nhau (F > 0)</li>
+                <li>✓ Khác dấu → hút nhau (F < 0)</li>
+                <li>✓ Lực cực mạnh khi r → 0</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            🎯 Áp dụng vào thí nghiệm
+          </h3>
+          <div class="bg-slate-800/50 p-5 rounded-xl">
+            <p class="text-slate-200 leading-relaxed mb-3">
+              Trong thí nghiệm Rutherford:
+            </p>
+            <ul class="space-y-2 text-slate-300">
+              <li>
+                <strong class="text-yellow-400">Hạt alpha:</strong> q₁ = +2e
+                (điện tích dương)
+              </li>
+              <li>
+                <strong class="text-yellow-400">Hạt nhân vàng:</strong> q₂ =
+                +79e (Au có 79 proton)
+              </li>
+              <li>
+                <strong class="text-yellow-400">Lực đẩy:</strong> F cực lớn khi
+                r rất nhỏ (hạt gần hạt nhân)
+              </li>
+            </ul>
+
+            <div
+              class="mt-4 p-4 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-500/30">
+              <p class="text-sm text-slate-200">
+                <strong>📊 Ví dụ tính toán:</strong><br />
+                Khi r = 10⁻¹⁴m (cực gần hạt nhân):<br />
+                F ≈ 9×10⁹ × (2×1.6×10⁻¹⁹) × (79×1.6×10⁻¹⁹) / (10⁻¹⁴)² ≈
+                <strong class="text-cyan-300">3600 N</strong><br />
+                → Lực cực lớn so với khối lượng hạt alpha (~6.6×10⁻²⁷ kg) → Gia
+                tốc khổng lồ → Bật ngược!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="mt-6 p-5 bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl border border-amber-500/30">
+          <h4 class="font-semibold text-amber-300 mb-2">
+            💡 Trong mô phỏng này:
+          </h4>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Chúng ta sử dụng công thức đơn giản hóa
+            <code class="bg-slate-700 px-2 py-1 rounded">F = K/r²</code>
+            để mô phỏng hiệu ứng tán xạ. Giá trị K được điều chỉnh để tạo hiệu
+            ứng trực quan, không phản ánh chính xác giá trị vật lý thực tế nhưng
+            thể hiện đúng bản chất của hiện tượng.
+          </p>
+        </div>
+      </div>
+
+      <div id="contentExample" class="card hidden">
+        <h2 class="font-bold text-2xl text-teal-300 mb-4">
+          💡 Ví dụ thực tế & Ứng dụng
+        </h2>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            📊 Số liệu thực nghiệm
+          </h3>
+          <div class="bg-slate-800/50 p-5 rounded-xl">
+            <p class="text-slate-200 mb-3">
+              Trong thí nghiệm gốc của Rutherford với
+              <strong>8000 hạt alpha</strong>:
+            </p>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="text-center p-4 bg-cyan-900/30 rounded-lg">
+                <div class="text-4xl font-bold text-cyan-400">~5600</div>
+                <div class="text-sm text-slate-300 mt-2">Đi thẳng (70%)</div>
+              </div>
+              <div class="text-center p-4 bg-yellow-900/30 rounded-lg">
+                <div class="text-4xl font-bold text-yellow-400">~2000</div>
+                <div class="text-sm text-slate-300 mt-2">Bị lệch (25%)</div>
+              </div>
+              <div class="text-center p-4 bg-red-900/30 rounded-lg">
+                <div class="text-4xl font-bold text-red-400">~400</div>
+                <div class="text-sm text-slate-300 mt-2">Bật ngược (5%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            🔬 So sánh kích thước
+          </h3>
+          <div
+            class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-5 rounded-xl border border-indigo-500/30">
+            <p class="text-slate-200 mb-3">
+              Để hình dung tỷ lệ giữa hạt nhân và nguyên tử:
+            </p>
+            <ul class="space-y-3 text-slate-300">
+              <li class="flex items-start gap-2">
+                <span class="text-2xl">🏟️</span>
+                <span
+                  >Nếu nguyên tử lớn bằng
+                  <strong class="text-teal-300">sân vận động</strong> (100m),
+                  thì hạt nhân chỉ bằng
+                  <strong class="text-teal-300">hạt đậu</strong> (1mm) ở giữa
+                  sân!</span
+                >
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-2xl">🌍</span>
+                <span
+                  >Nếu nguyên tử lớn bằng
+                  <strong class="text-teal-300">Trái Đất</strong>, hạt nhân chỉ
+                  bằng <strong class="text-teal-300">sân bóng đá</strong>!</span
+                >
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-2xl">⚖️</span>
+                <span
+                  >Nhưng 99.9% <strong>khối lượng</strong> nguyên tử tập trung ở
+                  hạt nhân!</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            🚀 Ứng dụng hiện đại
+          </h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+              <div class="text-2xl mb-2">🔬</div>
+              <h4 class="font-bold text-purple-300 mb-2">Vật lý hạt nhân</h4>
+              <p class="text-sm text-slate-300">
+                Kỹ thuật tán xạ được dùng để nghiên cứu cấu trúc hạt nhân, phát
+                hiện các hạt mới tại các máy gia tốc như LHC.
+              </p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+              <div class="text-2xl mb-2">🏥</div>
+              <h4 class="font-bold text-purple-300 mb-2">Y học</h4>
+              <p class="text-sm text-slate-300">
+                Phân tích tán xạ Rutherford ngược (RBS) giúp phân tích thành
+                phần mô, xác định vị trí khối u trong xạ trị.
+              </p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+              <div class="text-2xl mb-2">🔋</div>
+              <h4 class="font-bold text-purple-300 mb-2">Công nghệ vật liệu</h4>
+              <p class="text-sm text-slate-300">
+                Sử dụng RBS để phân tích lớp mỏng, pin mặt trời, chip bán dẫn -
+                kiểm tra độ tinh khiết và cấu trúc.
+              </p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+              <div class="text-2xl mb-2">🎨</div>
+              <h4 class="font-bold text-purple-300 mb-2">Khảo cổ học</h4>
+              <p class="text-sm text-slate-300">
+                Phân tích không phá hủy tác phẩm nghệ thuật, xác định tuổi và
+                thành phần hóa học của cổ vật.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="contentHistory" class="card hidden">
+        <h2 class="font-bold text-2xl text-teal-300 mb-4">
+          🏛️ Lịch sử & Tầm quan trọng
+        </h2>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            📅 Timeline lịch sử
+          </h3>
+          <div class="space-y-4">
+            <div class="flex gap-4 items-start">
+              <div
+                class="bg-teal-500 text-slate-900 font-bold px-3 py-1 rounded-lg min-w-[80px] text-center">
+                1904
+              </div>
+              <div class="flex-1 bg-slate-800/50 p-4 rounded-lg">
+                <strong class="text-yellow-300">J.J. Thomson</strong> đề xuất mô
+                hình "bánh pudding nho khô": điện tích dương phân bố đều,
+                electron nhúng trong đó như nho trong bánh.
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div
+                class="bg-teal-500 text-slate-900 font-bold px-3 py-1 rounded-lg min-w-[80px] text-center">
+                1909
+              </div>
+              <div class="flex-1 bg-slate-800/50 p-4 rounded-lg">
+                <strong class="text-yellow-300">Ernest Rutherford</strong> (với
+                Geiger & Marsden) tiến hành thí nghiệm tán xạ hạt alpha. Kết quả
+                bất ngờ: có hạt bật ngược!
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div
+                class="bg-teal-500 text-slate-900 font-bold px-3 py-1 rounded-lg min-w-[80px] text-center">
+                1911
+              </div>
+              <div class="flex-1 bg-slate-800/50 p-4 rounded-lg">
+                Rutherford công bố
+                <strong class="text-yellow-300"
+                  >mô hình hành tinh nguyên tử</strong
+                >: hạt nhân nhỏ, nặng ở trung tâm, electron quay xung quanh.
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div
+                class="bg-teal-500 text-slate-900 font-bold px-3 py-1 rounded-lg min-w-[80px] text-center">
+                1913
+              </div>
+              <div class="flex-1 bg-slate-800/50 p-4 rounded-lg">
+                <strong class="text-yellow-300">Niels Bohr</strong> cải tiến mô
+                hình Rutherford bằng cách thêm quỹ đạo lượng tử, giải thích vì
+                sao electron không rơi vào hạt nhân.
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div
+                class="bg-teal-500 text-slate-900 font-bold px-3 py-1 rounded-lg min-w-[80px] text-center">
+                1918
+              </div>
+              <div class="flex-1 bg-slate-800/50 p-4 rounded-lg">
+                Rutherford nhận
+                <strong class="text-yellow-300">Giải Nobel Hóa học 1908</strong>
+                (công bố muộn do chiến tranh) cho nghiên cứu về phóng xạ và cấu
+                trúc nguyên tử.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
+            🎓 Tầm quan trọng khoa học
+          </h3>
+          <div
+            class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 p-5 rounded-xl border-2 border-purple-500/30">
+            <ul class="space-y-3 text-slate-200">
+              <li class="flex items-start gap-3">
+                <span class="text-2xl">🏆</span>
+                <span>
+                  <strong class="text-purple-300"
+                    >Cách mạng vật lý nguyên tử:</strong
+                  >
+                  Lật đổ mô hình Thomson, mở đường cho cơ học lượng tử hiện đại.
+                </span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-2xl">🔬</span>
+                <span>
+                  <strong class="text-purple-300"
+                    >Phương pháp nghiên cứu mới:</strong
+                  >
+                  Đặt nền móng cho kỹ thuật tán xạ - công cụ quan trọng trong
+                  vật lý hạt.
+                </span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-2xl">⚛️</span>
+                <span>
+                  <strong class="text-purple-300">Hiểu về hạt nhân:</strong>
+                  Khám phá proton (1919), neutron (1932), dẫn đến năng lượng hạt
+                  nhân.
+                </span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-2xl">🌟</span>
+                <span>
+                  <strong class="text-purple-300">Di sản khoa học:</strong>
+                  Truyền cảm hứng cho nhiều thế hệ nhà khoa học, 8 học trò của
+                  Rutherford đoạt Nobel!
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="bg-gradient-to-r from-amber-900/20 to-orange-900/20 p-5 rounded-xl border border-amber-500/30">
+          <h4 class="font-semibold text-amber-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">💬</span> Câu nói nổi tiếng
+          </h4>
+          <blockquote
+            class="italic text-slate-200 text-lg leading-relaxed border-l-4 border-teal-400 pl-4">
+            "Đó là sự kiện đáng kinh ngạc nhất trong đời tôi. Nó gần như không
+            thể tin được như việc bạn bắn một viên đạn 15 inch vào tờ giấy lụa
+            và nó bật trở lại trúng bạn."
+            <div class="text-right text-sm text-slate-400 mt-2 not-italic">
+              — Ernest Rutherford (về kết quả thí nghiệm)
+            </div>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center mt-12 text-slate-400 text-sm pb-6">
+      <p>🎓 Mô phỏng giáo dục - Thí nghiệm Rutherford (1909)</p>
+      <p class="mt-1">Tương tác để khám phá cấu trúc nguyên tử</p>
+    </footer>
+
+    <script>
+      const canvas = document.getElementById("experimentCanvas");
+      const ctx = canvas.getContext("2d");
+      let alphas = [];
+      let animationId = null;
+      let zoom = false;
+      let stats = { straight: 0, deflect: 0, bounce: 0 };
+      let shootRate = 5;
+      let speedFactor = 1;
+      let forceFactor = 1;
+      const K_BASE = 1000;
+
+      // Chart setup
+      const statsCtx = document.getElementById("statsChart").getContext("2d");
+      const statsChart = new Chart(statsCtx, {
+        type: "bar",
+        data: {
+          labels: ["Đi thẳng", "Bị lệch", "Bật ngược"],
+          datasets: [
+            {
+              label: "Số hạt",
+              data: [0, 0, 0],
+              backgroundColor: [
+                "rgba(6, 182, 212, 0.8)",
+                "rgba(250, 204, 21, 0.8)",
+                "rgba(239, 68, 68, 0.8)",
+              ],
+              borderColor: [
+                "rgba(6, 182, 212, 1)",
+                "rgba(250, 204, 21, 1)",
+                "rgba(239, 68, 68, 1)",
+              ],
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.9)",
+              titleColor: "#06b6d4",
+              bodyColor: "#e6eef8",
+              borderColor: "#334155",
+              borderWidth: 1,
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: "rgba(51, 65, 85, 0.3)" },
+              ticks: { color: "#94a3b8" },
+            },
+            x: {
+              grid: { color: "rgba(51, 65, 85, 0.3)" },
+              ticks: { color: "#94a3b8" },
+            },
+          },
+        },
+      });
+
+      function updateStats() {
+        statsChart.data.datasets[0].data = [
+          stats.straight,
+          stats.deflect,
+          stats.bounce,
+        ];
+        statsChart.update();
+        document.getElementById("straightCount").textContent = stats.straight;
+        document.getElementById("deflectCount").textContent = stats.deflect;
+        document.getElementById("bounceCount").textContent = stats.bounce;
+      }
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Source
+        const gradient = ctx.createRadialGradient(
+          80,
+          canvas.height / 2,
+          5,
+          80,
+          canvas.height / 2,
+          25
+        );
+        gradient.addColorStop(0, "#ff6b35");
+        gradient.addColorStop(1, "#ff8c42");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(80, canvas.height / 2, 20, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = "#ffa500";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#e6eef8";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("☢ Nguồn α", 50, canvas.height / 2 - 30);
+
+        // Gold foil
+        const goldGradient = ctx.createLinearGradient(
+          canvas.width / 2 - 8,
+          0,
+          canvas.width / 2 + 8,
+          0
+        );
+        goldGradient.addColorStop(0, "#b8860b");
+        goldGradient.addColorStop(0.5, "#ffd700");
+        goldGradient.addColorStop(1, "#b8860b");
+        ctx.fillStyle = goldGradient;
+        ctx.fillRect(canvas.width / 2 - 8, canvas.height / 2 - 150, 16, 300);
+
+        ctx.strokeStyle = "#ffed4e";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width / 2 - 8, canvas.height / 2 - 150, 16, 300);
+
+        ctx.fillStyle = "#e6eef8";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText(
+          "🥇 Lá vàng",
+          canvas.width / 2 - 40,
+          canvas.height / 2 - 165
+        );
+
+        // Detector screen
+        ctx.fillStyle = "rgba(100, 255, 100, 0.1)";
+        ctx.fillRect(canvas.width - 100, 0, 100, canvas.height);
+        ctx.strokeStyle = "rgba(100, 255, 100, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width - 100, 0, 100, canvas.height);
+        ctx.fillStyle = "#a7f3d0";
+        ctx.font = "12px sans-serif";
+        ctx.fillText("Màn", canvas.width - 70, 20);
+        ctx.fillText("phát hiện", canvas.width - 85, 35);
+      }
+
+      function drawAtom() {
+        drawBackground();
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // Nucleus glow
+        const nucleusGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+        nucleusGlow.addColorStop(0, "rgba(255, 215, 0, 0.8)");
+        nucleusGlow.addColorStop(1, "rgba(255, 215, 0, 0)");
+        ctx.fillStyle = nucleusGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 30, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Nucleus
+        const nucleusGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 15);
+        nucleusGradient.addColorStop(0, "#ffd700");
+        nucleusGradient.addColorStop(1, "#ff8c00");
+        ctx.fillStyle = nucleusGradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 15, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = "#ffed4e";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Electron orbits
+        ctx.strokeStyle = "rgba(100, 200, 255, 0.3)";
+        ctx.lineWidth = 1;
+        [40, 70, 100, 130].forEach((r) => {
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+          ctx.stroke();
+        });
+
+        // Electrons
+        const electronPositions = [
+          { r: 40, angle: Date.now() * 0.003 },
+          { r: 70, angle: Date.now() * 0.002 },
+          { r: 100, angle: Date.now() * 0.0015 },
+          { r: 130, angle: Date.now() * 0.001 },
+        ];
+
+        electronPositions.forEach((pos) => {
+          const ex = cx + pos.r * Math.cos(pos.angle);
+          const ey = cy + pos.r * Math.sin(pos.angle);
+          ctx.fillStyle = "#60a5fa";
+          ctx.beginPath();
+          ctx.arc(ex, ey, 4, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+
+        ctx.fillStyle = "#e6eef8";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("⚛ Hạt nhân Au⁷⁹⁺", cx - 50, cy - 25);
+      }
+
+      function createAlpha() {
+        const y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+        const speed = 2 + Math.random() * 0.5;
+        const alpha = {
+          x: 80,
+          y,
+          vx: speed,
+          vy: 0,
+          type: "straight",
+          dragging: false,
+          trail: [],
+        };
+
+        const r = Math.random();
+        if (r < 0.05) alpha.type = "bounce";
+        else if (r < 0.3) alpha.type = "deflect";
+
+        stats[alpha.type]++;
+        alphas.push(alpha);
+        updateStats();
+      }
+
+      function updateAlphas() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const K = K_BASE * forceFactor;
+
+        alphas.forEach((a, index) => {
+          if (a.dragging) return;
+
+          const dx = cx - a.x;
+          const dy = cy - a.y;
+          const distSq = dx * dx + dy * dy;
+          const dist = Math.sqrt(distSq);
+
+          // Trail effect
+          a.trail.push({ x: a.x, y: a.y });
+          if (a.trail.length > 15) a.trail.shift();
+
+          if (a.type === "deflect" && dist < 200) {
+            const F = K / Math.max(distSq, 100);
+            const fx = F * (dx / dist) * 0.02 * speedFactor;
+            const fy = F * (dy / dist) * 0.02 * speedFactor;
+            a.vx += fx;
+            a.vy += fy;
+          } else if (a.type === "bounce" && dist < 50) {
+            a.vx = -Math.abs(a.vx) * 0.8;
+            a.vy = (Math.random() - 0.5) * 2;
+          }
+
+          a.x += a.vx * speedFactor;
+          a.y += a.vy * speedFactor;
+
+          // Remove off-screen particles
+          if (
+            a.x > canvas.width + 50 ||
+            a.x < -50 ||
+            a.y < -50 ||
+            a.y > canvas.height + 50
+          ) {
+            alphas.splice(index, 1);
+          }
+        });
+      }
+
+      function drawAlphas() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        alphas.forEach((a) => {
+          // Draw trail
+          ctx.strokeStyle =
+            a.type === "straight"
+              ? "rgba(6, 182, 212, 0.3)"
+              : a.type === "deflect"
+              ? "rgba(250, 204, 21, 0.3)"
+              : "rgba(239, 68, 68, 0.3)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          a.trail.forEach((point, i) => {
+            if (i === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          });
+          ctx.stroke();
+
+          // Draw particle
+          const particleGradient = ctx.createRadialGradient(
+            a.x,
+            a.y,
+            0,
+            a.x,
+            a.y,
+            5
+          );
+          particleGradient.addColorStop(
+            0,
+            a.type === "straight"
+              ? "#06b6d4"
+              : a.type === "deflect"
+              ? "#facc15"
+              : "#ef4444"
+          );
+          particleGradient.addColorStop(
+            1,
+            a.type === "straight"
+              ? "#0891b2"
+              : a.type === "deflect"
+              ? "#eab308"
+              : "#dc2626"
+          );
+          ctx.fillStyle = particleGradient;
+          ctx.beginPath();
+          ctx.arc(a.x, a.y, 4, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Draw force vector for deflected particles
+          if (a.type === "deflect" || a.type === "bounce") {
+            const dx = cx - a.x;
+            const dy = cy - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 200) {
+              const F = Math.min((K_BASE * forceFactor) / (dist * dist), 80);
+              const arrowLen = F * 0.5;
+              const angle = Math.atan2(dy, dx);
+
+              ctx.strokeStyle = "rgba(250, 204, 21, 0.7)";
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(
+                a.x + Math.cos(angle) * arrowLen,
+                a.y + Math.sin(angle) * arrowLen
+              );
+              ctx.stroke();
+
+              // Arrow head
+              ctx.fillStyle = "rgba(250, 204, 21, 0.7)";
+              ctx.beginPath();
+              ctx.moveTo(
+                a.x + Math.cos(angle) * arrowLen,
+                a.y + Math.sin(angle) * arrowLen
+              );
+              ctx.lineTo(
+                a.x + Math.cos(angle) * arrowLen - 5 * Math.cos(angle - 0.5),
+                a.y + Math.sin(angle) * arrowLen - 5 * Math.sin(angle - 0.5)
+              );
+              ctx.lineTo(
+                a.x + Math.cos(angle) * arrowLen - 5 * Math.cos(angle + 0.5),
+                a.y + Math.sin(angle) * arrowLen - 5 * Math.sin(angle + 0.5)
+              );
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+        });
+      }
+
+      function animate() {
+        if (!zoom) {
+          drawBackground();
+          updateAlphas();
+          drawAlphas();
+        } else {
+          drawAtom();
+        }
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Event listeners
+      document.getElementById("shootBtn").addEventListener("click", () => {
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => createAlpha(), i * 100);
+        }
+        if (!animationId) animate();
+      });
+
+      document.getElementById("zoomBtn").addEventListener("click", () => {
+        zoom = !zoom;
+        document.getElementById("zoomBtn").textContent = zoom
+          ? "🔙 Quay lại"
+          : "🔬 Xem nguyên tử";
+      });
+
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        alphas = [];
+        cancelAnimationFrame(animationId);
+        animationId = null;
+        drawBackground();
+      });
+
+      document.getElementById("resetStatsBtn").addEventListener("click", () => {
+        stats = { straight: 0, deflect: 0, bounce: 0 };
+        updateStats();
+      });
+
+      document.getElementById("rateSlider").addEventListener("input", (e) => {
+        shootRate = Number(e.target.value);
+        document.getElementById("rateValue").textContent = shootRate;
+      });
+
+      document.getElementById("speedSlider").addEventListener("input", (e) => {
+        speedFactor = Number(e.target.value);
+        document.getElementById("speedValue").textContent =
+          speedFactor.toFixed(1);
+      });
+
+      document.getElementById("forceSlider").addEventListener("input", (e) => {
+        forceFactor = Number(e.target.value);
+        document.getElementById("forceValue").textContent =
+          forceFactor.toFixed(1);
+      });
+
+      // Tab switching
+      const tabs = ["Theory", "Formula", "Example", "History"];
+      tabs.forEach((tab) => {
+        document.getElementById(`tab${tab}`).addEventListener("click", () => {
+          tabs.forEach((t) => {
+            document.getElementById(`tab${t}`).className =
+              t === tab ? "tab-btn tab-active" : "tab-btn tab-inactive";
+            document.getElementById(`content${t}`).className =
+              t === tab ? "card" : "card hidden";
+          });
+        });
+      });
+
+      // Auto shoot
+      setInterval(() => {
+        if (!zoom && animationId) {
+          for (let i = 0; i < shootRate; i++) {
+            setTimeout(() => createAlpha(), i * (1000 / shootRate));
+          }
+        }
+      }, 1000);
+
+      // Drag functionality
+      let draggingAlpha = null;
+
+      canvas.addEventListener("mousedown", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        draggingAlpha = alphas.find((a) => Math.hypot(a.x - mx, a.y - my) < 8);
+        if (draggingAlpha) draggingAlpha.dragging = true;
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (draggingAlpha) {
+          const rect = canvas.getBoundingClientRect();
+          draggingAlpha.x = e.clientX - rect.left;
+          draggingAlpha.y = e.clientY - rect.top;
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        if (draggingAlpha) draggingAlpha.dragging = false;
+        draggingAlpha = null;
+      });
+
+      // Initial draw
+      drawBackground();
+      animate();
+    </script>
+  </body>
+</html>
