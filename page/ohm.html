@@ -463,11 +463,12 @@
         // Nhãn nguồn điện
         ctx.fillStyle = "#e74c3c";
         ctx.font = "bold 18px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("Nguồn điện", batteryX, batteryY - 50);
+        ctx.textAlign = "left"; // <-- Sửa
+        ctx.fillText("Nguồn điện", batteryX + 15, batteryY - 50); // <-- Sửa
         ctx.fillStyle = "#333";
         ctx.font = "bold 20px Arial";
-        ctx.fillText(voltageSlider.value + "V", batteryX, batteryY + 70);
+        ctx.textAlign = "left"; // <-- Thêm
+        ctx.fillText(voltageSlider.value + "V", batteryX + 15, batteryY + 70);
 
         // Vẽ điện trở - ở trên
         const resistorX = centerX;
@@ -538,13 +539,14 @@
         // Nhãn ampe kế
         ctx.fillStyle = "#2980b9";
         ctx.font = "bold 18px Arial";
+        ctx.textAlign = "right";
         ctx.textBaseline = "alphabetic";
-        ctx.fillText("Ampe kế", ammeterX, ammeterY - 55);
+        ctx.fillText("Ampe kế", ammeterX - 15, ammeterY - 55);
 
         const current = parseFloat(displayI.textContent);
         ctx.fillStyle = "#e74c3c";
         ctx.font = "bold 20px Arial";
-        ctx.fillText(current.toFixed(3) + "A", ammeterX, ammeterY + 65);
+        ctx.fillText(current.toFixed(3) + "A", ammeterX - 15, ammeterY + 65);
 
         // Vẽ electron di chuyển
         drawElectrons(left, right, top, bottom, centerX, centerY);
@@ -618,7 +620,7 @@
         // Nhãn
         ctx.font = "bold 14px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("Chiều dòng điện I", centerX, top - 35);
+        ctx.fillText("Chiều dòng điện I", centerX, top - 55);
       }
 
       // Hàm vẽ mũi tên
