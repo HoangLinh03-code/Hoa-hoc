@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng: Sự phân rã Phóng xạ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .slider-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-start {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-pause {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-pause:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+        
+        .btn-reset {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .display-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .display-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .display-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .display-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 400px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            background: #1a1a2e;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff3333, #ff6666);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .progress-decayed {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #888, #555);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .instructions h2 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            color: #856404;
+            line-height: 1.6;
+        }
+        
+        .formula {
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #333;
+            border-left: 4px solid #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .display-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Mô phỏng: Sự phân rã Phóng xạ</h1>
+        <p class="subtitle">Khám phá quá trình phân rã hạt nhân theo thời gian</p>
+        
+        <div class="formula">
+            N(t) = N₀ · (1/2)^(t/T)
+        </div>
+        
+        <div class="main-content">
+            <!-- Cột trái: Thiết lập và Điều khiển -->
+            <div>
+                <div class="section">
+                    <h2>⚙️ Thiết lập</h2>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Số hạt ban đầu (N₀):</span>
+                            <span class="slider-value" id="n0-value">500</span>
+                        </div>
+                        <input type="range" id="n0-slider" min="100" max="1000" value="500" step="50">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Chu kỳ bán rã (T):</span>
+                            <span class="slider-value" id="t-value">5.0s</span>
+                        </div>
+                        <input type="range" id="t-slider" min="1" max="10" value="5" step="0.5">
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>🎮 Điều khiển</h2>
+                    <div class="controls">
+                        <button class="btn-start" id="start-btn">▶ Bắt đầu</button>
+                        <button class="btn-pause" id="pause-btn" disabled>⏸ Tạm dừng</button>
+                        <button class="btn-reset" id="reset-btn">↻ Reset</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>📊 Hiển thị Kết quả</h2>
+                    <div class="display-grid">
+                        <div class="display-item">
+                            <div class="display-label">Thời gian (t)</div>
+                            <div class="display-value" id="time-display">0.0s</div>
+                        </div>
+                        <div class="display-item">
+                            <div class="display-label">Số hạt còn lại N(t)</div>
+                            <div class="display-value" id="remaining-display">500</div>
+                        </div>
+                        <div class="display-item">
+                            <div class="display-label">Số hạt đã phân rã</div>
+                            <div class="display-value" id="decayed-display">0</div>
+                        </div>
+                        <div class="display-item">
+                            <div class="display-label">Phần trăm còn lại</div>
+                            <div class="display-value" id="percent-display">100%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cột phải: Canvas và Đồ thị -->
+            <div>
+                <div class="section" style="padding: 10px;">
+                    <canvas id="canvas"></canvas>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff3333;"></div>
+                            <span>Hạt chưa phân rã</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #555555;"></div>
+                            <span>Hạt đã phân rã</span>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Tỉ lệ hạt nhân:</span>
+                            <span id="ratio-text">100% còn lại | 0% đã phân rã</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-remaining" style="width: 100%;">
+                                <span id="remaining-percent">100%</span>
+                            </div>
+                            <div class="progress-decayed" id="progress-decayed" style="width: 0%;">
+                                <span id="decayed-percent"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section" style="padding: 15px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.1em;">📈 Đồ thị phân rã theo thời gian</h3>
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Giải thích thí nghiệm -->
+        <div class="instructions">
+            <h2>📚 Giải thích thí nghiệm: Sự phân rã Phóng xạ</h2>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">🔬 Hiện tượng phân rã phóng xạ là gì?</h3>
+            <p style="line-height: 1.8; color: #333; margin-bottom: 15px;">
+                <strong>Phân rã phóng xạ</strong> là quá trình mà hạt nhân nguyên tử không bền vững tự phát biến đổi thành hạt nhân khác, 
+                đồng thời phát ra các tia phóng xạ (alpha, beta, gamma). Đây là một <strong>quá trình ngẫu nhiên</strong> - 
+                chúng ta không thể dự đoán chính xác hạt nhân nào sẽ phân rã vào thời điểm nào, nhưng có thể dự đoán được 
+                <strong>số lượng hạt nhân</strong> còn lại sau một khoảng thời gian nhất định.
+            </p>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">📐 Công thức phân rã và ý nghĩa</h3>
+            <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #667eea;">
+                <p style="margin: 0; font-size: 1.1em; text-align: center; font-family: 'Courier New', monospace;"><strong>N(t) = N₀ · (1/2)^(t/T)</strong></p>
+            </div>
+            <p style="line-height: 1.8; color: #333; margin-bottom: 10px;">Trong đó:</p>
+            <ul style="line-height: 1.8; color: #333; margin-left: 20px; margin-bottom: 15px;">
+                <li><strong>N(t)</strong>: Số hạt nhân còn lại tại thời điểm t</li>
+                <li><strong>N₀</strong>: Số hạt nhân ban đầu (lúc t = 0)</li>
+                <li><strong>t</strong>: Thời gian đã trôi qua</li>
+                <li><strong>T</strong>: Chu kỳ bán rã (half-life) - thời gian để một nửa số hạt nhân phân rã</li>
+                <li><strong>(1/2)^(t/T)</strong>: Phần còn lại sau thời gian t, tính theo số lần bán rã</li>
+            </ul>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">💡 Tại sao công thức lại có dạng như vậy?</h3>
+            <p style="line-height: 1.8; color: #333; margin-bottom: 15px;">
+                Công thức này thể hiện <strong>quy luật giảm theo hàm mũ</strong>. Điều này có nghĩa là:
+            </p>
+            <ul style="line-height: 1.8; color: #333; margin-left: 20px; margin-bottom: 15px;">
+                <li>Sau mỗi chu kỳ bán rã T, số hạt nhân còn lại <strong>giảm đi một nửa</strong></li>
+                <li>Tốc độ phân rã tỉ lệ thuận với số hạt còn lại (càng nhiều hạt thì càng nhiều hạt phân rã)</li>
+                <li>Quá trình này <strong>không bao giờ dừng hẳn</strong> - luôn còn một số hạt chưa phân rã (về mặt lý thuyết)</li>
+            </ul>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">📊 Ví dụ minh họa cụ thể</h3>
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #4CAF50;">
+                <p style="margin: 0 0 10px 0; color: #2e7d32;"><strong>Giả sử:</strong> N₀ = 800 hạt, T = 4 giây</p>
+                <ul style="line-height: 1.8; color: #2e7d32; margin-left: 20px; margin-bottom: 0;">
+                    <li><strong>t = 0s</strong>: N(0) = 800 · (1/2)^(0/4) = 800 · 1 = <strong>800 hạt</strong></li>
+                    <li><strong>t = 4s</strong> (sau 1 chu kỳ): N(4) = 800 · (1/2)^(4/4) = 800 · 1/2 = <strong>400 hạt</strong></li>
+                    <li><strong>t = 8s</strong> (sau 2 chu kỳ): N(8) = 800 · (1/2)^(8/4) = 800 · 1/4 = <strong>200 hạt</strong></li>
+                    <li><strong>t = 12s</strong> (sau 3 chu kỳ): N(12) = 800 · (1/2)^(12/4) = 800 · 1/8 = <strong>100 hạt</strong></li>
+                    <li><strong>t = 16s</strong> (sau 4 chu kỳ): N(16) = 800 · (1/2)^(16/4) = 800 · 1/16 = <strong>50 hạt</strong></li>
+                </ul>
+            </div>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">🧪 Thử nghiệm với mô phỏng</h3>
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0 0 10px 0; color: #856404;"><strong>Hãy thử các bước sau để kiểm chứng công thức:</strong></p>
+                <ol style="line-height: 1.8; color: #856404; margin-left: 20px; margin-bottom: 0;">
+                    <li>Đặt N₀ = 800, T = 4s (như ví dụ trên)</li>
+                    <li>Nhấn "Bắt đầu" và quan sát tại các mốc thời gian t = 4s, 8s, 12s, 16s</li>
+                    <li>So sánh số hạt còn lại trên màn hình với kết quả tính toán ở ví dụ</li>
+                    <li>Thử thay đổi T và quan sát tốc độ phân rã thay đổi như thế nào</li>
+                    <li>Chú ý: Số hạt thực tế có thể dao động nhẹ do tính ngẫu nhiên của quá trình phân rã</li>
+                </ol>
+            </div>
+            
+            <h3 style="color: #667eea; margin-top: 15px; margin-bottom: 10px;">🌍 Ứng dụng thực tế</h3>
+            <ul style="line-height: 1.8; color: #333; margin-left: 20px;">
+                <li><strong>Xác định tuổi cổ vật</strong>: Phương pháp Carbon-14 (T = 5730 năm)</li>
+                <li><strong>Y học hạt nhân</strong>: Sử dụng đồng vị phóng xạ để chẩn đoán và điều trị bệnh</li>
+                <li><strong>Năng lượng hạt nhân</strong>: Phản ứng phân rã trong lò phản ứng hạt nhân</li>
+                <li><strong>Địa chất học</strong>: Xác định tuổi Trái Đất và các mẫu đá (Uranium-238: T = 4,5 tỷ năm)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // ==================== KHỞI TẠO CÁC BIẾN TOÀN CỤC ====================
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const chartCanvas = document.getElementById('chart');
+        const chartCtx = chartCanvas.getContext('2d');
+        
+        // Thiết lập kích thước canvas thực tế
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        chartCanvas.width = chartCanvas.offsetWidth;
+        chartCanvas.height = chartCanvas.offsetHeight;
+        
+        // Biến trạng thái mô phỏng
+        let isRunning = false;
+        let animationId = null;
+        let startTime = null;
+        let pausedTime = 0;
+        let currentTime = 0;
+        
+        // Tham số vật lý
+        let N0 = 500;  // Số hạt ban đầu
+        let T = 5;     // Chu kỳ bán rã (giây)
+        
+        // Mảng lưu trữ các hạt nhân
+        let particles = [];
+        
+        // Dữ liệu cho đồ thị
+        let chartData = {
+            times: [],
+            remaining: [],
+            theoretical: []
+        };
+        
+        // ==================== LẤY CÁC PHẦN TỬ DOM ====================
+        
+        const n0Slider = document.getElementById('n0-slider');
+        const tSlider = document.getElementById('t-slider');
+        const n0Value = document.getElementById('n0-value');
+        const tValue = document.getElementById('t-value');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const timeDisplay = document.getElementById('time-display');
+        const remainingDisplay = document.getElementById('remaining-display');
+        const decayedDisplay = document.getElementById('decayed-display');
+        const percentDisplay = document.getElementById('percent-display');
+        const progressRemaining = document.getElementById('progress-remaining');
+        const progressDecayed = document.getElementById('progress-decayed');
+        const remainingPercent = document.getElementById('remaining-percent');
+        const decayedPercent = document.getElementById('decayed-percent');
+        const ratioText = document.getElementById('ratio-text');
+        
+        // ==================== LỚP PARTICLE (HẠT NHÂN) ====================
+        
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 3;
+                this.isDecayed = false;
+                this.decayTime = null; // Thời điểm hạt này sẽ phân rã
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.isDecayed ? '#555555' : '#ff3333';
+                ctx.fill();
+                ctx.strokeStyle = this.isDecayed ? '#333333' : '#cc0000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+        
+        // ==================== HÀM KHỞI TẠO CÁC HẠT NHÂN ====================
+        
+        function initParticles() {
+            particles = [];
+            const padding = 20;
+            const cols = Math.floor(Math.sqrt(N0 * (canvas.width / canvas.height)));
+            const rows = Math.ceil(N0 / cols);
+            const spacingX = (canvas.width - 2 * padding) / (cols + 1);
+            const spacingY = (canvas.height - 2 * padding) / (rows + 1);
+            
+            for (let i = 0; i < N0; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = padding + (col + 1) * spacingX + (Math.random() - 0.5) * 10;
+                const y = padding + (row + 1) * spacingY + (Math.random() - 0.5) * 10;
+                
+                // Tính toán thời điểm phân rã ngẫu nhiên cho mỗi hạt
+                // Sử dụng phân phối xác suất mũ để mô phỏng quá trình phân rã ngẫu nhiên
+                const randomFactor = -Math.log(Math.random());
+                const decayTime = randomFactor * T / Math.LN2;
+                
+                const particle = new Particle(x, y);
+                particle.decayTime = decayTime;
+                particles.push(particle);
+            }
+            
+            drawParticles();
+        }
+        
+        // ==================== HÀM VẼ ĐỒ THỊ ====================
+        
+        function drawChart() {
+            const width = chartCanvas.width;
+            const height = chartCanvas.height;
+            const padding = 40;
+            
+            // Xóa canvas
+            chartCtx.clearRect(0, 0, width, height);
+            
+            if (chartData.times.length < 2) return;
+            
+            // Tìm giá trị max cho trục Y
+            const maxY = N0;
+            const maxX = Math.max(...chartData.times);
+            
+            // Vẽ nền
+            chartCtx.fillStyle = '#f9f9f9';
+            chartCtx.fillRect(0, 0, width, height);
+            
+            // Vẽ lưới
+            chartCtx.strokeStyle = '#e0e0e0';
+            chartCtx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (height - 2 * padding) * i / 5;
+                chartCtx.beginPath();
+                chartCtx.moveTo(padding, y);
+                chartCtx.lineTo(width - padding, y);
+                chartCtx.stroke();
+                
+                // Nhãn trục Y
+                chartCtx.fillStyle = '#666';
+                chartCtx.font = '11px Arial';
+                chartCtx.textAlign = 'right';
+                chartCtx.fillText(Math.round(maxY * (5 - i) / 5), padding - 5, y + 4);
+            }
+            
+            // Vẽ trục
+            chartCtx.strokeStyle = '#333';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            chartCtx.moveTo(padding, padding);
+            chartCtx.lineTo(padding, height - padding);
+            chartCtx.lineTo(width - padding, height - padding);
+            chartCtx.stroke();
+            
+            // Nhãn trục
+            chartCtx.fillStyle = '#333';
+            chartCtx.font = 'bold 12px Arial';
+            chartCtx.textAlign = 'center';
+            chartCtx.fillText('Thời gian (s)', width / 2, height - 10);
+            chartCtx.save();
+            chartCtx.translate(15, height / 2);
+            chartCtx.rotate(-Math.PI / 2);
+            chartCtx.fillText('Số hạt nhân', 0, 0);
+            chartCtx.restore();
+            
+            // Hàm chuyển đổi tọa độ
+            const toX = (t) => padding + (width - 2 * padding) * (t / maxX);
+            const toY = (n) => height - padding - (height - 2 * padding) * (n / maxY);
+            
+            // Vẽ đường lý thuyết (màu xanh đậm, nét đứt)
+            chartCtx.strokeStyle = '#667eea';
+            chartCtx.lineWidth = 3;
+            chartCtx.setLineDash([5, 5]);
+            chartCtx.beginPath();
+            for (let i = 0; i < chartData.theoretical.length; i++) {
+                const x = toX(chartData.times[i]);
+                const y = toY(chartData.theoretical[i]);
+                if (i === 0) chartCtx.moveTo(x, y);
+                else chartCtx.lineTo(x, y);
+            }
+            chartCtx.stroke();
+            chartCtx.setLineDash([]);
+            
+            // Vẽ đường thực tế (màu đỏ, nét liền)
+            chartCtx.strokeStyle = '#ff3333';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            for (let i = 0; i < chartData.remaining.length; i++) {
+                const x = toX(chartData.times[i]);
+                const y = toY(chartData.remaining[i]);
+                if (i === 0) chartCtx.moveTo(x, y);
+                else chartCtx.lineTo(x, y);
+            }
+            chartCtx.stroke();
+            
+            // Vẽ các điểm đo
+            chartData.remaining.forEach((n, i) => {
+                const x = toX(chartData.times[i]);
+                const y = toY(n);
+                chartCtx.fillStyle = '#ff3333';
+                chartCtx.beginPath();
+                chartCtx.arc(x, y, 3, 0, Math.PI * 2);
+                chartCtx.fill();
+            });
+            
+            // Vẽ chú thích
+            const legendX = width - padding - 120;
+            const legendY = padding + 20;
+            
+            // Đường lý thuyết
+            chartCtx.strokeStyle = '#667eea';
+            chartCtx.lineWidth = 3;
+            chartCtx.setLineDash([5, 5]);
+            chartCtx.beginPath();
+            chartCtx.moveTo(legendX, legendY);
+            chartCtx.lineTo(legendX + 30, legendY);
+            chartCtx.stroke();
+            chartCtx.setLineDash([]);
+            chartCtx.fillStyle = '#667eea';
+            chartCtx.font = '11px Arial';
+            chartCtx.textAlign = 'left';
+            chartCtx.fillText('Lý thuyết', legendX + 35, legendY + 4);
+            
+            // Đường thực tế
+            chartCtx.strokeStyle = '#ff3333';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            chartCtx.moveTo(legendX, legendY + 20);
+            chartCtx.lineTo(legendX + 30, legendY + 20);
+            chartCtx.stroke();
+            chartCtx.fillStyle = '#ff3333';
+            chartCtx.fillText('Thực tế', legendX + 35, legendY + 24);
+        }
+        
+        function drawParticles() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => particle.draw());
+        }
+        
+        // ==================== HÀM TÍNH TOÁN SỐ HẠT CÒN LẠI THEO CÔNG THỨC ====================
+        
+        /**
+         * Công thức phân rã phóng xạ: N(t) = N₀ · (1/2)^(t/T)
+         * @param {number} t - Thời gian hiện tại (giây)
+         * @returns {number} - Số hạt nhân còn lại
+         */
+        function calculateRemainingParticles(t) {
+            return N0 * Math.pow(0.5, t / T);
+        }
+        
+        // ==================== HÀM CẬP NHẬT TRẠNG THÁI CÁC HẠT NHÂN ====================
+        
+        function updateParticles(t) {
+            // Tính số hạt còn lại theo công thức lý thuyết
+            const theoreticalRemaining = calculateRemainingParticles(t);
+            
+            // Đánh dấu các hạt đã phân rã dựa trên thời gian phân rã đã tính trước
+            particles.forEach(particle => {
+                if (!particle.isDecayed && t >= particle.decayTime) {
+                    particle.isDecayed = true;
+                }
+            });
+            
+            // Đếm số hạt thực tế còn lại
+            const actualRemaining = particles.filter(p => !p.isDecayed).length;
+            const decayed = N0 - actualRemaining;
+            const percentRemaining = (actualRemaining / N0) * 100;
+            const percentDecayed = (decayed / N0) * 100;
+            
+            // Cập nhật hiển thị số liệu
+            timeDisplay.textContent = t.toFixed(1) + 's';
+            remainingDisplay.textContent = actualRemaining;
+            decayedDisplay.textContent = decayed;
+            percentDisplay.textContent = percentRemaining.toFixed(1) + '%';
+            
+            // Cập nhật thanh progress
+            progressRemaining.style.width = percentRemaining + '%';
+            progressDecayed.style.width = percentDecayed + '%';
+            remainingPercent.textContent = Math.round(percentRemaining) + '%';
+            decayedPercent.textContent = percentDecayed > 5 ? Math.round(percentDecayed) + '%' : '';
+            ratioText.textContent = `${Math.round(percentRemaining)}% còn lại | ${Math.round(percentDecayed)}% đã phân rã`;
+            
+            // Cập nhật dữ liệu đồ thị (mỗi 0.2 giây)
+            if (chartData.times.length === 0 || t - chartData.times[chartData.times.length - 1] >= 0.2) {
+                chartData.times.push(t);
+                chartData.remaining.push(actualRemaining);
+                chartData.theoretical.push(theoreticalRemaining);
+                
+                // Giới hạn số điểm để tránh quá tải
+                if (chartData.times.length > 100) {
+                    chartData.times.shift();
+                    chartData.remaining.shift();
+                    chartData.theoretical.shift();
+                }
+            }
+        }
+        
+        // ==================== HÀM ANIMATION CHÍNH ====================
+        
+        function animate(timestamp) {
+            if (!isRunning) return;
+            
+            if (!startTime) {
+                startTime = timestamp;
+            }
+            
+            // Tính thời gian hiện tại (tính cả thời gian đã tạm dừng)
+            currentTime = (timestamp - startTime) / 1000 + pausedTime;
+            
+            // Cập nhật trạng thái các hạt
+            updateParticles(currentTime);
+            
+            // Vẽ lại canvas và đồ thị
+            drawParticles();
+            drawChart();
+            
+            // Tiếp tục animation
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // ==================== XỬ LÝ Sự KIỆN SLIDER ====================
+        
+        n0Slider.addEventListener('input', (e) => {
+            N0 = parseInt(e.target.value);
+            n0Value.textContent = N0;
+            if (!isRunning) {
+                resetSimulation();
+            }
+        });
+        
+        tSlider.addEventListener('input', (e) => {
+            T = parseFloat(e.target.value);
+            tValue.textContent = T.toFixed(1) + 's';
+        });
+        
+        // ==================== XỬ LÝ CÁC NÚT ĐIỀU KHIỂN ====================
+        
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                n0Slider.disabled = true;
+                
+                // Bắt đầu animation
+                startTime = null;
+                animationId = requestAnimationFrame(animate);
+            }
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                pausedTime = currentTime;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            resetSimulation();
+        });
+        
+        // ==================== HÀM RESET MÔ PHỎNG ====================
+        
+        function resetSimulation() {
+            // Dừng animation
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // Reset các biến thời gian
+            startTime = null;
+            pausedTime = 0;
+            currentTime = 0;
+            
+            // Reset UI
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            n0Slider.disabled = false;
+            
+            // Khởi tạo lại các hạt
+            initParticles();
+            
+            // Cập nhật hiển thị
+            timeDisplay.textContent = '0.0s';
+            remainingDisplay.textContent = N0;
+            decayedDisplay.textContent = '0';
+            percentDisplay.textContent = '100%';
+        }
+        
+        // ==================== KHỞI TẠO BAN ĐẦU ====================
+        
+        // Khởi tạo mô phỏng khi trang được tải
+        initParticles();
+        
+        // Xử lý thay đổi kích thước cửa sổ
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            if (!isRunning) {
+                initParticles();
+            }
+        });
+    </script>
+</body>
+</html>

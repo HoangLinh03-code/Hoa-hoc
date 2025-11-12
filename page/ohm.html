@@ -1,0 +1,664 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô phỏng: Định luật Ôm</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 30px;
+      }
+
+      .controls {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+      }
+
+      .control-group {
+        margin-bottom: 30px;
+      }
+
+      .control-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 1.1em;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        background: #764ba2;
+        transform: scale(1.2);
+      }
+
+      .value-display {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 0.95em;
+        color: #666;
+      }
+
+      .results {
+        background: #e3f2fd;
+        padding: 25px;
+        border-radius: 15px;
+        border-left: 5px solid #2196f3;
+      }
+
+      .result-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .result-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 5px;
+      }
+
+      .result-value {
+        font-size: 1.8em;
+        color: #2196f3;
+        font-weight: bold;
+      }
+
+      .circuit-container {
+        grid-column: 1 / -1;
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+      }
+
+      canvas {
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        background: white;
+        max-width: 100%;
+      }
+
+      .explanation {
+        grid-column: 1 / -1;
+        background: #fff3e0;
+        padding: 25px;
+        border-radius: 15px;
+        border-left: 5px solid #ff9800;
+      }
+
+      .explanation h2 {
+        color: #e65100;
+        margin-bottom: 15px;
+      }
+
+      .explanation p {
+        line-height: 1.8;
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      .formula {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #e65100;
+        margin: 15px 0;
+      }
+
+      .example {
+        background: #f1f8e9;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 15px;
+        border-left: 4px solid #8bc34a;
+      }
+
+      .example h3 {
+        color: #558b2f;
+        margin-bottom: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 1.8em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>⚡ Mô phỏng: Thí nghiệm Định luật Ôm</h1>
+        <p class="subtitle">
+          Khám phá mối quan hệ giữa Điện áp, Điện trở và Dòng điện
+        </p>
+      </header>
+
+      <div class="content">
+        <div class="controls">
+          <h2 style="margin-bottom: 20px; color: #667eea">
+            ⚙️ Thiết lập Thí nghiệm
+          </h2>
+
+          <div class="control-group">
+            <label for="voltage">Hiệu điện thế (V) - Volt:</label>
+            <input
+              type="range"
+              id="voltage"
+              min="0"
+              max="20"
+              value="10"
+              step="0.5" />
+            <div class="value-display">
+              <span>0V</span>
+              <span id="voltageValue" style="font-weight: bold; color: #667eea"
+                >10V</span
+              >
+              <span>20V</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="resistance">Điện trở (R) - Ohm (Ω):</label>
+            <input
+              type="range"
+              id="resistance"
+              min="1"
+              max="100"
+              value="50"
+              step="1" />
+            <div class="value-display">
+              <span>1Ω</span>
+              <span
+                id="resistanceValue"
+                style="font-weight: bold; color: #764ba2"
+                >50Ω</span
+              >
+              <span>100Ω</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="results">
+          <h2 style="margin-bottom: 20px; color: #2196f3">📊 Kết quả Đo</h2>
+
+          <div class="result-item">
+            <div class="result-label">Hiệu điện thế:</div>
+            <div class="result-value"><span id="displayV">10</span> V</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Điện trở:</div>
+            <div class="result-value"><span id="displayR">50</span> Ω</div>
+          </div>
+
+          <div
+            class="result-item"
+            style="background: #e3f2fd; border: 2px solid #2196f3">
+            <div class="result-label">⚡ Cường độ dòng điện:</div>
+            <div class="result-value" style="font-size: 2.2em">
+              <span id="displayI">0.20</span> A
+            </div>
+          </div>
+        </div>
+
+        <div class="circuit-container">
+          <h2 style="margin-bottom: 15px; color: #667eea">
+            🔌 Sơ đồ Mạch Điện
+          </h2>
+          <canvas id="circuitCanvas" width="800" height="400"></canvas>
+        </div>
+
+        <div class="explanation">
+          <h2>📚 Giải thích Định luật Ôm</h2>
+
+          <div class="formula">I = V / R</div>
+
+          <p>
+            <strong>Định luật Ôm</strong> là một trong những định luật cơ bản
+            nhất của điện học, được nhà vật lý người Đức Georg Simon Ohm phát
+            hiện năm 1827. Định luật này mô tả mối quan hệ tuyến tính giữa hiệu
+            điện thế, cường độ dòng điện và điện trở trong một mạch điện.
+          </p>
+
+          <h3 style="color: #e65100; margin-top: 20px; margin-bottom: 10px">
+            🔍 Các đại lượng trong công thức:
+          </h3>
+          <p>
+            • <strong>I (Cường độ dòng điện)</strong>: Đo bằng Ampe (A), là
+            lượng điện tích di chuyển qua tiết diện dây dẫn trong một đơn vị
+            thời gian. Tương tự như lưu lượng nước chảy qua ống.<br /><br />
+            • <strong>V (Hiệu điện thế)</strong>: Đo bằng Volt (V), là "áp lực
+            điện" thúc đẩy electron di chuyển. Càng cao, dòng điện càng mạnh.
+            Giống như độ chênh lệch áp suất nước.<br /><br />
+            • <strong>R (Điện trở)</strong>: Đo bằng Ohm (Ω), là độ cản trở của
+            vật liệu đối với dòng điện. Càng lớn, dòng điện càng yếu. Giống như
+            đường ống hẹp cản trở dòng nước.
+          </p>
+
+          <h3 style="color: #e65100; margin-top: 20px; margin-bottom: 10px">
+            ⚙️ Nguyên lý hoạt động:
+          </h3>
+          <p>
+            Khi ta tăng hiệu điện thế (V), lực đẩy electron mạnh hơn → dòng điện
+            (I) tăng tỉ lệ thuận.<br />
+            Khi ta tăng điện trở (R), electron gặp nhiều cản trở hơn → dòng điện
+            (I) giảm tỉ lệ nghịch.<br /><br />
+            Trong mô phỏng, bạn có thể thấy tốc độ di chuyển của các electron
+            (chấm màu vàng) thay đổi theo dòng điện: dòng điện càng lớn,
+            electron di chuyển càng nhanh!
+          </p>
+
+          <div class="example">
+            <h3>💡 Ví dụ thực tế:</h3>
+            <p>
+              <strong>1. Bóng đèn gia đình:</strong> Nguồn điện nhà bạn cung cấp
+              220V. Một bóng đèn 100W có điện trở khoảng 484Ω. Theo Định luật
+              Ôm: I = 220V / 484Ω ≈ 0.45A. Đây là dòng điện chạy qua bóng đèn
+              khi bật.<br /><br />
+
+              <strong>2. Sạc điện thoại:</strong> Sạc USB cung cấp 5V. Nếu điện
+              thoại bạn đang sạc với dòng 2A, điện trở tương đương là: R = V/I =
+              5V / 2A = 2.5Ω.<br /><br />
+
+              <strong>3. Dây dẫn điện:</strong> Tại sao dây đồng được dùng làm
+              dây dẫn? Vì đồng có điện trở rất nhỏ (≈ 0.000017 Ω·m), cho phép
+              dòng điện lớn đi qua mà không bị tổn hao nhiều năng lượng.<br /><br />
+
+              <strong>4. Cầu chì bảo vệ:</strong> Khi dòng điện quá lớn (do chập
+              mạch hoặc quá tải), nhiệt độ tăng cao làm cầu chì nóng chảy, ngắt
+              mạch để bảo vệ thiết bị. Đây là ứng dụng của hiện tượng: I tăng →
+              nhiệt tỏa ra tăng (theo định luật Jun-Lenxơ: Q = I²Rt).
+            </p>
+          </div>
+
+          <h3 style="color: #e65100; margin-top: 20px; margin-bottom: 10px">
+            🎯 Tại sao Định luật Ôm quan trọng?
+          </h3>
+          <p>
+            Định luật Ôm là nền tảng để thiết kế mọi mạch điện, từ đơn giản (đèn
+            pin) đến phức tạp (máy tính, smartphone). Kỹ sư điện dùng nó để:<br />
+            • Tính toán dòng điện cần thiết cho thiết bị<br />
+            • Chọn dây dẫn phù hợp (đường kính, chất liệu)<br />
+            • Thiết kế bảo vệ quá tải<br />
+            • Tối ưu hóa tiêu thụ năng lượng<br /><br />
+
+            <strong>Lưu ý:</strong> Định luật Ôm chỉ áp dụng cho vật liệu "tuân
+            thủ định luật Ôm" (Ohmic materials) như kim loại ở nhiệt độ không
+            đổi. Với bán dẫn, điốt, hay vật liệu siêu dẫn, mối quan hệ phức tạp
+            hơn!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Lấy các phần tử HTML
+      const voltageSlider = document.getElementById("voltage");
+      const resistanceSlider = document.getElementById("resistance");
+      const voltageValue = document.getElementById("voltageValue");
+      const resistanceValue = document.getElementById("resistanceValue");
+      const displayV = document.getElementById("displayV");
+      const displayR = document.getElementById("displayR");
+      const displayI = document.getElementById("displayI");
+      const canvas = document.getElementById("circuitCanvas");
+      const ctx = canvas.getContext("2d");
+
+      // Mảng lưu trữ vị trí các electron
+      let electrons = [];
+      const numElectrons = 15;
+
+      // Khởi tạo vị trí electron ngẫu nhiên trên đường mạch
+      function initElectrons() {
+        electrons = [];
+        for (let i = 0; i < numElectrons; i++) {
+          electrons.push({
+            position: Math.random() * 100, // Vị trí từ 0-100%
+            speed: 0,
+          });
+        }
+      }
+
+      // Hàm tính toán dòng điện theo Định luật Ôm: I = V / R
+      function calculateCurrent() {
+        const V = parseFloat(voltageSlider.value);
+        const R = parseFloat(resistanceSlider.value);
+
+        // Tính cường độ dòng điện (Ampe)
+        const I = V / R;
+
+        // Cập nhật hiển thị
+        voltageValue.textContent = V + "V";
+        resistanceValue.textContent = R + "Ω";
+        displayV.textContent = V;
+        displayR.textContent = R;
+        displayI.textContent = I.toFixed(3); // Làm tròn 3 chữ số thập phân
+
+        // Cập nhật tốc độ electron tỉ lệ với dòng điện
+        const baseSpeed = 0.5;
+        const electronSpeed = baseSpeed * I * 5; // Nhân 5 để thấy rõ hơn
+        electrons.forEach((e) => (e.speed = electronSpeed));
+
+        return I;
+      }
+
+      // Hàm vẽ mạch điện
+      function drawCircuit() {
+        // Xóa canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const circuitWidth = 600;
+        const circuitHeight = 250;
+
+        // Tọa độ các điểm chính
+        const left = centerX - circuitWidth / 2;
+        const right = centerX + circuitWidth / 2;
+        const top = centerY - circuitHeight / 2;
+        const bottom = centerY + circuitHeight / 2;
+
+        // Vẽ dây dẫn
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(left, top);
+        ctx.lineTo(right, top);
+        ctx.lineTo(right, bottom);
+        ctx.lineTo(left, bottom);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Vẽ nguồn điện (pin) - bên trái
+        const batteryX = left;
+        const batteryY = centerY;
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 3;
+        // Cực dương
+        ctx.beginPath();
+        ctx.moveTo(batteryX - 5, batteryY - 30);
+        ctx.lineTo(batteryX - 5, batteryY + 30);
+        ctx.stroke();
+        // Cực âm
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(batteryX + 5, batteryY - 20);
+        ctx.lineTo(batteryX + 5, batteryY + 20);
+        ctx.stroke();
+
+        // Nhãn nguồn điện
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Nguồn điện", batteryX, batteryY - 50);
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(voltageSlider.value + "V", batteryX, batteryY + 70);
+
+        // Vẽ điện trở - ở trên
+        const resistorX = centerX;
+        const resistorY = top;
+        const resistorWidth = 80;
+        const resistorHeight = 25;
+
+        ctx.strokeStyle = "#f39c12";
+        ctx.fillStyle = "#fff3cd";
+        ctx.lineWidth = 3;
+        ctx.fillRect(
+          resistorX - resistorWidth / 2,
+          resistorY - resistorHeight / 2,
+          resistorWidth,
+          resistorHeight
+        );
+        ctx.strokeRect(
+          resistorX - resistorWidth / 2,
+          resistorY - resistorHeight / 2,
+          resistorWidth,
+          resistorHeight
+        );
+
+        // Vẽ zigzag trong điện trở
+        ctx.strokeStyle = "#f39c12";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const zigzagStart = resistorX - resistorWidth / 2 + 10;
+        const zigzagEnd = resistorX + resistorWidth / 2 - 10;
+        const zigzagStep = (zigzagEnd - zigzagStart) / 6;
+        ctx.moveTo(zigzagStart, resistorY);
+        for (let i = 1; i <= 6; i++) {
+          const x = zigzagStart + i * zigzagStep;
+          const y = resistorY + (i % 2 === 0 ? 8 : -8);
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Nhãn điện trở
+        ctx.fillStyle = "#d35400";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Điện trở", resistorX, resistorY - 35);
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(resistanceSlider.value + "Ω", resistorX, resistorY + 50);
+
+        // Vẽ ampe kế - bên phải
+        const ammeterX = right;
+        const ammeterY = centerY;
+        const ammeterRadius = 35;
+
+        ctx.strokeStyle = "#3498db";
+        ctx.fillStyle = "#e3f2fd";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(ammeterX, ammeterY, ammeterRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Chữ A trong ampe kế
+        ctx.fillStyle = "#2c3e50";
+        ctx.font = "bold 24px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("A", ammeterX, ammeterY);
+
+        // Nhãn ampe kế
+        ctx.fillStyle = "#2980b9";
+        ctx.font = "bold 18px Arial";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("Ampe kế", ammeterX, ammeterY - 55);
+
+        const current = parseFloat(displayI.textContent);
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(current.toFixed(3) + "A", ammeterX, ammeterY + 65);
+
+        // Vẽ electron di chuyển
+        drawElectrons(left, right, top, bottom, centerX, centerY);
+
+        // Vẽ mũi tên chỉ chiều dòng điện
+        drawCurrentArrows(left, right, top, bottom, centerX);
+      }
+
+      // Hàm vẽ các electron di chuyển
+      function drawElectrons(left, right, top, bottom, centerX, centerY) {
+        const totalPath = (right - left) * 2 + (bottom - top) * 2;
+
+        electrons.forEach((electron) => {
+          // Cập nhật vị trí
+          electron.position += electron.speed;
+          if (electron.position > 100) electron.position = 0;
+
+          // Tính tọa độ thực tế dựa trên vị trí phần trăm
+          const currentPos = (electron.position / 100) * totalPath;
+          let x, y;
+
+          const seg1 = right - left;
+          const seg2 = seg1 + (bottom - top);
+          const seg3 = seg2 + (right - left);
+
+          if (currentPos < seg1) {
+            // Đoạn trên: từ trái sang phải
+            x = left + currentPos;
+            y = top;
+          } else if (currentPos < seg2) {
+            // Đoạn phải: từ trên xuống dưới
+            x = right;
+            y = top + (currentPos - seg1);
+          } else if (currentPos < seg3) {
+            // Đoạn dưới: từ phải sang trái
+            x = right - (currentPos - seg2);
+            y = bottom;
+          } else {
+            // Đoạn trái: từ dưới lên trên
+            x = left;
+            y = bottom - (currentPos - seg3);
+          }
+
+          // Vẽ electron
+          ctx.fillStyle = "#ffd700";
+          ctx.shadowColor = "#ffd700";
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Vẽ dấu - (electron mang điện tích âm)
+          ctx.fillStyle = "#333";
+          ctx.font = "bold 10px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("-", x, y);
+        });
+      }
+
+      // Hàm vẽ mũi tên chỉ chiều dòng điện
+      function drawCurrentArrows(left, right, top, bottom, centerX) {
+        ctx.strokeStyle = "#e74c3c";
+        ctx.fillStyle = "#e74c3c";
+        ctx.lineWidth = 2;
+
+        // Mũi tên trên (đi từ trái sang phải)
+        drawArrow(centerX - 100, top - 20, centerX + 100, top - 20);
+
+        // Nhãn
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Chiều dòng điện I", centerX, top - 35);
+      }
+
+      // Hàm vẽ mũi tên
+      function drawArrow(fromX, fromY, toX, toY) {
+        const headLength = 15;
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(
+          toX - headLength * Math.cos(angle - Math.PI / 6),
+          toY - headLength * Math.sin(angle - Math.PI / 6)
+        );
+        ctx.lineTo(
+          toX - headLength * Math.cos(angle + Math.PI / 6),
+          toY - headLength * Math.sin(angle + Math.PI / 6)
+        );
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Hàm animation
+      function animate() {
+        drawCircuit();
+        requestAnimationFrame(animate);
+      }
+
+      // Lắng nghe sự kiện thay đổi
+      voltageSlider.addEventListener("input", calculateCurrent);
+      resistanceSlider.addEventListener("input", calculateCurrent);
+
+      // Khởi tạo
+      initElectrons();
+      calculateCurrent();
+      animate();
+    </script>
+  </body>
+</html>
