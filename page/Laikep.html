@@ -6,9 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Mô phỏng Sức mạnh của Lãi suất kép — Phiên bản tương tác</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       html,
@@ -46,13 +44,16 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
           "Courier New", monospace;
       }
-      /* make sliders easier to see on dark bg */
       input[type="range"] {
         accent-color: #06b6d4;
       }
+      /* Tùy chỉnh input text (thay cho number) */
+      input[type="text"].mono {
+        color-scheme: dark;
+      }
     </style>
   </head>
-  <body class="antialiased">
+  <body class="antiasa">
     <div class="max-w-7xl mx-auto p-6">
       <header class="mb-6">
         <h1 class="text-3xl sm:text-4xl font-extrabold text-teal-300">
@@ -65,27 +66,29 @@
       </header>
 
       <main class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <!-- Controls -->
         <section class="lg:col-span-1 card p-4 rounded-2xl shadow">
           <h2 class="text-xl font-semibold text-slate-200 mb-3">Thiết lập</h2>
 
-          <label class="block text-sm text-slate-300">Vốn gốc (P) — VNĐ</label>
-          <div class="flex items-center gap-3">
+          <label class="block text-sm text-slate-300"
+            >Vốn gốc (P) — VNĐ (ví dụ: 1.5 tỷ)</label
+          >
+          <div class="flex flex-col gap-2">
+            <input
+              id="principalInput"
+              type="text"
+              value="500.000.000.000"
+              class="w-full rounded-md border border-slate-700 p-2 bg-transparent text-slate-200 mono text-lg" />
             <input
               id="principalRange"
               type="range"
               min="1000000"
-              max="100000000"
-              step="1000000"
-              value="10000000"
+              max="1000000000000000"
+              step="10000000000"
+              value="500000000000"
               class="w-full" />
-            <div
-              id="principalLabel"
-              class="w-36 text-right text-sm font-medium text-teal-200 mono">
-              10.000.000 ₫
-            </div>
+            <input type="hidden" id="principalMin" value="1000000" />
+            <input type="hidden" id="principalMax" value="1000000000000000" />
           </div>
-
           <label class="block text-sm text-slate-300 mt-4"
             >Lãi suất hàng năm (r) — %</label
           >
@@ -123,7 +126,7 @@
           </div>
 
           <label class="block text-sm text-slate-300 mt-4"
-            >Số lần ghép lãi mỗi năm (n)</label
+            >Số lần tính lãi trong một năm (n)</label
           >
           <select
             id="compoundSelect"
@@ -201,7 +204,6 @@
           </p>
         </section>
 
-        <!-- Chart + dynamics -->
         <section class="lg:col-span-3 card p-4 rounded-2xl shadow">
           <div class="flex items-start justify-between">
             <div>
@@ -304,10 +306,10 @@
             <div class="mt-3 text-slate-300 space-y-2">
               <p><strong>Công thức cốt lõi:</strong></p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div class="p-3 bg-slate-800 rounded">
-                  <div class="text-xs text-slate-400">Lãi suất kép</div>
-                  <div class="mono mt-1">A = P · (1 + r/n)^(n·t)</div>
-                </div>
+                <div
+                  id="compoundFormulaBox"
+                  class="p-3 bg-slate-800 rounded"></div>
+
                 <div class="p-3 bg-slate-800 rounded">
                   <div class="text-xs text-slate-400">Lãi suất đơn</div>
                   <div class="mono mt-1">A = P · (1 + r·t)</div>
@@ -315,9 +317,51 @@
               </div>
 
               <p class="text-slate-300">
-                Lãi đơn là hàm tuyến tính theo thời gian; lãi kép là hàm mũ — đó
-                là lý do khi t tăng, sự khác biệt trở nên lớn hơn.
+                Lãi đơn tăng đều theo thời gian, còn lãi kép là hàm mũ nên tăng
+                nhanh dần vì mỗi năm bạn không chỉ nhận lãi từ tiền gốc mà còn
+                từ cả phần lãi của các năm trước. Càng lâu, tiền càng ‘đẻ’ ra
+                nhiều hơn.
               </p>
+
+              <div
+                class="mt-4 p-3 bg-slate-800 rounded border border-slate-700">
+                <h4 class="font-semibold text-teal-300">
+                  Lãi kép hoạt động như thế nào?
+                </h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Lãi suất kép, hay
+                  <strong>'lãi mẹ đẻ lãi con'</strong>, là khi tiền lãi bạn nhận
+                  được lại tiếp tục được cộng vào vốn gốc để tính lãi cho kỳ
+                  tiếp theo. Đây là yếu tố then chốt giúp tài sản tăng trưởng
+                  bùng nổ theo thời gian.
+                </p>
+                <h5 class="mt-3 font-semibold text-slate-200">
+                  Ví dụ minh họa (lãi 10%/năm):
+                </h5>
+                <ul
+                  class="mt-2 list-disc list-inside text-sm text-slate-400 space-y-1">
+                  <li>Giả sử bạn có <strong>100.000.000 ₫</strong>.</li>
+                  <li>
+                    <strong>Hết Năm 1:</strong> Bạn nhận 10% (10tr) tiền lãi.
+                    Tổng: <strong>110.000.000 ₫</strong>.
+                  </li>
+                  <li>
+                    <strong>Hết Năm 2:</strong> Bạn nhận 10% của
+                    <strong>110tr</strong> (là 11tr). Tổng:
+                    <strong>121.000.000 ₫</strong>.
+                  </li>
+                  <li>
+                    <strong>Hết Năm 3:</strong> Bạn nhận 10% của
+                    <strong>121tr</strong> (là 12.1tr). Tổng:
+                    <strong>133.100.000 ₫</strong>.
+                  </li>
+                </ul>
+                <p class="mt-2 text-sm text-slate-300">
+                  Nếu dùng lãi đơn, bạn chỉ nhận 10tr mỗi năm (tổng 130tr). Lãi
+                  kép đã giúp bạn có thêm
+                  <strong>3.100.000 ₫</strong>.
+                </p>
+              </div>
 
               <div
                 id="dynamicExplainSmall"
@@ -329,22 +373,112 @@
     </div>
 
     <script>
-      // --- Helpers ---
-      const fmtVND = (v) =>
-        v.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-          maximumFractionDigits: 0,
-        });
+      // === BẮT ĐẦU PHẦN THÊM MỚI ===
+
+      // Hàm fmtVND (định dạng số lớn, dùng fmtAxis cho gọn)
+      const fmtVND = (v) => {
+        v = Math.round(v);
+        const formatted = fmtAxis(v);
+        // Thêm ' ₫' nếu fmtAxis không trả về đơn vị
+        if (!formatted.includes("tỷ") && !formatted.includes("tr")) {
+          return v.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+            maximumFractionDigits: 0,
+          });
+        }
+        return formatted + " ₫";
+      };
+
+      // Hàm fmtAxis (định dạng trục biểu đồ, ngắn gọn)
+      const fmtAxis = (v) => {
+        if (v >= 1e15) {
+          return (
+            (v / 1e15).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
+            " tr. tỷ"
+          );
+        }
+        if (v >= 1e12) {
+          return (
+            (v / 1e12).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
+            " k. tỷ"
+          );
+        }
+        if (v >= 1e9) {
+          return (
+            (v / 1e9).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
+            " tỷ"
+          );
+        }
+        if (v >= 1e6) {
+          return (
+            (v / 1e6).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
+            " tr"
+          );
+        }
+        return v.toLocaleString("vi-VN");
+      };
+
+      // Hàm định dạng số với dấu chấm (Request 2)
+      const formatWithDots = (num) => {
+        return num.toLocaleString("vi-VN");
+      };
+
+      // Hàm phân tích text (Request 1)
+      const parseTextInput = (text) => {
+        let str = String(text).toLowerCase().trim();
+        // 1. Xóa tất cả dấu chấm (phân cách hàng nghìn)
+        str = str.replace(/\./g, "");
+
+        // 2. Chuẩn hóa dấu phẩy thành dấu chấm (cho số thập phân 1,5)
+        str = str.replace(",", ".");
+
+        let multiplier = 1;
+
+        if (str.includes("triệu tỷ")) {
+          multiplier = 1e15;
+          str = str.replace(/triệu tỷ/g, "").trim();
+        } else if (str.includes("nghìn tỷ")) {
+          multiplier = 1e12;
+          str = str.replace(/nghìn tỷ/g, "").trim();
+        } else if (str.includes("tỷ")) {
+          multiplier = 1e9;
+          str = str.replace(/tỷ/g, "").trim();
+        } else if (str.includes("triệu")) {
+          multiplier = 1e6;
+          str = str.replace(/triệu/g, "").trim();
+        } else if (str.includes("nghìn")) {
+          multiplier = 1e3;
+          str = str.replace(/nghìn/g, "").trim();
+        }
+
+        // 3. Chuyển đổi phần số còn lại
+        let num = parseFloat(str);
+        if (isNaN(num)) {
+          return 0; // Trả về 0 nếu không phải là số
+        }
+
+        return Math.round(num * multiplier);
+      };
+
+      // === KẾT THÚC PHẦN THÊM MỚI ===
 
       // DOM refs
+      const principalInput = document.getElementById("principalInput");
       const principalRange = document.getElementById("principalRange");
+      // Lấy min/max từ input hidden
+      const principalMin = Number(
+        document.getElementById("principalMin").value
+      );
+      const principalMax = Number(
+        document.getElementById("principalMax").value
+      );
+
       const rateRange = document.getElementById("rateRange");
       const yearsRange = document.getElementById("yearsRange");
       const compoundSelect = document.getElementById("compoundSelect");
       const speedRange = document.getElementById("speedRange");
 
-      const principalLabel = document.getElementById("principalLabel");
       const rateLabel = document.getElementById("rateLabel");
       const yearsLabel = document.getElementById("yearsLabel");
       const speedLabel = document.getElementById("speedLabel");
@@ -352,10 +486,8 @@
       const compoundTotal = document.getElementById("compoundTotal");
       const simpleTotal = document.getElementById("simpleTotal");
       const diffLabel = document.getElementById("diffLabel");
-
       const currentYearLabel = document.getElementById("currentYear");
       const currentSpeedLabel = document.getElementById("currentSpeed");
-
       const compoundNow = document.getElementById("compoundNow");
       const simpleNow = document.getElementById("simpleNow");
       const compoundInterestThisYear = document.getElementById(
@@ -364,23 +496,23 @@
       const simpleInterestThisYear = document.getElementById(
         "simpleInterestThisYear"
       );
-
       const progCompound = document.getElementById("progCompound");
       const progSimple = document.getElementById("progSimple");
       const progCompoundLabel = document.getElementById("progCompoundLabel");
       const progSimpleLabel = document.getElementById("progSimpleLabel");
-
       const dynamicExplainSmall = document.getElementById(
         "dynamicExplainSmall"
       );
-
       const playBtn = document.getElementById("playBtn");
       const pauseBtn = document.getElementById("pauseBtn");
       const resetBtn = document.getElementById("resetBtn");
+      const compoundFormulaBox = document.getElementById("compoundFormulaBox");
 
       // --- State & compute ---
       function getState() {
         return {
+          // THAY ĐỔI: Đọc P từ thanh trượt (slider)
+          // Thanh trượt sẽ là "nguồn sự thật" (source of truth)
           P: Number(principalRange.value),
           r: Number(rateRange.value) / 100,
           t: Number(yearsRange.value),
@@ -394,6 +526,21 @@
         const compound = years.map((year) => P * Math.pow(1 + r / n, n * year));
         const simple = years.map((year) => P * (1 + r * year));
         return { years, compound, simple };
+      }
+
+      function updateFormulaDisplay() {
+        const n = getState().n;
+        if (n === 1) {
+          compoundFormulaBox.innerHTML = `
+            <div class="text-xs text-slate-400">Lãi suất kép (Tính hàng năm)</div>
+            <div class="mono mt-1">A = P · (1 + r)<sup>t</sup></div>
+          `;
+        } else {
+          compoundFormulaBox.innerHTML = `
+            <div class="text-xs text-slate-400">Lãi suất kép (Tính ${n} lần/năm)</div>
+            <div class="mono mt-1">A = P · (1 + r/n)<sup>(n·t)</sup></div>
+          `;
+        }
       }
 
       // --- Chart setup ---
@@ -433,11 +580,7 @@
             y: {
               title: { display: true, text: "Tổng số tiền (VNĐ)" },
               ticks: {
-                callback: function (value) {
-                  if (value >= 1e9) return (value / 1e9).toFixed(1) + " Tỷ";
-                  if (value >= 1e6) return (value / 1e6).toFixed(0) + " Tr";
-                  return value.toLocaleString("vi-VN");
-                },
+                callback: fmtAxis,
               },
             },
           },
@@ -453,7 +596,7 @@
         },
       });
 
-      // --- Animation control using setInterval stepping per year ---
+      // --- Animation control ---
       let anim = {
         timer: null,
         currentYear: 0,
@@ -471,7 +614,6 @@
         anim.series = computeSeries(state);
         anim.currentYear = 0;
 
-        // initialize chart with year 0
         chart.data.labels = anim.series.years.slice(0, 1);
         chart.data.datasets[0].data = anim.series.compound
           .slice(0, 1)
@@ -541,7 +683,6 @@
         progCompoundLabel.textContent = pctC + "%";
         progSimpleLabel.textContent = pctS + "%";
 
-        // dynamic short explanation for the year
         dynamicExplainSmall.innerHTML = `
         <div class="text-sm"><strong>Năm ${yearIndex}:</strong> Lãi kép = <span class='text-teal-300'>${fmtVND(
           curCompound
@@ -563,13 +704,11 @@
       function stepOneYear() {
         const t = anim.series.years.length - 1;
         if (anim.currentYear >= t) {
-          // reached end — stop
           stopAnimation();
           return;
         }
         anim.currentYear = Math.min(t, anim.currentYear + 1);
 
-        // extend chart to current year
         chart.data.labels = anim.series.years.slice(0, anim.currentYear + 1);
         chart.data.datasets[0].data = anim.series.compound
           .slice(0, anim.currentYear + 1)
@@ -587,7 +726,7 @@
         anim.running = true;
         const speed = Math.max(0.25, getState().speed);
         currentSpeedLabel.textContent = speed + "×";
-        const msPerYear = Math.max(80, Math.round(1000 / speed)); // at speed 1 => 1000ms per year
+        const msPerYear = Math.max(80, Math.round(1000 / speed));
         anim.timer = setInterval(() => {
           stepOneYear();
         }, msPerYear);
@@ -605,17 +744,15 @@
       // --- UI wiring ---
       function refreshInputsUI() {
         const s = getState();
-        principalLabel.textContent = s.P.toLocaleString("vi-VN") + " ₫";
+        // Chỉ cập nhật các label khác, không cập nhật principalInput
         rateLabel.textContent = (s.r * 100).toFixed(1) + " %";
         yearsLabel.textContent = s.t;
         speedLabel.textContent = s.speed + "×";
 
-        // recompute series and reset animation
         anim.series = computeSeries(s);
         if (anim.currentYear > s.t) anim.currentYear = s.t;
         updateTotals();
 
-        // re-render chart up to currentYear
         chart.data.labels = anim.series.years.slice(0, anim.currentYear + 1);
         chart.data.datasets[0].data = anim.series.compound
           .slice(0, anim.currentYear + 1)
@@ -627,23 +764,53 @@
         updateNumerics(anim.currentYear);
       }
 
-      // wire events
-      [
-        principalRange,
-        rateRange,
-        yearsRange,
-        compoundSelect,
-        speedRange,
-      ].forEach((el) => {
+      // Listener cho các thanh trượt khác (không phải P)
+      [rateRange, yearsRange, compoundSelect, speedRange].forEach((el) => {
         el.addEventListener("input", () => {
-          // on parameter change we reset the simulation to start to avoid confusion
           stopAnimation();
           refreshInputsUI();
+          updateFormulaDisplay();
         });
       });
 
+      // === BẮT ĐẦU LISTENER MỚI CHO VỐN GỐC (P) ===
+
+      // 1. Khi người dùng GÕ vào ô input TEXT (sự kiện 'change'
+      // chỉ kích hoạt khi nhấn Enter hoặc click ra ngoài)
+      principalInput.addEventListener("change", () => {
+        let rawValue = parseTextInput(principalInput.value);
+
+        // Giới hạn giá trị trong khoảng min/max
+        if (rawValue < principalMin) rawValue = principalMin;
+        if (rawValue > principalMax) rawValue = principalMax;
+
+        // Cập nhật "nguồn sự thật" (thanh trượt)
+        principalRange.value = rawValue;
+
+        // Định dạng lại ô input text (Request 2)
+        principalInput.value = formatWithDots(rawValue);
+
+        // Kích hoạt làm mới mô phỏng
+        stopAnimation();
+        refreshInputsUI();
+        updateFormulaDisplay();
+      });
+
+      // 2. Khi người dùng KÉO thanh trượt
+      principalRange.addEventListener("input", () => {
+        let rawValue = Number(principalRange.value);
+
+        // Cập nhật ô input text để hiển thị
+        principalInput.value = formatWithDots(rawValue);
+
+        // Kích hoạt làm mới mô phỏng
+        stopAnimation();
+        refreshInputsUI();
+        updateFormulaDisplay();
+      });
+      // === KẾT THÚC LISTENER MỚI ===
+
       playBtn.addEventListener("click", () => {
-        // if end reached, reset to 0 before play
         const s = getState();
         if (anim.currentYear >= s.t) {
           resetAnimationToStart();
@@ -658,8 +825,10 @@
         resetAnimationToStart();
       });
 
-      // keyboard: space = play/pause, right arrow = step, r = reset
       window.addEventListener("keydown", (e) => {
+        // Bỏ qua nếu đang gõ trong ô input
+        if (e.target === principalInput) return;
+
         if (e.code === "Space") {
           e.preventDefault();
           if (anim.running) stopAnimation();
@@ -689,13 +858,16 @@
       chart.update("none");
       updateTotals();
       updateNumerics(0);
+      updateFormulaDisplay();
 
-      // pause when window not visible
+      // Cập nhật định dạng cho ô input khi tải trang
+      principalInput.value = formatWithDots(Number(principalRange.value));
+
       window.addEventListener("blur", () => {
         if (anim.running) stopAnimation();
       });
 
-      console.log("Interactive compound interest simulator ready");
+      console.log("Interactive compound interest simulator (v6-text-parse)");
     </script>
   </body>
 </html>

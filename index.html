@@ -1,34 +1,770 @@
 <!-- @format -->
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Mô Phỏng Khoa Học</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .checkbox-custom {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #d1d5db;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+      }
+
+      .checkbox-custom:checked {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+      }
+
+      .checkbox-custom:checked::after {
+        content: "✓";
+        position: absolute;
+        color: white;
+        font-size: 14px;
+        top: -2px;
+        left: 2px;
+      }
+
+      .filter-badge {
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
   </head>
-  <body>
-    <div class="flex justify-center items-center h-screen">
-      <div class="flex flex-col items-center">
-        <h1 class="text-4xl font-bold mb-4">Gia Lập</h1>
-        <a href="./page/test.html" class="text-xl font-semibold mb-4"
-          >Mô phỏng phản ứng Oxi hóa - khử</a
-        >
-        <a href="./page/phanra.html" class="text-xl font-semibold mb-4"
-          >Sự phân rã phóng xạ</a
-        >
-        <a href="./page/ohm.html" class="text-xl font-semibold mb-4"
-          >Thí nghiệm Định luật Ôm</a
-        >
-        <a href="./page/Laikep.html" class="text-xl font-semibold mb-4"
-          >Mô phỏng Lãi kep</a
-        >
-        <a href="./page/rutherford.html" class="text-xl font-semibold mb-4"
-          >Mô phỏng Rutherford</a
-        >
-        <a href="./page/bang.html" class="text-xl font-semibold mb-4"
-          >Mô phỏng bảng tuần hoàn</a
+  <body
+    class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1
+              class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              🔬 Mô Phỏng Khoa Học
+            </h1>
+            <p class="text-gray-600 mt-1">
+              Khám phá khoa học qua các mô phỏng tương tác
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar Filters -->
+        <aside class="lg:col-span-1">
+          <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <span class="mr-2">🔍</span>
+              Bộ lọc tìm kiếm
+            </h2>
+
+            <!-- Search Box -->
+            <div class="mb-6">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Tìm kiếm mô phỏng..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Subject Filter -->
+            <div class="mb-6">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <span class="mr-2">📚</span>
+                Môn học
+              </h3>
+              <div class="space-y-2">
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="subject"
+                    value="hoa-hoc" />
+                  <span class="ml-3 text-gray-700">Hóa học</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="subject"
+                    value="vat-ly" />
+                  <span class="ml-3 text-gray-700">Vật lý</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="subject"
+                    value="toan-hoc" />
+                  <span class="ml-3 text-gray-700">Toán học</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Grade Level Filter -->
+            <div class="mb-6">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <span class="mr-2">🎓</span>
+                Lớp học
+              </h3>
+              <div class="space-y-2">
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="grade"
+                    value="10" />
+                  <span class="ml-3 text-gray-700">Lớp 10</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="grade"
+                    value="11" />
+                  <span class="ml-3 text-gray-700">Lớp 11</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="grade"
+                    value="12" />
+                  <span class="ml-3 text-gray-700">Lớp 12</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Topic Filter -->
+            <div class="mb-6">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <span class="mr-2">📖</span>
+                Chủ đề
+              </h3>
+              <div class="space-y-2">
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="topic"
+                    value="phan-ung" />
+                  <span class="ml-3 text-gray-700">Phản ứng hóa học</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="topic"
+                    value="dien-hoc" />
+                  <span class="ml-3 text-gray-700">Điện học</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="topic"
+                    value="hat-nhan" />
+                  <span class="ml-3 text-gray-700">Hạt nhân</span>
+                </label>
+                <label
+                  class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    class="checkbox-custom"
+                    data-filter="topic"
+                    value="tai-chinh" />
+                  <span class="ml-3 text-gray-700">Toán tài chính</span>
+                </label>
+              </div>
+            </div>
+
+            <button
+              id="resetBtn"
+              class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition">
+              🔄 Đặt lại bộ lọc
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="lg:col-span-3">
+          <!-- Active Filters Display -->
+          <div id="activeFilters" class="mb-6 hidden">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-semibold text-blue-800">Đang lọc:</h3>
+                <button
+                  id="clearFilters"
+                  class="text-sm text-blue-600 hover:text-blue-800">
+                  Xóa tất cả
+                </button>
+              </div>
+              <div id="filterBadges" class="flex flex-wrap gap-2"></div>
+            </div>
+          </div>
+
+          <!-- Results Count -->
+          <div class="mb-6">
+            <p class="text-gray-600">
+              Tìm thấy
+              <span id="resultCount" class="font-bold text-blue-600">6</span> mô
+              phỏng
+            </p>
+          </div>
+
+          <!-- Simulation Cards Grid -->
+          <div
+            id="simulationGrid"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Card 1: Phản ứng Oxi hóa - khử -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="hoa-hoc"
+              data-grade="10,11"
+              data-topic="phan-ung"
+              data-keywords="oxi hóa khử phản ứng hóa học điện tử">
+              <div
+                class="h-48 bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center">
+                <span class="text-8xl">⚗️</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"
+                    >Hóa học</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 10-11</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Phản ứng Oxi hóa - Khử
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Mô phỏng quá trình trao đổi electron trong phản ứng oxi hóa
+                  khử, quan sát sự thay đổi số oxi hóa
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 15-20 phút</span>
+                  <a
+                    href="./page/test.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Phân rã phóng xạ -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="vat-ly"
+              data-grade="12"
+              data-topic="hat-nhan"
+              data-keywords="phân rã phóng xạ hạt nhân chu kỳ bán rã">
+              <div
+                class="h-48 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                <span class="text-8xl">☢️</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium"
+                    >Vật lý</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 12</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Sự Phân Rã Phóng Xạ
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Quan sát quá trình phân rã của các hạt nhân phóng xạ, tính chu
+                  kỳ bán rã và số lượng hạt còn lại
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 10-15 phút</span>
+                  <a
+                    href="./page/phanra.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Định luật Ôm -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="vat-ly"
+              data-grade="11"
+              data-topic="dien-hoc"
+              data-keywords="định luật ôm điện áp dòng điện điện trở">
+              <div
+                class="h-48 bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                <span class="text-8xl">⚡</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium"
+                    >Vật lý</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 11</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Định Luật Ôm
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Thí nghiệm tương tác để hiểu mối quan hệ giữa điện áp, cường
+                  độ dòng điện và điện trở
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 10-15 phút</span>
+                  <a
+                    href="./page/ohm.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Lãi kép -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="toan-hoc"
+              data-grade="10,11,12"
+              data-topic="tai-chinh"
+              data-keywords="lãi kép toán học tài chính đầu tư tiết kiệm">
+              <div
+                class="h-48 bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                <span class="text-8xl">💰</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                    >Toán học</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 10-12</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Mô Phỏng Lãi Kép
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Tính toán và trực quan hóa sự tăng trưởng của tiền gửi với lãi
+                  suất kép qua thời gian
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 10-15 phút</span>
+                  <a
+                    href="./page/Laikep.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 5: Thí nghiệm Rutherford -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="vat-ly"
+              data-grade="12"
+              data-topic="hat-nhan"
+              data-keywords="rutherford hạt nhân nguyên tử cấu trúc">
+              <div
+                class="h-48 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                <span class="text-8xl">🔬</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium"
+                    >Vật lý</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 12</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Thí Nghiệm Rutherford
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Mô phỏng thí nghiệm lịch sử khám phá ra cấu trúc hạt nhân của
+                  nguyên tử
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 15-20 phút</span>
+                  <a
+                    href="./page/rutherford.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 6: Bảng tuần hoàn -->
+            <div
+              class="simulation-card card-hover bg-white rounded-xl shadow-lg overflow-hidden"
+              data-subject="hoa-hoc"
+              data-grade="10,11,12"
+              data-topic="phan-ung"
+              data-keywords="bảng tuần hoàn nguyên tố hóa học chu kỳ nhóm">
+              <div
+                class="h-48 bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+                <span class="text-8xl">🧪</span>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
+                    >Hóa học</span
+                  >
+                  <span
+                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >Lớp 10-12</span
+                  >
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  Bảng Tuần Hoàn
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Khám phá các nguyên tố hóa học, tính chất và mối quan hệ trong
+                  bảng tuần hoàn
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500">⏱️ 20-30 phút</span>
+                  <a
+                    href="./page/bang.html"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                    Khám phá →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Results Message -->
+          <div id="noResults" class="hidden text-center py-16">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">
+              Không tìm thấy kết quả
+            </h3>
+            <p class="text-gray-600">
+              Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm
+            </p>
+          </div>
+        </main>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16 py-8">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-gray-300">
+          © 2025 Mô Phỏng Khoa Học - Học tập thông minh, tương tác sáng tạo
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // State management
+      const state = {
+        filters: {
+          subject: new Set(),
+          grade: new Set(),
+          topic: new Set(),
+        },
+        searchTerm: "",
+      };
+
+      // DOM elements
+      const searchInput = document.getElementById("searchInput");
+      const simulationCards = document.querySelectorAll(".simulation-card");
+      const resultCount = document.getElementById("resultCount");
+      const noResults = document.getElementById("noResults");
+      const simulationGrid = document.getElementById("simulationGrid");
+      const resetBtn = document.getElementById("resetBtn");
+      const activeFiltersDiv = document.getElementById("activeFilters");
+      const filterBadges = document.getElementById("filterBadges");
+      const clearFilters = document.getElementById("clearFilters");
+
+      // Filter checkboxes
+      const checkboxes = document.querySelectorAll(".checkbox-custom");
+
+      // Initialize
+      updateDisplay();
+
+      // Event listeners
+      checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", handleFilterChange);
+      });
+
+      searchInput.addEventListener("input", (e) => {
+        state.searchTerm = e.target.value.toLowerCase();
+        updateDisplay();
+      });
+
+      resetBtn.addEventListener("click", resetAllFilters);
+      clearFilters.addEventListener("click", resetAllFilters);
+
+      // Handle filter changes
+      function handleFilterChange(e) {
+        const filterType = e.target.dataset.filter;
+        const value = e.target.value;
+
+        if (e.target.checked) {
+          state.filters[filterType].add(value);
+        } else {
+          state.filters[filterType].delete(value);
+        }
+
+        updateDisplay();
+      }
+
+      // Reset all filters
+      function resetAllFilters() {
+        checkboxes.forEach((cb) => (cb.checked = false));
+        searchInput.value = "";
+        state.filters.subject.clear();
+        state.filters.grade.clear();
+        state.filters.topic.clear();
+        state.searchTerm = "";
+        updateDisplay();
+      }
+
+      // Update display based on filters
+      function updateDisplay() {
+        let visibleCount = 0;
+
+        simulationCards.forEach((card) => {
+          if (matchesFilters(card)) {
+            card.style.display = "block";
+            visibleCount++;
+          } else {
+            card.style.display = "none";
+          }
+        });
+
+        // Update result count
+        resultCount.textContent = visibleCount;
+
+        // Show/hide no results message
+        if (visibleCount === 0) {
+          noResults.classList.remove("hidden");
+          simulationGrid.classList.add("hidden");
+        } else {
+          noResults.classList.add("hidden");
+          simulationGrid.classList.remove("hidden");
+        }
+
+        // Update active filters display
+        updateActiveFilters();
+      }
+
+      // Check if card matches all filters
+      function matchesFilters(card) {
+        // Check search term
+        if (state.searchTerm) {
+          const keywords = card.dataset.keywords.toLowerCase();
+          const cardText = card.textContent.toLowerCase();
+          if (
+            !keywords.includes(state.searchTerm) &&
+            !cardText.includes(state.searchTerm)
+          ) {
+            return false;
+          }
+        }
+
+        // Check subject filter
+        if (state.filters.subject.size > 0) {
+          const cardSubject = card.dataset.subject;
+          if (!state.filters.subject.has(cardSubject)) {
+            return false;
+          }
+        }
+
+        // Check grade filter
+        if (state.filters.grade.size > 0) {
+          const cardGrades = card.dataset.grade.split(",");
+          const hasMatchingGrade = cardGrades.some((grade) =>
+            state.filters.grade.has(grade)
+          );
+          if (!hasMatchingGrade) {
+            return false;
+          }
+        }
+
+        // Check topic filter
+        if (state.filters.topic.size > 0) {
+          const cardTopic = card.dataset.topic;
+          if (!state.filters.topic.has(cardTopic)) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // Update active filters display
+      function updateActiveFilters() {
+        const hasActiveFilters =
+          state.filters.subject.size > 0 ||
+          state.filters.grade.size > 0 ||
+          state.filters.topic.size > 0 ||
+          state.searchTerm !== "";
+
+        if (hasActiveFilters) {
+          activeFiltersDiv.classList.remove("hidden");
+
+          // Build badges
+          let badgesHTML = "";
+
+          // Subject badges
+          state.filters.subject.forEach((subject) => {
+            const label = getSubjectLabel(subject);
+            badgesHTML += `
+            <span class="filter-badge inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+              ${label}
+              <button class="ml-2 hover:text-red-900" onclick="removeFilter('subject', '${subject}')">×</button>
+            </span>
+          `;
+          });
+
+          // Grade badges
+          state.filters.grade.forEach((grade) => {
+            badgesHTML += `
+            <span class="filter-badge inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+              Lớp ${grade}
+              <button class="ml-2 hover:text-blue-900" onclick="removeFilter('grade', '${grade}')">×</button>
+            </span>
+          `;
+          });
+
+          // Topic badges
+          state.filters.topic.forEach((topic) => {
+            const label = getTopicLabel(topic);
+            badgesHTML += `
+            <span class="filter-badge inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+              ${label}
+              <button class="ml-2 hover:text-green-900" onclick="removeFilter('topic', '${topic}')">×</button>
+            </span>
+          `;
+          });
+
+          // Search term badge
+          if (state.searchTerm) {
+            badgesHTML += `
+            <span class="filter-badge inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+              "${state.searchTerm}"
+              <button class="ml-2 hover:text-purple-900" onclick="removeSearchTerm()">×</button>
+            </span>
+          `;
+          }
+
+          filterBadges.innerHTML = badgesHTML;
+        } else {
+          activeFiltersDiv.classList.add("hidden");
+        }
+      }
+
+      // Helper functions for labels
+      function getSubjectLabel(subject) {
+        const labels = {
+          "hoa-hoc": "Hóa học",
+          "vat-ly": "Vật lý",
+          "toan-hoc": "Toán học",
+        };
+        return labels[subject] || subject;
+      }
+
+      function getTopicLabel(topic) {
+        const labels = {
+          "phan-ung": "Phản ứng hóa học",
+          "dien-hoc": "Điện học",
+          "hat-nhan": "Hạt nhân",
+          "tai-chinh": "Toán tài chính",
+        };
+        return labels[topic] || topic;
+      }
+
+      // Remove individual filter
+      window.removeFilter = function (filterType, value) {
+        state.filters[filterType].delete(value);
+
+        // Uncheck corresponding checkbox
+        checkboxes.forEach((cb) => {
+          if (cb.dataset.filter === filterType && cb.value === value) {
+            cb.checked = false;
+          }
+        });
+
+        updateDisplay();
+      };
+
+      // Remove search term
+      window.removeSearchTerm = function () {
+        state.searchTerm = "";
+        searchInput.value = "";
+        updateDisplay();
+      };
+    </script>
   </body>
 </html>
