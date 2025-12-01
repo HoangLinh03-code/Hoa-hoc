@@ -1,0 +1,560 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô Phỏng Hệ Mặt Trời</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      #canvas {
+        display: block;
+        background: radial-gradient(
+          ellipse at center,
+          #1a1a2e 0%,
+          #000000 100%
+        );
+      }
+      .star {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s infinite;
+      }
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .planet-trail {
+        stroke-dasharray: 5, 5;
+        animation: dash 20s linear infinite;
+      }
+      @keyframes dash {
+        to {
+          stroke-dashoffset: -100;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-black">
+    <!-- Background stars -->
+    <div id="stars"></div>
+
+    <!-- Canvas -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Control Panel -->
+    <div
+      class="absolute top-4 left-4 bg-gray-900 bg-opacity-90 text-white p-4 rounded-lg shadow-2xl border border-gray-700 max-w-xs">
+      <h2 class="text-xl font-bold mb-3 text-blue-400">
+        🌌 Điều Khiển Hệ Mặt Trời
+      </h2>
+
+      <div class="space-y-3">
+        <div>
+          <button
+            id="playPause"
+            class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+            ⏸️ Tạm dừng
+          </button>
+        </div>
+
+        <div>
+          <button
+            id="reset"
+            class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
+            🔄 Đặt lại
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1"
+            >Tốc độ: <span id="speedValue">1x</span></label
+          >
+          <input
+            type="range"
+            id="speed"
+            min="0.1"
+            max="5"
+            step="0.1"
+            value="1"
+            class="w-full" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1"
+            >Phóng to: <span id="zoomValue">1x</span></label
+          >
+          <input
+            type="range"
+            id="zoom"
+            min="0.5"
+            max="2"
+            step="0.1"
+            value="1"
+            class="w-full" />
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="showOrbits" checked class="w-4 h-4" />
+          <label for="showOrbits" class="text-sm">Hiện quỹ đạo</label>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="showLabels" checked class="w-4 h-4" />
+          <label for="showLabels" class="text-sm">Hiện tên hành tinh</label>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="showTrails" class="w-4 h-4" />
+          <label for="showTrails" class="text-sm">Hiện vệt chuyển động</label>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-gray-700 text-xs text-gray-400">
+        💡 Kéo thả hành tinh để thay đổi vị trí!<br />
+        🖱️ Click vào hành tinh để xem thông tin!
+      </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div
+      id="infoPanel"
+      class="absolute top-4 right-4 bg-gray-900 bg-opacity-90 text-white p-4 rounded-lg shadow-2xl border border-gray-700 max-w-sm hidden">
+      <h3 id="planetName" class="text-lg font-bold mb-2 text-yellow-400"></h3>
+      <div id="planetInfo" class="text-sm space-y-1"></div>
+      <button
+        id="closeInfo"
+        class="mt-3 w-full bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm transition">
+        Đóng
+      </button>
+    </div>
+
+    <!-- Statistics Panel -->
+    <div
+      class="absolute bottom-4 left-4 bg-gray-900 bg-opacity-90 text-white p-3 rounded-lg shadow-2xl border border-gray-700">
+      <div class="text-xs space-y-1">
+        <div>
+          ⏱️ Thời gian:
+          <span id="timeElapsed" class="text-blue-400">0</span> ngày Trái Đất
+        </div>
+        <div>
+          🌍 Năm Trái Đất:
+          <span id="earthYears" class="text-green-400">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let centerX = canvas.width / 2;
+      let centerY = canvas.height / 2;
+
+      // Create background stars
+      const starsContainer = document.getElementById("stars");
+      for (let i = 0; i < 200; i++) {
+        const star = document.createElement("div");
+        star.className = "star";
+        star.style.width = Math.random() * 2 + "px";
+        star.style.height = star.style.width;
+        star.style.left = Math.random() * 100 + "%";
+        star.style.top = Math.random() * 100 + "%";
+        star.style.animationDelay = Math.random() * 3 + "s";
+        starsContainer.appendChild(star);
+      }
+
+      // Planet data (realistic orbital periods and sizes scaled for visualization)
+      let planets = [
+        {
+          name: "Mặt Trời",
+          radius: 30,
+          color: "#FDB813",
+          glowColor: "#FFA500",
+          orbit: 0,
+          speed: 0,
+          angle: 0,
+          mass: 1989000,
+          realRadius: "696,340 km",
+          temp: "5,500°C",
+          info: "Ngôi sao trung tâm, chiếm 99.86% khối lượng hệ Mặt Trời",
+          x: centerX,
+          y: centerY,
+        },
+        {
+          name: "Sao Thủy",
+          radius: 4,
+          color: "#8C7853",
+          orbit: 70,
+          speed: 4.15,
+          angle: 0,
+          mass: 0.33,
+          realRadius: "2,439 km",
+          temp: "167°C (TB)",
+          info: "Hành tinh nhỏ nhất, gần Mặt Trời nhất. Chu kỳ: 88 ngày",
+          trail: [],
+        },
+        {
+          name: "Sao Kim",
+          radius: 9,
+          color: "#FFC649",
+          orbit: 100,
+          speed: 3.24,
+          angle: 60,
+          mass: 4.87,
+          realRadius: "6,051 km",
+          temp: "464°C",
+          info: "Hành tinh nóng nhất. Quay ngược chiều. Chu kỳ: 225 ngày",
+          trail: [],
+        },
+        {
+          name: "Trái Đất",
+          radius: 10,
+          color: "#4A90E2",
+          orbit: 130,
+          speed: 2.97,
+          angle: 120,
+          mass: 5.97,
+          realRadius: "6,371 km",
+          temp: "15°C (TB)",
+          info: "Hành tinh xanh, nơi có sự sống. Chu kỳ: 365 ngày",
+          trail: [],
+        },
+        {
+          name: "Sao Hỏa",
+          radius: 5,
+          color: "#E27B58",
+          orbit: 160,
+          speed: 2.41,
+          angle: 180,
+          mass: 0.642,
+          realRadius: "3,389 km",
+          temp: "-63°C (TB)",
+          info: "Hành tinh đỏ, có núi lửa Olympus Mons. Chu kỳ: 687 ngày",
+          trail: [],
+        },
+        {
+          name: "Sao Mộc",
+          radius: 22,
+          color: "#C88B3A",
+          orbit: 220,
+          speed: 1.31,
+          angle: 240,
+          mass: 1898,
+          realRadius: "69,911 km",
+          temp: "-108°C",
+          info: "Hành tinh lớn nhất, có Vết Đỏ Lớn. Chu kỳ: 12 năm",
+          trail: [],
+        },
+        {
+          name: "Sao Thổ",
+          radius: 18,
+          color: "#FAD5A5",
+          orbit: 280,
+          speed: 0.97,
+          angle: 300,
+          mass: 568,
+          realRadius: "58,232 km",
+          temp: "-139°C",
+          info: "Có vành đai nổi tiếng. Chu kỳ: 29 năm",
+          trail: [],
+          hasRings: true,
+        },
+        {
+          name: "Sao Thiên Vương",
+          radius: 12,
+          color: "#4FD0E7",
+          orbit: 330,
+          speed: 0.68,
+          angle: 0,
+          mass: 86.8,
+          realRadius: "25,362 km",
+          temp: "-197°C",
+          info: "Quay nghiêng 98°. Chu kỳ: 84 năm",
+          trail: [],
+        },
+        {
+          name: "Sao Hải Vương",
+          radius: 11,
+          color: "#4166F5",
+          orbit: 370,
+          speed: 0.54,
+          angle: 60,
+          mass: 102,
+          realRadius: "24,622 km",
+          temp: "-201°C",
+          info: "Hành tinh xa nhất. Gió mạnh nhất hệ. Chu kỳ: 165 năm",
+          trail: [],
+        },
+      ];
+
+      let isRunning = true;
+      let speedMultiplier = 1;
+      let zoomLevel = 1;
+      let showOrbits = true;
+      let showLabels = true;
+      let showTrails = false;
+      let time = 0;
+      let draggedPlanet = null;
+      let mouseX = 0;
+      let mouseY = 0;
+
+      // Event Listeners
+      document.getElementById("playPause").addEventListener("click", () => {
+        isRunning = !isRunning;
+        document.getElementById("playPause").innerHTML = isRunning
+          ? "⏸️ Tạm dừng"
+          : "▶️ Tiếp tục";
+      });
+
+      document.getElementById("reset").addEventListener("click", () => {
+        location.reload();
+      });
+
+      document.getElementById("speed").addEventListener("input", e => {
+        speedMultiplier = parseFloat(e.target.value);
+        document.getElementById("speedValue").textContent =
+          speedMultiplier.toFixed(1) + "x";
+      });
+
+      document.getElementById("zoom").addEventListener("input", e => {
+        zoomLevel = parseFloat(e.target.value);
+        document.getElementById("zoomValue").textContent =
+          zoomLevel.toFixed(1) + "x";
+      });
+
+      document.getElementById("showOrbits").addEventListener("change", e => {
+        showOrbits = e.target.checked;
+      });
+
+      document.getElementById("showLabels").addEventListener("change", e => {
+        showLabels = e.target.checked;
+      });
+
+      document.getElementById("showTrails").addEventListener("change", e => {
+        showTrails = e.target.checked;
+        if (!showTrails) {
+          planets.forEach(p => (p.trail = []));
+        }
+      });
+
+      document.getElementById("closeInfo").addEventListener("click", () => {
+        document.getElementById("infoPanel").classList.add("hidden");
+      });
+
+      // Mouse events for dragging
+      canvas.addEventListener("mousedown", e => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+
+        for (let planet of planets) {
+          if (planet.name === "Mặt Trời") continue;
+
+          const dx = mouseX - planet.x;
+          const dy = mouseY - planet.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < planet.radius * zoomLevel + 5) {
+            draggedPlanet = planet;
+            showPlanetInfo(planet);
+            break;
+          }
+        }
+      });
+
+      canvas.addEventListener("mousemove", e => {
+        if (draggedPlanet) {
+          const rect = canvas.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+
+          const dx = mouseX - centerX;
+          const dy = mouseY - centerY;
+          draggedPlanet.angle = Math.atan2(dy, dx);
+          draggedPlanet.trail = [];
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        draggedPlanet = null;
+      });
+
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+      });
+
+      function showPlanetInfo(planet) {
+        const panel = document.getElementById("infoPanel");
+        document.getElementById("planetName").textContent = planet.name;
+        document.getElementById("planetInfo").innerHTML = `
+                <div><strong>🌐 Bán kính:</strong> ${planet.realRadius}</div>
+                <div><strong>🌡️ Nhiệt độ:</strong> ${planet.temp}</div>
+                <div><strong>⚖️ Khối lượng:</strong> ${
+                  planet.mass
+                } × 10²¹ kg</div>
+                <div><strong>📏 Quỹ đạo:</strong> ${
+                  planet.orbit > 0
+                    ? (planet.orbit * 2).toFixed(0) + " triệu km"
+                    : "Trung tâm"
+                }</div>
+                <div class="mt-2 text-gray-300">${planet.info}</div>
+            `;
+        panel.classList.remove("hidden");
+      }
+
+      function drawPlanet(planet) {
+        if (planet.name !== "Mặt Trời") {
+          planet.x =
+            centerX + Math.cos(planet.angle) * planet.orbit * zoomLevel;
+          planet.y =
+            centerY + Math.sin(planet.angle) * planet.orbit * zoomLevel;
+        }
+
+        // Draw trail
+        if (showTrails && planet.trail) {
+          ctx.strokeStyle = planet.color + "40";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < planet.trail.length; i++) {
+            const point = planet.trail[i];
+            if (i === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          }
+          ctx.stroke();
+        }
+
+        // Draw planet glow
+        if (planet.name === "Mặt Trời") {
+          const gradient = ctx.createRadialGradient(
+            planet.x,
+            planet.y,
+            0,
+            planet.x,
+            planet.y,
+            planet.radius * zoomLevel * 1.5
+          );
+          gradient.addColorStop(0, planet.color);
+          gradient.addColorStop(0.5, planet.glowColor + "80");
+          gradient.addColorStop(1, planet.glowColor + "00");
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(
+            planet.x,
+            planet.y,
+            planet.radius * zoomLevel * 1.5,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+
+        // Draw planet
+        ctx.fillStyle = planet.color;
+        ctx.beginPath();
+        ctx.arc(planet.x, planet.y, planet.radius * zoomLevel, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw Saturn's rings
+        if (planet.hasRings) {
+          ctx.strokeStyle = planet.color + "AA";
+          ctx.lineWidth = 2 * zoomLevel;
+          ctx.beginPath();
+          ctx.ellipse(
+            planet.x,
+            planet.y,
+            planet.radius * zoomLevel * 1.8,
+            planet.radius * zoomLevel * 0.4,
+            0,
+            0,
+            Math.PI * 2
+          );
+          ctx.stroke();
+        }
+
+        // Draw label
+        if (showLabels) {
+          ctx.fillStyle = "white";
+          ctx.font = `${12 * zoomLevel}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            planet.name,
+            planet.x,
+            planet.y + planet.radius * zoomLevel + 15 * zoomLevel
+          );
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw orbits
+        if (showOrbits) {
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+          ctx.lineWidth = 1;
+          planets.forEach(planet => {
+            if (planet.orbit > 0) {
+              ctx.beginPath();
+              ctx.arc(
+                centerX,
+                centerY,
+                planet.orbit * zoomLevel,
+                0,
+                Math.PI * 2
+              );
+              ctx.stroke();
+            }
+          });
+        }
+
+        // Update and draw planets
+        planets.forEach(planet => {
+          if (isRunning && planet !== draggedPlanet && planet.speed > 0) {
+            planet.angle += (planet.speed * speedMultiplier) / 1000;
+
+            if (showTrails && planet.trail) {
+              const x =
+                centerX + Math.cos(planet.angle) * planet.orbit * zoomLevel;
+              const y =
+                centerY + Math.sin(planet.angle) * planet.orbit * zoomLevel;
+              planet.trail.push({ x, y });
+              if (planet.trail.length > 100) planet.trail.shift();
+            }
+          }
+          drawPlanet(planet);
+        });
+
+        // Update time
+        if (isRunning) {
+          time += speedMultiplier * 0.1;
+          document.getElementById("timeElapsed").textContent = Math.floor(time);
+          document.getElementById("earthYears").textContent = (
+            time / 365
+          ).toFixed(2);
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>

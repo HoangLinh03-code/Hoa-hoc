@@ -35,13 +35,11 @@
         padding: 30px;
         text-align: center;
       }
-
       .header h1 {
         font-size: 2.5em;
         margin-bottom: 10px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
       }
-
       .header p {
         font-size: 1.2em;
         opacity: 0.95;
@@ -53,7 +51,6 @@
         gap: 30px;
         padding: 30px;
       }
-
       .simulation-area {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         border-radius: 15px;
@@ -65,12 +62,12 @@
         position: relative;
         width: 100%;
         height: 400px;
-        /* Nền ban đầu sẽ được đặt bởi JS */
         border: 4px solid #333;
         border-radius: 0 0 30px 30px;
         margin: 20px 0;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: white;
       }
 
       .solution {
@@ -78,10 +75,7 @@
         bottom: 0;
         width: 100%;
         height: 80%;
-        transition: background 0.5s ease; /* Sửa 'background-color' thành 'background' */
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        transition: background 0.5s ease;
         overflow: hidden;
       }
 
@@ -98,7 +92,7 @@
           #b0b0b0 100%
         );
         border-radius: 10px 10px 3px 3px;
-        top: -200px; /* Vị trí ban đầu, bên ngoài cốc */
+        top: -200px;
         z-index: 10;
         box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
         transition: top 1s ease-in, background 1s ease;
@@ -123,17 +117,7 @@
         background: #ffd700;
         border-radius: 50%;
         box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
-        animation: float 2s infinite ease-in-out;
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
+        z-index: 15;
       }
 
       .ion {
@@ -146,7 +130,7 @@
         align-items: center;
         justify-content: center;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        animation: drift 4s infinite ease-in-out;
+        transition: top 1s linear, left 1s linear;
       }
 
       @keyframes drift {
@@ -154,15 +138,12 @@
         100% {
           transform: translate(0, 0);
         }
-        25% {
-          transform: translate(10px, -10px);
-        }
         50% {
-          transform: translate(-5px, 10px);
+          transform: translate(-5px, 5px);
         }
-        75% {
-          transform: translate(-10px, -5px);
-        }
+      }
+      .drifting {
+        animation: drift 4s infinite ease-in-out;
       }
 
       .cu-ion {
@@ -179,22 +160,26 @@
         box-shadow: 0 0 10px #90ee90;
       }
 
-      /* ĐÃ THÊM: CSS cho SO42- */
       .so4-ion {
         width: 35px;
         height: 35px;
-        background: radial-gradient(circle at 30% 30%, #f0f0f0, #c0c0c0);
-        box-shadow: 0 0 10px #f0f0f0;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.8),
+          rgba(200, 200, 200, 0.3)
+        );
+        border: 1px solid #ccc;
+        box-shadow: none;
         color: #333;
         text-shadow: none;
-        animation-duration: 6s; /* Trôi chậm hơn */
       }
 
       .cu-deposit {
         position: absolute;
         background: radial-gradient(circle at 30% 30%, #cd7f32, #8b4513);
         border-radius: 50%;
-        animation: deposit 2s ease-out forwards;
+        z-index: 11;
+        animation: deposit 0.5s ease-out forwards;
       }
 
       @keyframes deposit {
@@ -214,11 +199,9 @@
         padding: 25px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
-
       .control-group {
         margin-bottom: 25px;
       }
-
       .control-group label {
         display: block;
         font-weight: 600;
@@ -226,13 +209,11 @@
         color: #333;
         font-size: 1.1em;
       }
-
       .slider-container {
         display: flex;
         align-items: center;
         gap: 15px;
       }
-
       input[type="range"] {
         flex: 1;
         height: 8px;
@@ -241,7 +222,6 @@
         outline: none;
         -webkit-appearance: none;
       }
-
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -252,17 +232,6 @@
         cursor: pointer;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
-
-      input[type="range"]::-moz-range-thumb {
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        border: none;
-      }
-
       .value-display {
         min-width: 80px;
         text-align: center;
@@ -273,13 +242,11 @@
         padding: 8px 15px;
         border-radius: 8px;
       }
-
       .button-group {
         display: flex;
         gap: 15px;
         margin-top: 20px;
       }
-
       button {
         flex: 1;
         padding: 15px;
@@ -291,32 +258,26 @@
         transition: all 0.3s ease;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
-
       .start-btn {
         background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         color: white;
       }
-
       .start-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
       }
-
       .reset-btn {
         background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
         color: white;
       }
-
       .reset-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
       }
-
       .pause-btn {
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         color: white;
       }
-
       .pause-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
@@ -329,19 +290,16 @@
         padding: 25px;
         margin-top: 10px;
       }
-
       .info-panel h3 {
         color: #d63031;
         margin-bottom: 15px;
         font-size: 1.5em;
       }
-
       .equation {
         background: white;
         padding: 20px;
         border-radius: 10px;
         margin: 15px 0;
-        /* ĐÃ SỬA: Thay đổi style để chứa 2 phương trình */
         font-size: 1.1em;
         text-align: left;
         padding-left: 30px;
@@ -349,14 +307,12 @@
         color: #2d3436;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       }
-
       .steps {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 15px;
         margin-top: 20px;
       }
-
       .step {
         background: white;
         padding: 15px;
@@ -364,19 +320,16 @@
         border-left: 4px solid #667eea;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       }
-
       .step h4 {
         color: #667eea;
         margin-bottom: 8px;
       }
-
       .stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 15px;
         margin-top: 20px;
       }
-
       .stat-card {
         background: white;
         padding: 20px;
@@ -384,13 +337,11 @@
         text-align: center;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       }
-
       .stat-card h4 {
         color: #666;
         font-size: 0.9em;
         margin-bottom: 10px;
       }
-
       .stat-card .value {
         font-size: 2em;
         font-weight: bold;
@@ -404,7 +355,6 @@
         flex-wrap: wrap;
         justify-content: center;
       }
-
       .legend-item {
         display: flex;
         align-items: center;
@@ -414,7 +364,6 @@
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
-
       .legend-color {
         width: 25px;
         height: 25px;
@@ -426,7 +375,6 @@
         .main-content {
           grid-template-columns: 1fr;
         }
-
         .stats {
           grid-template-columns: 1fr;
         }
@@ -471,7 +419,7 @@
               <div
                 class="legend-color"
                 style="background: #f0f0f0; border: 1px solid #ccc"></div>
-              <span>SO₄²⁻ (không màu)</span>
+              <span>SO₄²⁻ (không màu - ion không tham gia phản ứng)</span>
             </div>
           </div>
         </div>
@@ -480,7 +428,6 @@
           <h3 style="margin-bottom: 20px; color: #333">
             ⚙️ Điều khiển Thí nghiệm
           </h3>
-
           <div class="control-group">
             <label>Nồng độ CuSO₄ (M)</label>
             <div class="slider-container">
@@ -555,26 +502,26 @@
           <h3>📚 Thông tin Phản ứng</h3>
           <div class="equation">
             <p>
-              <strong>Phương trình hoá học đầy đủ:</strong><br />
-              Fe + CuSO₄ → FeSO₄ + Cu
+              <strong>Phương trình hóa học đầy đủ:</strong><br />Fe + CuSO₄ →
+              FeSO₄ + Cu
             </p>
             <br />
             <p>
-              <strong>Phương trình ion thu gọn:</strong><br />
-              Fe + Cu²⁺ → Fe²⁺ + Cu
+              <strong>Phương trình ion thu gọn:</strong><br />Fe + Cu²⁺ → Fe²⁺ +
+              Cu
             </p>
           </div>
           <div class="steps">
             <div class="step">
               <h4>Quá trình Oxi hóa</h4>
-              <p>Fe → Fe²⁺ + 2e</p>
+              <p>Fe → Fe²⁺ + 2e⁻</p>
               <p style="font-size: 0.9em; color: #666; margin-top: 5px">
                 Sắt nhường 2 electron
               </p>
             </div>
             <div class="step">
               <h4>Quá trình Khử</h4>
-              <p>Cu²⁺ + 2e → Cu</p>
+              <p>Cu²⁺ + 2e⁻ → Cu</p>
               <p style="font-size: 0.9em; color: #666; margin-top: 5px">
                 Đồng nhận 2 electron
               </p>
@@ -596,8 +543,6 @@
       let elapsedTime = 0;
       let cuPercentage = 100;
       let cuDepositPercentage = 0;
-      let electronCount = 0;
-      let ionCount = 0;
 
       const solution = document.getElementById("solution");
       const ironNail = document.getElementById("ironNail");
@@ -605,40 +550,31 @@
       const tempSlider = document.getElementById("temperature");
       const speedSlider = document.getElementById("speed");
 
-      // Cập nhật giá trị hiển thị
       concSlider.oninput = function () {
         document.getElementById("concValue").textContent = this.value + " M";
-        updateSolutionColor(); // Cập nhật màu ngay khi kéo slider
+        if (!animationInterval) resetReaction();
       };
-
       tempSlider.oninput = function () {
         document.getElementById("tempValue").textContent = this.value + "°C";
       };
-
       speedSlider.oninput = function () {
         document.getElementById("speedValue").textContent = this.value + "x";
       };
 
-      // ĐÃ SỬA: Cập nhật logic màu
+      // Hàm cập nhật màu nền dung dịch
       function updateSolutionColor() {
         const conc = parseFloat(concSlider.value);
-        const progress = cuPercentage / 100; // 1 (bắt đầu) -> 0 (kết thúc)
+        const progress = cuPercentage / 100;
 
-        // Màu cuối (FeSO4 - lục nhạt)
         const R_green = 144,
           G_green = 238,
           B_green = 144;
 
-        // Màu đầu (CuSO4 - xanh) - điều chỉnh theo nồng độ
-        // Normalized conc [0.1, 2.0] -> [0, 1]
         const concFactor = (conc - 0.1) / (2.0 - 0.1);
-        // 1M (concFactor ~ 0.47) -> xanh vừa
-        // 2M (concFactor = 1.0) -> xanh đậm
-        const R_blue = 70 - Math.floor(concFactor * 40); // Đậm hơn = ít đỏ
-        const G_blue = 130 - Math.floor(concFactor * 40); // Đậm hơn = ít lục
-        const B_blue = 180 + Math.floor(concFactor * 55); // Đậm hơn = nhiều lam
+        const R_blue = 70 - Math.floor(concFactor * 40);
+        const G_blue = 130 - Math.floor(concFactor * 40);
+        const B_blue = 180 + Math.floor(concFactor * 55);
 
-        // Nội suy tuyến tính giữa 2 màu
         const R = Math.floor(R_green + (R_blue - R_green) * progress);
         const G = Math.floor(G_green + (G_blue - G_green) * progress);
         const B = Math.floor(B_green + (B_blue - B_green) * progress);
@@ -647,8 +583,7 @@
                 rgba(${R}, ${G}, ${B}, 0.3) 0%, 
                 rgba(${R}, ${G}, ${B}, 0.8) 100%)`;
 
-        // Cập nhật màu đinh sắt (ăn mòn)
-        const corrosion = 1 - progress; // 0 -> 1
+        const corrosion = 1 - progress;
         ironNail.style.background = `linear-gradient(90deg, 
                 rgb(${176 - corrosion * 50}, ${176 - corrosion * 50}, ${
           176 - corrosion * 50
@@ -661,128 +596,142 @@
         }) 100%)`;
       }
 
-      function createElectron() {
-        if (electronCount >= 20) return; // Giới hạn số electron
+      // Hàm tạo ion ban đầu trong dung dịch CuSO4
+      // Dung dịch CuSO4 chứa Cu2+ và SO4 2- với số lượng bằng nhau (để trung hòa điện tích)
+      function createInitialIons() {
+        document.querySelectorAll(".ion").forEach(e => e.remove());
+
+        const conc = parseFloat(concSlider.value);
+        const count = Math.floor(10 + conc * 10);
+
+        for (let i = 0; i < count; i++) {
+          createFloatingIon("cu");
+          createFloatingIon("so4");
+        }
+      }
+
+      function createFloatingIon(type) {
+        const ion = document.createElement("div");
+        ion.className = `ion ${type}-ion drifting`;
+
+        if (type === "cu") ion.textContent = "Cu²⁺";
+        if (type === "so4") ion.textContent = "SO₄²⁻";
+
+        ion.style.left = Math.random() * 90 + 5 + "%";
+        ion.style.top = Math.random() * 70 + 20 + "%";
+
+        ion.style.animationDuration = 3 + Math.random() * 4 + "s";
+
+        solution.appendChild(ion);
+        return ion;
+      }
+
+      // Hàm mô phỏng phản ứng
+      // Quá trình: Fe → Fe2+ + 2e (tại bề mặt đinh sắt)
+      //           Cu2+ + 2e → Cu (bám lên đinh sắt)
+      function triggerReactionEvent() {
+        const speed = parseFloat(speedSlider.value);
+
+        // 1. Tìm vị trí ngẫu nhiên trên bề mặt đinh sắt (chạm dung dịch)
+        const nailSurfaceTop = 15 + Math.random() * 60;
+
+        // 2. TẠI BỀ MẶT ĐINH: Fe nhường electron tạo Fe2+
+        const feIon = document.createElement("div");
+        feIon.className = "ion fe-ion";
+        feIon.textContent = "Fe²⁺";
+        feIon.style.left = "50%";
+        feIon.style.top = nailSurfaceTop + "%";
+        solution.appendChild(feIon);
 
         const electron = document.createElement("div");
         electron.className = "electron";
-
-        // Vị trí bắt đầu từ đinh sắt
-        const startX = 50;
-        const startY = 30 + Math.random() * 40; // Dọc phần chìm của đinh
-        electron.style.left = startX + "%";
-        electron.style.top = startY + "%";
-
+        electron.style.left = "50%";
+        electron.style.top = nailSurfaceTop + "%";
         solution.appendChild(electron);
-        electronCount++;
 
-        // Di chuyển electron (tượng trưng cho việc đi đến ion Cu2+)
-        let x = startX;
-        let y = startY;
-        const targetX = Math.random() * 80 + 10;
-        const targetY = Math.random() * 60 + 20;
-        const speed = parseFloat(speedSlider.value);
+        // 3. Fe2+ bay ra dung dịch, electron đợi Cu2+ đến
+        setTimeout(() => {
+          feIon.style.transition = "all 0.8s ease-out";
+          // Fe2+ bay ra NGẪU NHIÊN về mọi hướng (không chỉ trái phải)
+          const randomAngle = Math.random() * 2 * Math.PI; // Góc ngẫu nhiên 360 độ
+          const distance = 20 + Math.random() * 30; // Khoảng cách ngẫu nhiên
 
-        const moveInterval = setInterval(() => {
-          if (isPaused) return;
+          const targetLeft = 50 + Math.cos(randomAngle) * distance;
+          const targetTop = nailSurfaceTop + Math.sin(randomAngle) * distance;
 
-          x += (targetX - x) * 0.05 * speed;
-          y += (targetY - y) * 0.05 * speed;
-          electron.style.left = x + "%";
-          electron.style.top = y + "%";
+          // Đảm bảo Fe2+ không bay ra ngoài cốc
+          feIon.style.left = Math.max(5, Math.min(95, targetLeft)) + "%";
+          feIon.style.top = Math.max(15, Math.min(85, targetTop)) + "%";
+          feIon.classList.add("drifting");
 
-          // Khi "đến" ion Cu2+
-          if (Math.abs(x - targetX) < 1 && Math.abs(y - targetY) < 1) {
-            clearInterval(moveInterval);
-            electron.remove();
-            electronCount--;
-            // Tạo Cu bám vào đinh sắt
-            createCuDeposit(targetX, targetY);
-          }
+          electron.style.transition = "all 0.3s ease";
+          electron.style.transform = "scale(2)";
+          electron.style.boxShadow = "0 0 25px #ffd700, 0 0 50px #ffd700";
         }, 50);
-      }
 
-      // ĐÃ SỬA: Cập nhật logic tạo ion
-      function createIon(type) {
-        if (ionCount >= 50) {
-          const oldIons = solution.querySelectorAll(".ion:not(.so4-ion)"); // Không xóa SO4
-          if (oldIons.length > 0) {
-            oldIons[0].remove();
-            ionCount--;
+        // 4. Tìm ion Cu2+ gần nhất để lao vào đinh
+        setTimeout(() => {
+          const availableCuIons = document.querySelectorAll(
+            ".cu-ion:not(.reacting)"
+          );
+
+          if (availableCuIons.length > 0) {
+            const targetCu =
+              availableCuIons[
+                Math.floor(Math.random() * availableCuIons.length)
+              ];
+            targetCu.classList.add("reacting");
+            targetCu.classList.remove("drifting");
+
+            // Cu2+ LAO VỀ PHÍA ĐINH (nơi có electron)
+            targetCu.style.transition = "all 0.6s ease-in";
+            targetCu.style.left = 50 + (Math.random() - 0.5) * 3 + "%";
+            targetCu.style.top = nailSurfaceTop + "%";
+
+            // 5. Khi Cu2+ đến đinh: nhận e → tạo Cu kim loại bám lên đinh
+            setTimeout(() => {
+              targetCu.remove();
+              electron.remove();
+              createCuDeposit(nailSurfaceTop);
+            }, 600);
+          } else {
+            electron.remove();
           }
-        }
-
-        const ion = document.createElement("div");
-        let ionText = "";
-        let ionClass = `ion ${type}-ion`;
-
-        // Đặt text và class
-        if (type === "cu") {
-          ionText = "Cu²⁺";
-        } else if (type === "fe") {
-          ionText = "Fe²⁺";
-        } else if (type === "so4") {
-          ionText = "SO₄²⁻";
-          ionClass = "ion so4-ion";
-        }
-        ion.className = ionClass;
-        ion.textContent = ionText;
-
-        // ĐÃ SỬA: ion Fe2+ phải xuất hiện từ đinh sắt
-        if (type === "fe") {
-          ion.style.left = 45 + Math.random() * 10 + "%"; // Gần đinh sắt
-          ion.style.top = 30 + Math.random() * 40 + "%"; // Dọc đinh sắt
-        } else {
-          // Cu2+ và SO4- xuất hiện ngẫu nhiên
-          ion.style.left = Math.random() * 80 + 10 + "%";
-          ion.style.top = Math.random() * 60 + 20 + "%";
-        }
-        ion.style.animationDelay = Math.random() * 2 + "s";
-
-        solution.appendChild(ion);
-        ionCount++;
-
-        // ĐÃ SỬA: ion SO42- không bị xóa (lơ lửng)
-        if (type !== "so4") {
-          setTimeout(() => {
-            if (ion.parentNode) {
-              ion.remove();
-              ionCount--;
-            }
-          }, 8000); // Các ion khác tự mất đi
-        }
+        }, 400);
       }
 
-      function createCuDeposit(x, y) {
+      // Tạo Cu kim loại bám ĐỀU lên bề mặt đinh sắt
+      function createCuDeposit(topPos) {
         const deposit = document.createElement("div");
         deposit.className = "cu-deposit";
 
-        const size = 5 + Math.random() * 10;
+        const size = 8 + Math.random() * 10;
         deposit.style.width = size + "px";
         deposit.style.height = size + "px";
-        // Bám trên toàn bộ đinh sắt tiếp xúc
-        deposit.style.left = 48 + Math.random() * 4 + "%"; // Bám quanh đinh (50%)
-        deposit.style.top = 30 + Math.random() * 50 + "%"; // Dọc phần chìm
+
+        deposit.style.left = 48 + (Math.random() - 0.5) * 6 + "%";
+        deposit.style.top = topPos + "%";
 
         solution.appendChild(deposit);
       }
 
       function startReaction() {
-        if (animationInterval || cuPercentage <= 0) {
-          return;
-        }
+        if (animationInterval || cuPercentage <= 0) return;
         isPaused = false;
         document.querySelector(".pause-btn").textContent = "⏸️ Tạm dừng";
-        ironNail.style.top = "15%"; // Thả đinh sắt
 
+        // Thả đinh sắt vào dung dịch
+        ironNail.style.top = "15%";
+
+        // CHỜ ĐINH CHÌM HOÀN TOÀN (1 giây - transition time) RỒI MỚI BẮT ĐẦU PHẢN ỨNG
         setTimeout(() => {
-          const speed = parseFloat(speedSlider.value);
-          const temp = parseFloat(tempSlider.value);
-          const conc = parseFloat(concSlider.value);
-          const reactionRate = speed * (1 + (temp - 25) / 100) * conc;
-
           animationInterval = setInterval(() => {
             if (isPaused) return;
+
+            const speed = parseFloat(speedSlider.value);
+            const temp = parseFloat(tempSlider.value);
+            const conc = parseFloat(concSlider.value);
+            const reactionRate = speed * (1 + (temp - 25) / 100) * conc;
 
             elapsedTime += 0.1;
             document.getElementById("timeValue").textContent =
@@ -800,27 +749,18 @@
               document.getElementById("cuDeposit").textContent =
                 cuDepositPercentage.toFixed(1) + "%";
 
-              updateSolutionColor(); // Cập nhật màu liên tục
+              updateSolutionColor();
 
-              // Tạo hiệu ứng
-              if (Math.random() < 0.3 * reactionRate) {
-                createElectron(); // e- đi từ Fe -> Cu2+
-              }
-              if (Math.random() < 0.2 * reactionRate) {
-                createIon("cu"); // Thêm Cu2+ (tượng trưng)
-              }
-              if (Math.random() < 0.15 * reactionRate) {
-                createIon("fe"); // Fe2+ sinh ra từ đinh
+              if (Math.random() < 0.4 * reactionRate) {
+                triggerReactionEvent();
               }
             } else {
               clearInterval(animationInterval);
               animationInterval = null;
-              alert(
-                "Phản ứng hoàn tất! Tất cả Cu²⁺ đã được khử thành Cu kim loại."
-              );
+              alert("Phản ứng hoàn tất!");
             }
           }, 100);
-        }, 1000); // Chờ đinh rơi xong
+        }, 1000); // Đợi 1 giây cho đinh chìm vào dung dịch
       }
 
       function pauseReaction() {
@@ -840,41 +780,26 @@
         elapsedTime = 0;
         cuPercentage = 100;
         cuDepositPercentage = 0;
-        electronCount = 0;
-        ionCount = 0;
 
         document.getElementById("timeValue").textContent = "0s";
         document.getElementById("cuIons").textContent = "100%";
         document.getElementById("cuDeposit").textContent = "0%";
         document.querySelector(".pause-btn").textContent = "⏸️ Tạm dừng";
 
-        // Xóa tất cả các hiệu ứng (kể cả SO4)
         solution
           .querySelectorAll(".electron, .ion, .cu-deposit")
-          .forEach((el) => el.remove());
+          .forEach(el => el.remove());
 
-        // Reset màu sắc
         updateSolutionColor();
+        ironNail.style.top = "-200px";
         ironNail.style.background =
-          "linear-gradient(90deg, #B0B0B0 0%, #DCDCDC 50%, #B0B0B0 100%)";
-        ironNail.style.top = "-200px"; // Nhấc đinh sắt lên
+          "linear-gradient(90deg, #b0b0b0 0%, #dcdcdc 50%, #b0b0b0 100%)";
 
-        // ĐÃ SỬA: Tạo lại ion ban đầu
         createInitialIons();
       }
 
-      // ĐÃ THÊM: Hàm tạo ion ban đầu
-      function createInitialIons() {
-        // Tạo một số ion Cu²⁺ và SO₄²⁻ ban đầu
-        for (let i = 0; i < 15; i++) {
-          setTimeout(() => createIon("cu"), i * 200);
-          setTimeout(() => createIon("so4"), i * 200 + 100); // Tạo so4 xen kẽ
-        }
-      }
-
-      // Khởi tạo
-      updateSolutionColor(); // Đặt màu ban đầu
-      createInitialIons(); // Tạo ion ban đầu
+      updateSolutionColor();
+      createInitialIons();
     </script>
   </body>
 </html>

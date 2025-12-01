@@ -128,7 +128,7 @@
           step="0.25"
           value="1" />
       </label>
-      <label
+      <!-- <label
         class="text-slate-300 flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl">
         <span class="font-semibold"
           >Độ lớn lực: <span id="forceValue">1.0</span>x</span
@@ -140,7 +140,7 @@
           max="3"
           step="0.1"
           value="1" />
-      </label>
+      </label> -->
     </section>
 
     <div class="max-w-6xl mx-auto">
@@ -173,12 +173,6 @@
         </div>
       </div>
       <canvas id="statsChart" height="100"></canvas>
-      <div class="mt-4 p-4 bg-slate-800/50 rounded-xl">
-        <p class="text-sm text-slate-300">
-          <strong>Tỷ lệ lý thuyết (ước tính):</strong> ~70% đi thẳng, ~25% bị
-          lệch, ~5% bật ngược
-        </p>
-      </div>
     </section>
 
     <section class="max-w-6xl mx-auto mt-6">
@@ -264,22 +258,12 @@
             🎓 Kết luận
           </h3>
           <p class="text-slate-200 leading-relaxed mb-3">
-            Thí nghiệm này đã lật đổ mô hình "bánh pudding nho khô" của Thomson
-            và dẫn đến
-            <strong class="text-teal-300">mô hình hành tinh nguyên tử</strong>
-            của Rutherford:
+            - Khối lượng electron rất nhỏ, phần lớn khối lượng nguyên tử tập
+            trung chủ yếu ở hạt nhân <br />
+            - Nguyên tử có cấu tạo rỗng <br />
+            - Hạt nhân ở tâm nguyên tử mang điện tích dương và có kích thước rất
+            nhỏ so với nguyên tử <br />
           </p>
-          <ul class="space-y-2 text-slate-300 ml-4">
-            <li>
-              ✅ Hầu hết thể tích nguyên tử là
-              <strong>khoảng trống (cấu tạo rỗng)</strong>
-            </li>
-            <li>
-              ✅ Nguyên tử có <strong>hạt nhân ở tâm</strong>, mang
-              <strong>điện tích dương</strong> và có
-              <strong>kích thước rất nhỏ</strong> so với nguyên tử
-            </li>
-          </ul>
         </div>
       </div>
 
@@ -346,36 +330,7 @@
                 r rất nhỏ (hạt gần hạt nhân)
               </li>
             </ul>
-
-            <div
-              class="mt-4 p-4 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-500/30">
-              <p class="text-sm text-slate-200">
-                <strong>📊 Ví dụ tính toán:</strong><br />
-                Khi r = 10⁻¹⁴m (cực gần hạt nhân):<br />
-                F ≈ 9×10⁹ × (2×1.6×10⁻¹⁹) × (79×1.6×10⁻¹⁹) / (10⁻¹⁴)² ≈
-                <strong class="text-cyan-300">36 N</strong><br />
-                → Lực cực lớn so với khối lượng hạt alpha (~6.6×10⁻²⁷ kg) → Gia
-                tốc khổng lồ → Bật ngược!
-                <br />
-                *(Lưu ý: Tính toán trong file gốc có lỗi, 36N là giá trị chính
-                xác hơn)*
-              </p>
-            </div>
           </div>
-        </div>
-
-        <div
-          class="mt-6 p-5 bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl border border-amber-500/30">
-          <h4 class="font-semibold text-amber-300 mb-2">
-            💡 Trong mô phỏng này:
-          </h4>
-          <p class="text-slate-300 text-sm leading-relaxed">
-            Chúng ta sử dụng công thức đơn giản hóa
-            <code class="bg-slate-700 px-2 py-1 rounded">F = K/r²</code>
-            để mô phỏng hiệu ứng tán xạ. Giá trị K được điều chỉnh để tạo hiệu
-            ứng trực quan, không phản ánh chính xác giá trị vật lý thực tế nhưng
-            thể hiện đúng bản chất của hiện tượng.
-          </p>
         </div>
       </div>
 
@@ -394,9 +349,8 @@
               90°) là <strong>1 trên 8000</strong> hạt.
             </p>
             <p class="text-slate-200 mb-3">
-              Các số liệu trong mô phỏng (70%/25%/5%) được
-              <strong class="text-yellow-300">phóng đại</strong> để quan sát
-              hiện tượng dễ dàng hơn.
+              Tỉ lệ giữa số hạt bật đi thẳng, bị lệch, bật ngược được phóng đại
+              để quan sát hiện tượng dễ dàng hơn
             </p>
           </div>
         </div>
@@ -412,40 +366,13 @@
             </p>
             <ul class="space-y-3 text-slate-300">
               <li class="flex items-start gap-2">
-                <span class="text-2xl">🏟️</span>
-                <span
-                  >Nếu nguyên tử lớn bằng
-                  <strong class="text-teal-300">sân vận động</strong> (100m),
-                  thì hạt nhân chỉ bằng
-                  <strong class="text-teal-300">hạt đậu</strong> (1mm) ở giữa
-                  sân!</span
-                >
+                <span class="flex-1 space-y-1">
+                  - Nếu nguyên tử lớn bằng sân vận động hình tròn có bán kính
+                  100 m thì hạt nhân chỉ bằng hạt đậu có đường kính 1 cm nằm
+                  giữa sân!
+                </span>
               </li>
             </ul>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold text-cyan-300 mb-3">
-            🚀 Ứng dụng hiện đại
-          </h3>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="bg-slate-800/50 p-4 rounded-xl">
-              <div class="text-2xl mb-2">🔬</div>
-              <h4 class="font-bold text-purple-300 mb-2">Vật lý hạt nhân</h4>
-              <p class="text-sm text-slate-300">
-                Kỹ thuật tán xạ được dùng để nghiên cứu cấu trúc hạt nhân, phát
-                hiện các hạt mới tại các máy gia tốc như LHC.
-              </p>
-            </div>
-            <div class="bg-slate-800/50 p-4 rounded-xl">
-              <div class="text-2xl mb-2">🔋</div>
-              <h4 class="font-bold text-purple-300 mb-2">Công nghệ vật liệu</h4>
-              <p class="text-sm text-slate-300">
-                Sử dụng Phân tích tán xạ Rutherford ngược (RBS) để phân tích lớp
-                mỏng, pin mặt trời, chip bán dẫn.
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -824,7 +751,7 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        alphas.forEach((a) => {
+        alphas.forEach(a => {
           const particleColor = "#facc15";
           const particleColorDark = "#eab308";
           const trailColor = "rgba(250, 204, 21, 0.3)";
@@ -996,7 +923,7 @@
         updateStats();
       });
 
-      document.getElementById("rateSlider").addEventListener("input", (e) => {
+      document.getElementById("rateSlider").addEventListener("input", e => {
         shootRate = Number(e.target.value);
         document.getElementById("rateValue").textContent = shootRate;
         if (!isPaused) {
@@ -1004,23 +931,23 @@
         }
       });
 
-      document.getElementById("speedSlider").addEventListener("input", (e) => {
+      document.getElementById("speedSlider").addEventListener("input", e => {
         speedFactor = Number(e.target.value);
         document.getElementById("speedValue").textContent =
           speedFactor.toFixed(1);
       });
 
-      document.getElementById("forceSlider").addEventListener("input", (e) => {
-        forceFactor = Number(e.target.value);
-        document.getElementById("forceValue").textContent =
-          forceFactor.toFixed(1);
-      });
+      // document.getElementById("forceSlider").addEventListener("input", e => {
+      //   forceFactor = Number(e.target.value);
+      //   document.getElementById("forceValue").textContent =
+      //     forceFactor.toFixed(1);
+      // });
 
       // Tab switching
       const tabs = ["Theory", "Formula", "Example", "History"];
-      tabs.forEach((tab) => {
+      tabs.forEach(tab => {
         document.getElementById(`tab${tab}`).addEventListener("click", () => {
-          tabs.forEach((t) => {
+          tabs.forEach(t => {
             document.getElementById(`tab${t}`).className =
               t === tab ? "tab-btn tab-active" : "tab-btn tab-inactive";
             document.getElementById(`content${t}`).className =
@@ -1032,16 +959,16 @@
       // Drag functionality
       let draggingAlpha = null;
 
-      canvas.addEventListener("mousedown", (e) => {
+      canvas.addEventListener("mousedown", e => {
         if (isPaused) return;
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        draggingAlpha = alphas.find((a) => Math.hypot(a.x - mx, a.y - my) < 8);
+        draggingAlpha = alphas.find(a => Math.hypot(a.x - mx, a.y - my) < 8);
         if (draggingAlpha) draggingAlpha.dragging = true;
       });
 
-      canvas.addEventListener("mousemove", (e) => {
+      canvas.addEventListener("mousemove", e => {
         if (isPaused) return;
         if (draggingAlpha) {
           const rect = canvas.getBoundingClientRect();

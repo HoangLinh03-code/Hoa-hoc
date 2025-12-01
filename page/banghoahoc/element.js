@@ -736,7 +736,7 @@ const elements = [
     config: "[Xe] 5d¹ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.1,
@@ -749,7 +749,7 @@ const elements = [
     config: "[Xe] 4f¹ 5d¹ 6s²",
     valence: 4,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.12,
@@ -762,7 +762,7 @@ const elements = [
     config: "[Xe] 4f³ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.13,
@@ -775,7 +775,7 @@ const elements = [
     config: "[Xe] 4f⁴ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.14,
@@ -788,7 +788,7 @@ const elements = [
     config: "[Xe] 4f⁵ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.13,
@@ -801,7 +801,7 @@ const elements = [
     config: "[Xe] 4f⁶ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.17,
@@ -814,7 +814,7 @@ const elements = [
     config: "[Xe] 4f⁷ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.2,
@@ -827,7 +827,7 @@ const elements = [
     config: "[Xe] 4f⁷ 5d¹ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.2,
@@ -840,7 +840,7 @@ const elements = [
     config: "[Xe] 4f⁹ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.1,
@@ -853,7 +853,7 @@ const elements = [
     config: "[Xe] 4f¹⁰ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.22,
@@ -866,7 +866,7 @@ const elements = [
     config: "[Xe] 4f¹¹ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.23,
@@ -879,7 +879,7 @@ const elements = [
     config: "[Xe] 4f¹² 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.24,
@@ -892,7 +892,7 @@ const elements = [
     config: "[Xe] 4f¹³ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.25,
@@ -905,7 +905,7 @@ const elements = [
     config: "[Xe] 4f¹⁴ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.1,
@@ -918,7 +918,7 @@ const elements = [
     config: "[Xe] 4f¹⁴ 5d¹ 6s²",
     valence: 3,
     period: 6,
-    group: "Lanthanide",
+    group: "IIIB",
     type: "lanthanide",
 
     electronegativity: 1.27,
@@ -1152,7 +1152,7 @@ const elements = [
     config: "[Rn] 6d¹ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.1,
@@ -1165,7 +1165,7 @@ const elements = [
     config: "[Rn] 6d² 7s²",
     valence: 4,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1178,7 +1178,7 @@ const elements = [
     config: "[Rn] 5f² 6d¹ 7s²",
     valence: 5,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.5,
@@ -1191,7 +1191,7 @@ const elements = [
     config: "[Rn] 5f³ 6d¹ 7s²",
     valence: 6,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.38,
@@ -1204,7 +1204,7 @@ const elements = [
     config: "[Rn] 5f⁴ 6d¹ 7s²",
     valence: 5,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.36,
@@ -1217,7 +1217,7 @@ const elements = [
     config: "[Rn] 5f⁶ 7s²",
     valence: 4,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.28,
@@ -1230,7 +1230,7 @@ const elements = [
     config: "[Rn] 5f⁷ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1243,7 +1243,7 @@ const elements = [
     config: "[Rn] 5f⁷ 6d¹ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1256,7 +1256,7 @@ const elements = [
     config: "[Rn] 5f⁹ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1269,7 +1269,7 @@ const elements = [
     config: "[Rn] 5f¹⁰ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1282,7 +1282,7 @@ const elements = [
     config: "[Rn] 5f¹¹ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1295,7 +1295,7 @@ const elements = [
     config: "[Rn] 5f¹² 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1308,7 +1308,7 @@ const elements = [
     config: "[Rn] 5f¹³ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1321,7 +1321,7 @@ const elements = [
     config: "[Rn] 5f¹⁴ 7s²",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,
@@ -1334,7 +1334,7 @@ const elements = [
     config: "[Rn] 5f¹⁴ 7s² 7p¹",
     valence: 3,
     period: 7,
-    group: "Actinide",
+    group: "IIIB",
     type: "actinide",
 
     electronegativity: 1.3,

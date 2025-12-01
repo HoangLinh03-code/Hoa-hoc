@@ -1,0 +1,401 @@
+/** @format */
+
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 16px;
+}
+
+/* ELEMENT CELL */
+.element-cell {
+  position: relative;
+  transition: all 0.2s ease-out;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  padding: 0;
+  /* Lưu ý: background-color sẽ được gán bằng JS inline */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  z-index: 1; /* Để xử lý lớp phủ */
+}
+.element-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Đẩy 2 phần tử ra 2 đầu trái phải */
+  align-items: flex-start;
+  margin-bottom: 2px;
+}
+.element-cell:hover {
+  transform: translateY(-4px) scale(1.05);
+  z-index: 100;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+.element-number {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  /* Màu nền sẽ được JS thêm trực tiếp vào đây */
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.element-mass {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #222;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.element-symbol {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 14px;
+  margin-bottom: 2px;
+  color: #000;
+  z-index: 2;
+}
+
+.element-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  color: #333;
+  z-index: 2;
+}
+.element-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex-grow: 1; /* Chiếm phần khoảng trống còn lại */
+  margin-top: -5px; /* Kéo lên một chút cho cân đối */
+}
+.element-electronegativity {
+  font-size: 0.5rem;
+  line-height: 1;
+  margin-top: 1px;
+  opacity: 0.8;
+}
+
+/* GRID LAYOUT */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+.table-grid {
+  display: grid;
+  grid-template-columns: 35px repeat(18, minmax(55px, 1fr));
+  gap: 3px;
+  min-width: 1150px;
+}
+/* TAB STYLES */
+.tab-nav {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb; /* border-gray-200 */
+  margin-bottom: 16px;
+}
+.tab-button {
+  padding: 12px 20px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280; /* text-gray-500 */
+  margin-bottom: -2px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+.tab-button:hover {
+  background-color: #f3f4f6; /* bg-gray-100 */
+  color: #374151; /* text-gray-700 */
+}
+.tab-button.active {
+  color: #4f46e5; /* text-indigo-600 */
+  border-bottom-color: #4f46e5; /* border-indigo-600 */
+}
+.tab-content {
+  display: none;
+  animation: fadeIn 0.5s;
+}
+.tab-content.active {
+  display: block;
+}
+/* Dùng lại keyframe fadeIn từ modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* HEADERS */
+.group-header {
+  font-weight: 700;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: #4b5563;
+}
+.period-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+}
+.lanthanide-label {
+  font-size: 1rem !important;
+  line-height: 1.1;
+  text-align: center;
+  word-wrap: break-word;
+  padding-left: 190px;
+}
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  animation: fadeIn 0.3s;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.modal-content {
+  background: white;
+  margin: 3% auto;
+  padding: 30px;
+  border-radius: 16px;
+  width: 92%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(-60px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ATOM MODEL */
+.electron-shell {
+  stroke: #374151;
+  fill: none;
+  stroke-width: 1.5;
+}
+.electron {
+  fill: #3b82f6;
+}
+.nucleus {
+  fill: #ef4444;
+}
+
+/* FILTER */
+.active-filter {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.8) !important;
+  border-color: #3b82f6 !important;
+  border-width: 3px !important;
+}
+
+/* LEGEND */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-box {
+  width: 35px;
+  height: 22px;
+  border: 2px solid #333;
+  border-radius: 4px;
+}
+
+/* RESPONSIVE */
+@media (min-width: 1400px) {
+  .table-grid {
+    grid-template-columns: 40px repeat(18, minmax(65px, 1fr));
+    gap: 4px;
+    min-width: 1400px;
+  }
+  .element-cell {
+    min-height: 85px;
+    padding: 6px 3px;
+  }
+  .element-symbol {
+    font-size: 1.5rem;
+  }
+  .element-number,
+  .element-name,
+  .element-mass {
+    font-size: 0.65rem;
+  }
+  .element-electronegativity {
+    font-size: 0.6rem;
+  }
+  .group-header {
+    font-size: 0.8rem;
+  }
+  .period-label {
+    font-size: 0.85rem;
+  }
+}
+/* Style cho ô đại diện nhóm Lantan/Actini */
+.placeholder-cell {
+  position: relative;
+  border-radius: 4px;
+  /* Màu xanh dương giống hệt ảnh mẫu */
+  background-color: #88c0be !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  color: #000;
+  padding: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.placeholder-range {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.placeholder-symbol {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.placeholder-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+/* --- CẬP NHẬT CSS ĐỂ BẢNG DƯỚI TO RA --- */
+
+/* Container bao ngoài */
+.bottom-rows-container {
+  margin-top: 30px;
+  width: 85%; /* Bắt buộc chiếm 100% chiều rộng */
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Thêm padding nhẹ để không bị dính sát mép nếu cần */
+  padding: 0 4px;
+}
+
+/* Hàng ngang */
+.bottom-row {
+  display: flex;
+  width: 100%; /* Chiếm hết chiều rộng container */
+  gap: 4px; /* Khoảng cách khe hở giống bảng chính (3px-4px) */
+}
+
+/* QUAN TRỌNG: Sửa class này để ô to ra */
+.bottom-row .element-cell {
+  flex: 1; /* Tự động phình to ra để lấp đầy chiều ngang */
+  min-width: 0; /* Đảm bảo layout flex không bị vỡ */
+  height: auto; /* Chiều cao tự động theo nội dung hoặc để 90px như cũ */
+  aspect-ratio: 1 / 1.1; /* Giữ tỷ lệ khung hình đẹp (tùy chọn) */
+}
+
+/* Giữ nguyên style nhãn dọc, nhưng chỉnh lại margin chút cho đẹp */
+.side-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+  margin-right: 4px;
+  flex-shrink: 0; /* Không cho phép nhãn bị co lại */
+  width: 25px; /* Chiều rộng cố định cho nhãn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group-header,
+.period-label {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  user-select: none; /* Không cho bôi đen văn bản */
+}
+
+/* 2. Hiệu ứng khi di chuột vào (Hover) */
+.group-header:hover,
+.period-label:hover {
+  background-color: #ddd;
+  color: #4f46e5; /* Màu tím đậm */
+  transform: scale(1.2); /* Phóng to nhẹ */
+}
+
+/* 3. Hiệu ứng khi đang được chọn (Active) */
+.header-active {
+  background-color: #4f46e5 !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Tinh chỉnh lại thanh Máy tính phân tử khối cho gọn */
+.molar-calculator-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,475 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bảng Tuần Hoàn Tương Tác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="max-w-full mx-auto">
+      <!-- HEADER -->
+      <div class="bg-white rounded-xl shadow-2xl p-6 mb-4">
+        <h1
+          class="text-3xl md:text-4xl font-bold text-center text-purple-800 mb-2">
+          BẢNG TUẦN HOÀN CÁC NGUYÊN TỐ HÓA HỌC
+        </h1>
+        <p class="text-center text-gray-600 text-sm md:text-base">
+          Nhấp vào nguyên tố để xem chi tiết | Di chuột để xem thông tin cơ bản
+        </p>
+      </div>
+
+      <!-- FILTER BUTTONS -->
+      <div class="bg-white rounded-xl shadow-2xl p-4 mb-4">
+        <h3 class="font-semibold mb-3 text-gray-700">
+          ⚙️ Máy tính Phân tử khối (Molar Mass)
+        </h3>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            id="formulaInput"
+            placeholder="Nhập công thức, ví dụ: H2SO4, Al(OH)3"
+            class="flex-grow px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" />
+          <button
+            onclick="calculateMolarMass()"
+            class="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition">
+            Tính toán
+          </button>
+        </div>
+        <div
+          id="molarMassResult"
+          class="mt-3 text-lg font-bold text-gray-800"></div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="bg-white rounded-xl shadow-2xl p-4 mb-4">
+      <h3 class="font-bold mb-3 text-gray-800">Chú thích màu sắc:</h3>
+      <div class="grid grid-cols-2 md:grid-cols-1 gap-3">
+        <div class="legend-item">
+          <div class="legend-box" style="background: #88c0be"></div>
+          <span class="text-sm font-medium">Kim loại</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box" style="background: #e19ca8"></div>
+          <span class="text-sm font-medium">Phi kim</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box" style="background: #e0c210"></div>
+          <span class="text-sm font-medium">Khí hiếm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAMPLE BOX -->
+    <div
+      class="flex justify-center items-center bg-white rounded-xl shadow-2xl py-12 px-20 mb-5 mt-8">
+      <div class="relative">
+        <div
+          class="w-[160px] h-[170px] bg-[#E19CA8] rounded-lg shadow-lg relative flex flex-col items-center justify-center overflow-hidden text-[#111]">
+          <div
+            class="absolute top-0 left-0 w-[50px] h-[50px] bg-[#b47d86] flex items-center justify-center text-xl font-bold">
+            6
+          </div>
+
+          <div
+            class="absolute top-3 right-3 text-sm font-semibold text-gray-800">
+            12.011
+          </div>
+
+          <div class="text-7xl font-black mt-4 mb-1 leading-none">C</div>
+
+          <div class="text-lg font-medium">Carbon</div>
+        </div>
+
+        <div
+          class="absolute top-[8px] -left-[220px] flex w-[230px] items-center justify-end">
+          <span
+            class="whitespace-nowrap rounded bg-[#FFEFEF] p-2 text-sm shadow border border-pink-100">
+            Số hiệu nguyên tử
+          </span>
+          <div class="h-[2px] w-[60px] bg-gray-500 ml-2"></div>
+        </div>
+
+        <div
+          class="absolute top-[5px] -right-[260px] flex w-[270px] items-center">
+          <div class="h-[2px] w-[70px] bg-gray-500 mr-2"></div>
+          <span
+            class="whitespace-nowrap rounded bg-[#FFEFEF] p-2 text-sm shadow border border-pink-100">
+            Nguyên tử khối
+          </span>
+        </div>
+
+        <div
+          class="absolute top-[113px] -left-[250px] flex w-[290px] items-center justify-end">
+          <span
+            class="whitespace-nowrap rounded bg-[#FFEFEF] p-2 text-sm shadow border border-pink-100">
+            Ký hiệu hóa học
+          </span>
+          <div class="h-[2px] w-[90px] bg-gray-500 ml-2"></div>
+        </div>
+
+        <div
+          class="absolute bottom-[60px] -right-[240px] flex w-[290px] items-center">
+          <div class="h-[2px] w-[100px] bg-gray-500 mr-2"></div>
+          <span
+            class="whitespace-nowrap rounded bg-[#FFEFEF] p-2 text-sm shadow border border-pink-100">
+            Tên nguyên tố
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERIODIC TABLE -->
+    <div class="table-wrapper shadow-2xl">
+      <div class="table-grid" id="groupHeaders"></div>
+      <div class="table-grid" id="periodicTable"></div>
+      <div class="main-content">
+        <div id="periodicTable"></div>
+        <div id="bottomRowsContainer" class="bottom-rows-container"></div>
+      </div>
+    </div>
+
+    <!-- KNOWLEDGE SECTION -->
+    <div class="bg-white rounded-xl shadow-2xl p-6 mt-4">
+      <div class="tab-nav">
+        <button
+          class="tab-button active"
+          onclick="openTab(event, 'tab-knowledge')">
+          📚 Kiến Thức Cơ Bản
+        </button>
+        <button class="tab-button" onclick="openTab(event, 'tab-history')">
+          📜 Lịch Sử
+        </button>
+        <button class="tab-button" onclick="openTab(event, 'tab-creators')">
+          👨‍🔬 Người Tạo Ra
+        </button>
+      </div>
+
+      <div id="tab-knowledge" class="tab-content active">
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-blue-700 mb-3">
+            1. Cấu tạo của Bảng tuần hoàn
+          </h3>
+          <p class="text-gray-700 mb-2">
+            Bảng tuần hoàn gồm các thành phần chính:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+            <li>
+              <strong>Ô nguyên tố:</strong> Mỗi ô chứa thông tin về một nguyên
+              tố (<strong class="text-red-600"
+                >số hiệu nguyên tử, ký hiệu nguyên tố, tên nguyên tố, nguyên tử
+                khối trung bình</strong
+              >)
+            </li>
+            <li>
+              <strong>Chu kì:</strong>
+              <strong class="text-red-600">7 chu kì</strong>, mỗi chu kì ứng với
+              một hàng ngang
+              <ul class="list-circle list-inside ml-6 mt-1">
+                <li>+ 3 chu kì nhỏ: 1, 2, 3</li>
+                <li>+ 4 chu kì lớn: 4, 5, 6, 7</li>
+              </ul>
+              <div class="mt-1">Số thứ tự chu kì = Số lớp electron</div>
+            </li>
+            <li>
+              <strong>Nhóm:</strong>
+              <strong class="text-red-600">16 nhóm</strong>, mỗi nhóm ứng với
+              một cột dọc (riêng nhóm VIIIB có 3 cột)
+              <ul class="list-circle list-inside ml-6 mt-1">
+                <li>+ 8 nhóm A: IA → VIIIA</li>
+                <li>+ 8 nhóm B: IB → VIIIB</li>
+              </ul>
+              <div class="mt-1">
+                <strong class="text-red-600"
+                  >Số thứ tự nhóm = Số electron hoá trị</strong
+                >
+                <br />
+
+                (Lưu ý: Số electron hoá trị = Số e lớp ngoài cùng + Số e phân
+                lớp sát ngoài cùng nếu chưa bão hoà)
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-blue-700 mb-3">
+            2. Định luật tuần hoàn
+          </h3>
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+            <p class="font-semibold text-gray-800 italic">
+              "Tính chất của các nguyên tố và đơn chất, cũng như thành phần và
+              tính chất của các hợp chất tạo nên từ các nguyên tố đó biến đổi
+              tuần hoàn theo chiều tăng của điện tích hạt nhân nguyên tử."
+            </p>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-blue-700 mb-3">
+            3. Quy luật biến đổi trong bảng tuần hoàn
+            <span class="text-red-600">(chỉ xét nguyên tố nhóm A)</span>
+          </h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+              <h4 class="font-bold text-green-700 mb-3">
+                Trong một chu kì (theo chiều tăng của Z):
+              </h4>
+              <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm">
+                <li>Số electron lớp ngoài cùng tăng dần từ 1 → 8</li>
+                <li>Bán kính nguyên tử giảm dần</li>
+                <li>Độ âm điện tăng dần</li>
+                <li>
+                  Tính kim loại của nguyên tố giảm, tính phi kim của nguyên tố
+                  tăng
+                </li>
+                <li>
+                  Tính acid của oxide cao nhất và hydroxide cao nhất tăng dần,
+                  tính base của chúng giảm dần
+                </li>
+              </ul>
+            </div>
+            <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+              <h4 class="font-bold text-blue-700 mb-3">
+                Trong một nhóm A (theo chiều tăng của Z):
+              </h4>
+              <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm">
+                <li>Số lớp electron tăng dần</li>
+                <li>Bán kính nguyên tử tăng dần</li>
+                <li>Độ âm điện giảm dần</li>
+                <li>
+                  Tính kim loại của nguyên tố tăng, tính phi kim của nguyên tố
+                  giảm
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-blue-700 mb-3">
+            4. Một số ví dụ điển hình
+          </h3>
+          <div class="border-2 border-gray-200 rounded-lg p-4 bg-gray-50 mb-4">
+            <h4 class="font-bold text-gray-700 mb-3">
+              Ví dụ 1: Nhóm IA - Kim loại kiềm (Li, Na, K, Rb, Cs, Fr)
+            </h4>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm">
+              <li>
+                <strong>Cấu hình electron lớp ngoài:</strong> ns<sup>1</sup> (1
+                electron hóa trị)
+              </li>
+              <li>
+                <strong>Bán kính nguyên tử:</strong> Li &lt; Na &lt; K &lt; Rb
+                &lt; Cs
+              </li>
+              <li>
+                <strong>Độ âm điện:</strong> Li &gt; Na &gt; K &gt; Rb &gt; Cs
+              </li>
+              <li>
+                <strong>Tính kim loại:</strong> Li &lt; Na &lt; K &lt; Rb &lt;
+                Cs
+              </li>
+              <li>
+                <strong>Ứng dụng:</strong> Na (muối ăn NaCl), K (phân bón KCl)
+              </li>
+            </ul>
+          </div>
+          <div class="border-2 border-gray-200 rounded-lg p-4 bg-gray-50 mb-4">
+            <h4 class="font-bold text-gray-700 mb-3">
+              Ví dụ 2: Chu kì 3 (Na → Ar)
+            </h4>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm">
+              <li><strong>Đều có 3 lớp electron</strong></li>
+              <li>
+                <strong>Bán kính nguyên tử:</strong> Na &gt; Mg &gt; Al &gt; Si
+                &gt; P &gt; S &gt; Cl &gt; Ar
+              </li>
+              <li>
+                <strong>Độ âm điện:</strong> Na &lt; Mg &lt; Al &lt; Si &lt; P
+                &lt; S &lt; Cl
+              </li>
+              <li>
+                <strong>Tính kim loại giảm, tính phi kim tăng</strong>: Na (kim
+                loại mạnh) → Mg → Al → Si (á kim) → P, S, Cl (phi kim) → Ar (khí
+                hiếm)
+              </li>
+              <li>
+                <strong>Tính acid - base của hydroxide cao nhất:</strong>
+                NaOH (tính base mạnh) → Mg(OH)<sub>2</sub> (tính base yếu) →
+                Al(OH)<sub>3</sub> (hydroxide lưỡng tính) → H<sub>2</sub>SiO<sub
+                  >3</sub
+                >
+                (tính acid rất yếu) → H<sub>3</sub>PO<sub>4</sub> (tính acid
+                yếu) → H<sub>2</sub>SO<sub>4</sub> (tính acid mạnh) → HClO<sub
+                  >4</sub
+                >
+                (tính acid rất mạnh)
+              </li>
+            </ul>
+          </div>
+          <div class="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h4 class="font-bold text-gray-700 mb-3">
+              Ví dụ 3: Nhóm VIIA - Halogen (F, Cl, Br, I)
+            </h4>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm">
+              <li>
+                <strong>Cấu hình electron lớp ngoài:</strong>
+                ns<sup>2</sup>np<sup>5</sup>
+                (7 electron hóa trị)
+              </li>
+              <li>
+                <strong>Bán kính nguyên tử tăng dần:</strong> F &lt; Cl &lt; Br
+                &lt; I
+              </li>
+              <li>
+                <strong>Độ âm điện giảm dần:</strong> F &gt; Cl &gt; Br &gt; I
+              </li>
+              <li>
+                <strong>Tính phi kim giảm dần:</strong> F &gt; Cl &gt; Br &gt; I
+              </li>
+              <li>
+                <strong>Ứng dụng:</strong> Cl<sub>2</sub> (khử trùng nước),
+                I<sub>2</sub> (sát trùng vết thương)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-history" class="tab-content">
+        <h3 class="text-xl font-semibold text-blue-700 mb-3">
+          Lịch sử hình thành Bảng tuần hoàn
+        </h3>
+        <p class="text-gray-700 mb-4">
+          Bảng tuần hoàn không phải là phát minh của một người duy nhất mà là
+          kết quả của nhiều thế kỷ khám phá khoa học.
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-3">
+          <li>
+            <strong>Những nỗ lực ban đầu (Đầu thế kỷ 19):</strong> Nhà hóa học
+            <strong>Johann Wolfgang Döbereiner</strong> nhận thấy các bộ ba
+            nguyên tố (như Liti, Natri, Kali) có tính chất hóa học tương tự và
+            nguyên tử khối của nguyên tố ở giữa bằng trung bình cộng của hai
+            nguyên tố còn lại (Học thuyết Bộ Ba).
+          </li>
+          <li>
+            <strong>Quy luật quãng tám (1864):</strong> Nhà hóa học người Anh
+            <strong>John Newlands</strong> đã sắp xếp các nguyên tố theo thứ tự
+            tăng dần của nguyên tử khối và nhận thấy rằng "nguyên tố thứ tám có
+            tính chất lặp lại giống nguyên tố đầu tiên", tương tự như các nốt
+            nhạc (Quy luật quãng tám). Tuy nhiên, nó không đúng với các nguyên
+            tố nặng hơn.
+          </li>
+          <li>
+            <strong>Phát minh then chốt (1869):</strong> Nhà hóa học người Nga
+            <strong>Dmitri Mendeleev</strong> đã công bố phiên bản đầu tiên của
+            bảng tuần hoàn. Ông sắp xếp các nguyên tố theo
+            <strong>nguyên tử khối</strong>, nhưng điểm thiên tài của ông là:
+            <ul class="list-circle list-inside ml-6 mt-2 space-y-1">
+              <li>
+                Ông <strong class="text-red-600">để trống</strong> cho các
+                nguyên tố chưa được khám phá.
+              </li>
+              <li>
+                Ông <strong class="text-red-600">dự đoán</strong> chính xác tính
+                chất của các nguyên tố còn thiếu đó (như Eka-silicon, sau này là
+                Germanium).
+              </li>
+              <li>
+                Ông chấp nhận đảo trật tự một vài nguyên tố để chúng phù hợp với
+                nhóm có tính chất tương đồng.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Sự hoàn thiện (1913):</strong>
+            <strong>Henry Moseley</strong>, một nhà vật lý người Anh, đã sử dụng
+            tia X để xác định
+            <strong class="text-red-600">số hiệu nguyên tử (số proton)</strong>
+            của các nguyên tố. Ông đã sắp xếp lại bảng tuần hoàn theo
+            <strong>số hiệu nguyên tử</strong> thay vì nguyên tử khối, giải
+            quyết triệt để các vấn đề còn tồn tại trong bảng của Mendeleev. Đây
+            chính là cơ sở của bảng tuần hoàn hiện đại.
+          </li>
+        </ul>
+      </div>
+
+      <div id="tab-creators" class="tab-content">
+        <h3 class="text-xl font-semibold text-blue-700 mb-3">
+          Những Gương Mặt Tiêu Biểu
+        </h3>
+        <p class="text-gray-700 mb-4">
+          Mặc dù có nhiều nhà khoa học đóng góp, ba cái tên sau đây được coi là
+          quan trọng nhất trong việc định hình Bảng tuần hoàn.
+        </p>
+
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-purple-700">
+            1. Dmitri Mendeleev (1834 - 1907)
+          </h4>
+          <p class="text-gray-700">
+            Thường được coi là "cha đẻ" của Bảng tuần hoàn. Nhà hóa học người
+            Nga này đã sắp xếp 63 nguyên tố đã biết vào năm 1869 dựa trên nguyên
+            tử khối. Sự vĩ đại của ông nằm ở việc nhận ra
+            <strong>tính tuần hoàn</strong> của các tính chất và sự dũng cảm khi
+            <strong class="text-red-600">dự đoán</strong> các nguyên tố chưa tồn
+            tại. Định luật tuần hoàn của ông là nền tảng cho hóa học hiện đại.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-purple-700">
+            2. Lothar Meyer (1830 - 1895)
+          </h4>
+          <p class="text-gray-700">
+            Một nhà hóa học người Đức, ông cũng phát triển một bảng tuần hoàn
+            tương tự Mendeleev một cách
+            <strong>độc lập và gần như đồng thời</strong>. Bảng của Meyer (công
+            bố năm 1870) cũng sắp xếp các nguyên tố theo nguyên tử khối và cho
+            thấy mối quan hệ tuần hoàn. Tuy nhiên, Mendeleev đã nhanh hơn trong
+            việc công bố và đặc biệt là không đưa ra các dự đoán táo bạo như
+            Mendeleev, nên Mendeleev thường được ghi công nhiều hơn.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-purple-700">
+            3. Henry Moseley (1887 - 1915)
+          </h4>
+          <p class="text-gray-700">
+            Nhà vật lý trẻ tuổi người Anh đã mang đến sự điều chỉnh quan trọng
+            nhất cho bảng tuần hoàn. Bằng cách dùng thực nghiệm, ông chứng minh
+            rằng <strong class="text-red-600">số hiệu nguyên tử</strong>
+            (số proton trong hạt nhân) mới là thuộc tính cơ bản quyết định vị
+            trí của nguyên tố, chứ không phải nguyên tử khối. Khám phá của ông
+            đã
+            <strong
+              >đặt bảng tuần hoàn lên một nền tảng vật lý vững chắc</strong
+            >
+            và tạo ra bảng tuần hoàn hiện đại mà chúng ta sử dụng ngày nay.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="elementModal" class="modal">
+      <div class="modal-content">
+        <span
+          onclick="closeModal()"
+          class="float-right text-4xl font-bold cursor-pointer hover:text-red-500 transition leading-none"
+          >&times;</span
+        >
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <script src="element.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

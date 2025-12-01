@@ -492,7 +492,7 @@
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-gray-500">⏱️ 20-30 phút</span>
                   <a
-                    href="./page/bang.html"
+                    href="./page/banghoahoc/bang.html"
                     class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
                     Khám phá →
                   </a>
@@ -553,11 +553,11 @@
       updateDisplay();
 
       // Event listeners
-      checkboxes.forEach((checkbox) => {
+      checkboxes.forEach(checkbox => {
         checkbox.addEventListener("change", handleFilterChange);
       });
 
-      searchInput.addEventListener("input", (e) => {
+      searchInput.addEventListener("input", e => {
         state.searchTerm = e.target.value.toLowerCase();
         updateDisplay();
       });
@@ -581,7 +581,7 @@
 
       // Reset all filters
       function resetAllFilters() {
-        checkboxes.forEach((cb) => (cb.checked = false));
+        checkboxes.forEach(cb => (cb.checked = false));
         searchInput.value = "";
         state.filters.subject.clear();
         state.filters.grade.clear();
@@ -594,7 +594,7 @@
       function updateDisplay() {
         let visibleCount = 0;
 
-        simulationCards.forEach((card) => {
+        simulationCards.forEach(card => {
           if (matchesFilters(card)) {
             card.style.display = "block";
             visibleCount++;
@@ -644,7 +644,7 @@
         // Check grade filter
         if (state.filters.grade.size > 0) {
           const cardGrades = card.dataset.grade.split(",");
-          const hasMatchingGrade = cardGrades.some((grade) =>
+          const hasMatchingGrade = cardGrades.some(grade =>
             state.filters.grade.has(grade)
           );
           if (!hasMatchingGrade) {
@@ -678,7 +678,7 @@
           let badgesHTML = "";
 
           // Subject badges
-          state.filters.subject.forEach((subject) => {
+          state.filters.subject.forEach(subject => {
             const label = getSubjectLabel(subject);
             badgesHTML += `
             <span class="filter-badge inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
@@ -689,7 +689,7 @@
           });
 
           // Grade badges
-          state.filters.grade.forEach((grade) => {
+          state.filters.grade.forEach(grade => {
             badgesHTML += `
             <span class="filter-badge inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
               Lớp ${grade}
@@ -699,7 +699,7 @@
           });
 
           // Topic badges
-          state.filters.topic.forEach((topic) => {
+          state.filters.topic.forEach(topic => {
             const label = getTopicLabel(topic);
             badgesHTML += `
             <span class="filter-badge inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
@@ -750,7 +750,7 @@
         state.filters[filterType].delete(value);
 
         // Uncheck corresponding checkbox
-        checkboxes.forEach((cb) => {
+        checkboxes.forEach(cb => {
           if (cb.dataset.filter === filterType && cb.value === value) {
             cb.checked = false;
           }

@@ -5,7 +5,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mô phỏng: Định luật Ôm (Đã sửa ký hiệu)</title>
+    <title>Mô phỏng: Định luật Ôm</title>
     <style>
       /* CSS không thay đổi, giữ nguyên như trước */
       * {
@@ -381,7 +381,7 @@
 
         const baseSpeed = 0.5;
         const electronSpeed = baseSpeed * I * 5;
-        electrons.forEach((e) => (e.speed = electronSpeed));
+        electrons.forEach(e => (e.speed = electronSpeed));
 
         drawVAGraph();
         return I;
@@ -576,7 +576,7 @@
       function drawElectrons(left, right, top, bottom, centerX, centerY) {
         const totalPath = (right - left) * 2 + (bottom - top) * 2;
 
-        electrons.forEach((electron) => {
+        electrons.forEach(electron => {
           electron.position -= electron.speed;
           if (electron.position < 0) electron.position = 100;
 
@@ -632,7 +632,7 @@
         ctx.fillStyle = "#007bff";
         ctx.lineWidth = 2;
         const arrowY = bottom + 30;
-        drawArrow(ctx, centerX + 100, arrowY, centerX - 100, arrowY, 15);
+        drawArrow(ctx, centerX - 100, arrowY, centerX + 100, arrowY, 15);
         ctx.font = "bold 14px Arial";
         ctx.textAlign = "center";
         ctx.fillText("Chiều dòng Electron (e-)", centerX, arrowY + 15);
@@ -669,9 +669,8 @@
         const maxU = 20;
         const maxI = 20;
 
-        const getX = (u_val) => padding + (u_val / maxU) * (w - 2 * padding);
-        const getY = (i_val) =>
-          h - padding - (i_val / maxI) * (h - 2 * padding);
+        const getX = u_val => padding + (u_val / maxU) * (w - 2 * padding);
+        const getY = i_val => h - padding - (i_val / maxI) * (h - 2 * padding);
 
         graphCtx.clearRect(0, 0, w, h);
         graphCtx.fillStyle = "white";
