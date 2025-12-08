@@ -112,8 +112,8 @@
 
       .electron {
         position: absolute;
-        width: 12px;
-        height: 12px;
+        width: 4px;
+        height: 4px;
         background: #ffd700;
         border-radius: 50%;
         box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
@@ -561,15 +561,13 @@
         document.getElementById("speedValue").textContent = this.value + "x";
       };
 
-      // Hàm cập nhật màu nền dung dịch
       function updateSolutionColor() {
         const conc = parseFloat(concSlider.value);
         const progress = cuPercentage / 100;
-
+        // Màu xanh dương nhạt dần sang xanh lục nhạt
         const R_green = 144,
           G_green = 238,
           B_green = 144;
-
         const concFactor = (conc - 0.1) / (2.0 - 0.1);
         const R_blue = 70 - Math.floor(concFactor * 40);
         const G_blue = 130 - Math.floor(concFactor * 40);
@@ -580,30 +578,26 @@
         const B = Math.floor(B_green + (B_blue - B_green) * progress);
 
         solution.style.background = `linear-gradient(to bottom, 
-                rgba(${R}, ${G}, ${B}, 0.3) 0%, 
-                rgba(${R}, ${G}, ${B}, 0.8) 100%)`;
+            rgba(${R}, ${G}, ${B}, 0.3) 0%, 
+            rgba(${R}, ${G}, ${B}, 0.8) 100%)`;
 
         const corrosion = 1 - progress;
         ironNail.style.background = `linear-gradient(90deg, 
-                rgb(${176 - corrosion * 50}, ${176 - corrosion * 50}, ${
+            rgb(${176 - corrosion * 50}, ${176 - corrosion * 50}, ${
           176 - corrosion * 50
         }) 0%, 
-                rgb(${220 - corrosion * 80}, ${220 - corrosion * 100}, ${
+            rgb(${220 - corrosion * 80}, ${220 - corrosion * 100}, ${
           220 - corrosion * 120
         }) 50%, 
-                rgb(${176 - corrosion * 50}, ${176 - corrosion * 50}, ${
+            rgb(${176 - corrosion * 50}, ${176 - corrosion * 50}, ${
           176 - corrosion * 50
         }) 100%)`;
       }
 
-      // Hàm tạo ion ban đầu trong dung dịch CuSO4
-      // Dung dịch CuSO4 chứa Cu2+ và SO4 2- với số lượng bằng nhau (để trung hòa điện tích)
       function createInitialIons() {
         document.querySelectorAll(".ion").forEach(e => e.remove());
-
         const conc = parseFloat(concSlider.value);
         const count = Math.floor(10 + conc * 10);
-
         for (let i = 0; i < count; i++) {
           createFloatingIon("cu");
           createFloatingIon("so4");
@@ -613,69 +607,66 @@
       function createFloatingIon(type) {
         const ion = document.createElement("div");
         ion.className = `ion ${type}-ion drifting`;
-
         if (type === "cu") ion.textContent = "Cu²⁺";
         if (type === "so4") ion.textContent = "SO₄²⁻";
-
         ion.style.left = Math.random() * 90 + 5 + "%";
         ion.style.top = Math.random() * 70 + 20 + "%";
-
-        ion.style.animationDuration = 3 + Math.random() * 4 + "s";
-
+        ion.style.animationDuration = 5 + Math.random() * 5 + "s";
         solution.appendChild(ion);
         return ion;
       }
 
-      // Hàm mô phỏng phản ứng
-      // Quá trình: Fe → Fe2+ + 2e (tại bề mặt đinh sắt)
-      //           Cu2+ + 2e → Cu (bám lên đinh sắt)
+      // --- LOGIC PHẢN ỨNG MỚI ---
       function triggerReactionEvent() {
-        const speed = parseFloat(speedSlider.value);
+        const speedMultiplier = parseFloat(speedSlider.value);
+        // Base duration ~3s cho animation chậm rãi
+        const baseDuration = 3000 / speedMultiplier;
 
-        // 1. Tìm vị trí ngẫu nhiên trên bề mặt đinh sắt (chạm dung dịch)
-        const nailSurfaceTop = 15 + Math.random() * 60;
+        // 1. Xác định vị trí phản ứng trên bề mặt đinh
+        const nailSurfaceTop = 15 + Math.random() * 60; // Vị trí dọc theo đinh
 
-        // 2. TẠI BỀ MẶT ĐINH: Fe nhường electron tạo Fe2+
+        // 2. TẠO CÁC HẠT: 1 Fe2+ và 2 Electron
         const feIon = document.createElement("div");
         feIon.className = "ion fe-ion";
         feIon.textContent = "Fe²⁺";
-        feIon.style.left = "50%";
+        feIon.style.left = "50%"; // Xuất phát từ giữa đinh
         feIon.style.top = nailSurfaceTop + "%";
         solution.appendChild(feIon);
 
-        const electron = document.createElement("div");
-        electron.className = "electron";
-        electron.style.left = "50%";
-        electron.style.top = nailSurfaceTop + "%";
-        solution.appendChild(electron);
+        // Tạo 2 electron riêng biệt
+        const e1 = createElectron(nailSurfaceTop, -4); // Lệch trái 4px
+        const e2 = createElectron(nailSurfaceTop, 4); // Lệch phải 4px
 
-        // 3. Fe2+ bay ra dung dịch, electron đợi Cu2+ đến
+        // 3. ANIMATION FE2+ (Mô phỏng khuếch tán)
         setTimeout(() => {
-          feIon.style.transition = "all 0.8s ease-out";
-          // Fe2+ bay ra NGẪU NHIÊN về mọi hướng (không chỉ trái phải)
-          const randomAngle = Math.random() * 2 * Math.PI; // Góc ngẫu nhiên 360 độ
-          const distance = 20 + Math.random() * 30; // Khoảng cách ngẫu nhiên
+          // Bước 1: Fe2+ tách ra khỏi mạng tinh thể, nhưng còn ở GẦN đinh (Lớp khuyếch tán Nernst)
+          // Di chuyển ngẫu nhiên trái hoặc phải một chút xíu
+          const direction = Math.random() > 0.5 ? 1 : -1;
+          const initialDistance = 10 + Math.random() * 5; // Chỉ bay ra khoảng 10-15%
 
-          const targetLeft = 50 + Math.cos(randomAngle) * distance;
-          const targetTop = nailSurfaceTop + Math.sin(randomAngle) * distance;
+          feIon.style.transition = `all ${baseDuration / 1000}s ease-out`;
+          feIon.style.left = 50 + direction * initialDistance + "%";
+          feIon.style.top = nailSurfaceTop + (Math.random() - 0.5) * 5 + "%"; // Dao động dọc nhẹ
 
-          // Đảm bảo Fe2+ không bay ra ngoài cốc
-          feIon.style.left = Math.max(5, Math.min(95, targetLeft)) + "%";
-          feIon.style.top = Math.max(15, Math.min(85, targetTop)) + "%";
-          feIon.classList.add("drifting");
+          // Bước 2: Sau khi tách ra, Fe2+ từ từ khuếch tán ra toàn bộ dung dịch
+          // Sử dụng setTimeout để nối tiếp chuyển động
+          setTimeout(() => {
+            feIon.style.transition = `all ${(baseDuration * 4) / 1000}s linear`; // Trôi rất chậm (x4 thời gian)
+            // Đích đến là một vị trí ngẫu nhiên xa tít trong cốc
+            feIon.style.left = Math.random() * 90 + 5 + "%";
+            feIon.style.top = Math.random() * 80 + 10 + "%";
+            feIon.classList.add("drifting"); // Thêm hiệu ứng lắc lư
+          }, baseDuration);
+        }, 100);
 
-          electron.style.transition = "all 0.3s ease";
-          electron.style.transform = "scale(2)";
-          electron.style.boxShadow = "0 0 25px #ffd700, 0 0 50px #ffd700";
-        }, 50);
-
-        // 4. Tìm ion Cu2+ gần nhất để lao vào đinh
+        // 4. ANIMATION CU2+ (Hút vào Electron)
         setTimeout(() => {
           const availableCuIons = document.querySelectorAll(
             ".cu-ion:not(.reacting)"
           );
 
           if (availableCuIons.length > 0) {
+            // Lấy 1 Cu2+ bất kỳ
             const targetCu =
               availableCuIons[
                 Math.floor(Math.random() * availableCuIons.length)
@@ -683,33 +674,62 @@
             targetCu.classList.add("reacting");
             targetCu.classList.remove("drifting");
 
-            // Cu2+ LAO VỀ PHÍA ĐINH (nơi có electron)
-            targetCu.style.transition = "all 0.6s ease-in";
-            targetCu.style.left = 50 + (Math.random() - 0.5) * 3 + "%";
+            // Cu2+ lao vào vị trí của cặp Electron (giữa 2 e)
+            targetCu.style.transition = `all ${
+              baseDuration / 1000
+            }s ease-in-out`;
+            targetCu.style.left = 50 + "%";
             targetCu.style.top = nailSurfaceTop + "%";
 
-            // 5. Khi Cu2+ đến đinh: nhận e → tạo Cu kim loại bám lên đinh
+            // 5. KẾT THÚC: Trao đổi electron hoàn tất
             setTimeout(() => {
+              // Xóa ion Cu (đã nhận e)
               targetCu.remove();
-              electron.remove();
+              // Xóa 2 electron (đã bị Cu lấy)
+              e1.remove();
+              e2.remove();
+
+              // Tạo đúng 1 nguyên tử Cu bám vào đinh
               createCuDeposit(nailSurfaceTop);
-            }, 600);
+            }, baseDuration);
           } else {
-            electron.remove();
+            // Nếu không có Cu2+ (gần hết phản ứng), xóa e và Fe đi để dọn rác
+            e1.remove();
+            e2.remove();
+            feIon.style.opacity = 0;
+            setTimeout(() => feIon.remove(), 1000);
           }
-        }, 400);
+        }, baseDuration * 0.5); // Chờ Fe đi được nửa đường ngắn thì Cu mới bắt đầu lao vào
       }
 
-      // Tạo Cu kim loại bám ĐỀU lên bề mặt đinh sắt
+      // Hàm phụ trợ tạo electron
+      function createElectron(topPos, xOffset) {
+        const e = document.createElement("div");
+        e.className = "electron";
+        // Tính toán vị trí chính xác (giữa màn hình + độ lệch)
+        e.style.left = `calc(50% + ${xOffset}px)`;
+        e.style.top = topPos + "%";
+
+        // Hiệu ứng xuất hiện
+        e.style.transform = "scale(0)";
+        e.style.transition = "transform 0.3s ease-out";
+        setTimeout(() => {
+          e.style.transform = "scale(1)";
+        }, 50);
+
+        solution.appendChild(e);
+        return e;
+      }
+
       function createCuDeposit(topPos) {
         const deposit = document.createElement("div");
         deposit.className = "cu-deposit";
-
-        const size = 8 + Math.random() * 10;
+        const size = 14;
         deposit.style.width = size + "px";
         deposit.style.height = size + "px";
 
-        deposit.style.left = 48 + (Math.random() - 0.5) * 6 + "%";
+        // Random nhẹ vị trí bám để trông tự nhiên nhưng vẫn dính vào đinh
+        deposit.style.left = 48 + (Math.random() - 0.5) * 4 + "%";
         deposit.style.top = topPos + "%";
 
         solution.appendChild(deposit);
@@ -719,11 +739,8 @@
         if (animationInterval || cuPercentage <= 0) return;
         isPaused = false;
         document.querySelector(".pause-btn").textContent = "⏸️ Tạm dừng";
-
-        // Thả đinh sắt vào dung dịch
         ironNail.style.top = "15%";
 
-        // CHỜ ĐINH CHÌM HOÀN TOÀN (1 giây - transition time) RỒI MỚI BẮT ĐẦU PHẢN ỨNG
         setTimeout(() => {
           animationInterval = setInterval(() => {
             if (isPaused) return;
@@ -738,8 +755,9 @@
               elapsedTime.toFixed(1) + "s";
 
             if (cuPercentage > 0) {
-              cuPercentage -= 0.5 * reactionRate;
-              cuDepositPercentage += 0.5 * reactionRate;
+              const slowFactor = 0.2;
+              cuPercentage -= 0.5 * reactionRate * slowFactor;
+              cuDepositPercentage += 0.5 * reactionRate * slowFactor;
 
               if (cuPercentage < 0) cuPercentage = 0;
               if (cuDepositPercentage > 100) cuDepositPercentage = 100;
@@ -751,7 +769,7 @@
 
               updateSolutionColor();
 
-              if (Math.random() < 0.4 * reactionRate) {
+              if (Math.random() < 0.08 * reactionRate) {
                 triggerReactionEvent();
               }
             } else {
@@ -760,7 +778,7 @@
               alert("Phản ứng hoàn tất!");
             }
           }, 100);
-        }, 1000); // Đợi 1 giây cho đinh chìm vào dung dịch
+        }, 1000);
       }
 
       function pauseReaction() {
@@ -775,12 +793,10 @@
           clearInterval(animationInterval);
           animationInterval = null;
         }
-
         isPaused = false;
         elapsedTime = 0;
         cuPercentage = 100;
         cuDepositPercentage = 0;
-
         document.getElementById("timeValue").textContent = "0s";
         document.getElementById("cuIons").textContent = "100%";
         document.getElementById("cuDeposit").textContent = "0%";
@@ -789,12 +805,8 @@
         solution
           .querySelectorAll(".electron, .ion, .cu-deposit")
           .forEach(el => el.remove());
-
         updateSolutionColor();
         ironNail.style.top = "-200px";
-        ironNail.style.background =
-          "linear-gradient(90deg, #b0b0b0 0%, #dcdcdc 50%, #b0b0b0 100%)";
-
         createInitialIons();
       }
 

@@ -1,0 +1,720 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô Phỏng: Dao Động Cộng Hưởng</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --panel-bg: #1e293b;
+        --accent: #3b82f6;
+        --text: #e2e8f0;
+        --success: #10b981;
+        --danger: #ef4444;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Layout */
+      .header {
+        padding: 10px 20px;
+        background: var(--panel-bg);
+        border-bottom: 1px solid #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header h1 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      .main-container {
+        display: grid;
+        grid-template-columns: 350px 1fr 350px;
+        flex: 1;
+        min-height: 0;
+        gap: 1px;
+        background: #334155; /* Border color */
+      }
+
+      .panel {
+        background: var(--bg-color);
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .simulation-area {
+        background: #000;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Components */
+      .control-group {
+        background: var(--panel-bg);
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+
+      .control-label {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+
+      .value-display {
+        color: var(--accent);
+        font-weight: bold;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 4px;
+        background: #475569;
+        border-radius: 2px;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-top: 5px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #2563eb;
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Theory Panel */
+      .theory-content h3 {
+        color: var(--success);
+        font-size: 1rem;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 4px;
+      }
+
+      .theory-content p,
+      .theory-content li {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #cbd5e1;
+        margin-bottom: 8px;
+      }
+
+      .theory-formula {
+        background: var(--panel-bg);
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
+        margin: 10px 0;
+        border: 1px solid #334155;
+      }
+
+      /* Canvas & Stats */
+      #simCanvas {
+        flex: 1;
+        width: 100%;
+      }
+
+      .overlay-stats {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(15, 23, 42, 0.8);
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        font-family: monospace;
+        font-size: 12px;
+        pointer-events: none;
+      }
+
+      .chart-container {
+        height: 250px;
+        background: var(--panel-bg);
+        border-top: 1px solid #334155;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🔬 Vật Lý 12: Dao Động & Cộng Hưởng</h1>
+      <div style="font-size: 0.9rem; color: #94a3b8">
+        Trạng thái:
+        <span id="statusBadge" style="color: var(--success)">Sẵn sàng</span>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div class="panel">
+        <div class="control-group">
+          <div class="control-label">
+            <span>Tần số ngoại lực (f)</span>
+            <span class="value-display" id="val_f">1.00 Hz</span>
+          </div>
+          <input
+            type="range"
+            id="input_f"
+            min="0.1"
+            max="3.0"
+            step="0.05"
+            value="1.0" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Biên độ ngoại lực (F₀)</span>
+            <span class="value-display" id="val_F0">5.0 N</span>
+          </div>
+          <input
+            type="range"
+            id="input_F0"
+            min="1"
+            max="10"
+            step="0.5"
+            value="5.0" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Hệ số cản (c) - Ma sát</span>
+            <span class="value-display" id="val_c">0.50</span>
+          </div>
+          <input
+            type="range"
+            id="input_c"
+            min="0.1"
+            max="3.0"
+            step="0.1"
+            value="0.5" />
+          <small
+            style="
+              color: #64748b;
+              font-size: 0.75rem;
+              display: block;
+              margin-top: 4px;
+            ">
+            c càng nhỏ, đỉnh cộng hưởng càng nhọn
+          </small>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Độ cứng lò xo (k)</span>
+            <span class="value-display" id="val_k">40 N/m</span>
+          </div>
+          <input
+            type="range"
+            id="input_k"
+            min="10"
+            max="100"
+            step="5"
+            value="40" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Khối lượng vật (m)</span>
+            <span class="value-display" id="val_m">1.0 kg</span>
+          </div>
+          <input
+            type="range"
+            id="input_m"
+            min="0.1"
+            max="2.0"
+            step="0.1"
+            value="1.0" />
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnStart">▶ Bắt đầu</button>
+          <button class="btn btn-danger" id="btnReset">↺ Đặt lại</button>
+        </div>
+        <button
+          class="btn"
+          style="background: #8b5cf6; color: white"
+          id="btnScan">
+          ⚡ Quét Thực Nghiệm Tự Động
+        </button>
+      </div>
+
+      <div class="simulation-area">
+        <canvas id="simCanvas"></canvas>
+        <div class="overlay-stats">
+          <div>
+            Thời gian t:
+            <span id="disp_time" style="color: var(--accent)">0.00</span> s
+          </div>
+          <div>
+            Biên độ A:
+            <span id="disp_amp" style="color: var(--success)">0.00</span> m
+          </div>
+          <div>
+            Tần số riêng f₀:
+            <span id="disp_f0" style="color: #f59e0b">1.00</span> Hz
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="resChart"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="theory-content">
+          <h3>1. Dao động cưỡng bức</h3>
+          <p>
+            Là dao động chịu tác dụng của một ngoại lực biến thiên tuần hoàn: \(
+            F = F_0 \cos(2\pi f t + \varphi) \).
+          </p>
+
+          <h3>2. Hiện tượng Cộng hưởng</h3>
+          <p>
+            Hiện tượng biên độ dao động cưỡng bức tăng nhanh đến giá trị cực đại
+            khi tần số của lực cưỡng bức \(f\) bằng tần số riêng \(f_0\) của hệ.
+          </p>
+          <div class="theory-formula">
+            \( f = f_0 = \frac{1}{2\pi}\sqrt{\frac{k}{m}} \)
+          </div>
+
+          <h3>3. Công thức biên độ</h3>
+          <p>
+            Biên độ \(A\) phụ thuộc vào độ chênh lệch tần số và lực cản môi
+            trường:
+          </p>
+          <div class="theory-formula">
+            \( A = \frac{F_0}{\sqrt{(k - m\omega^2)^2 + (c\omega)^2}} \)
+          </div>
+          <ul>
+            <li>Nếu \( |f - f_0| \) càng nhỏ \(\rightarrow\) A càng lớn.</li>
+            <li>
+              Nếu ma sát \(c\) càng nhỏ \(\rightarrow\) Đỉnh cộng hưởng càng cao
+              và nhọn.
+            </li>
+          </ul>
+
+          <h3>4. Hướng dẫn thí nghiệm</h3>
+          <p>
+            1. Ấn <b>Quét Thực Nghiệm</b> để máy tự động thay đổi tần số f từ
+            nhỏ đến lớn.
+          </p>
+          <p>2. Quan sát đồ thị vẽ nên đường cong cộng hưởng.</p>
+          <p>
+            3. Thử thay đổi c (ma sát) và quét lại để thấy sự thay đổi của đỉnh
+            đồ thị.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- CONSTANTS & CONFIG ---
+      const canvas = document.getElementById("simCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const config = {
+        pixelsPerMeter: 100, // Scale rendering
+        dt: 0.016, // Time step (approx 60fps)
+        chartPoints: 100, // Chart resolution
+      };
+
+      const state = {
+        running: false,
+        scanning: false,
+        t: 0,
+        x: 0, // Position
+        v: 0, // Velocity
+        a: 0, // Acceleration
+
+        // Physics Params
+        m: 1.0,
+        k: 40,
+        c: 0.5,
+        F0: 5.0,
+        f: 1.0, // Driving freq
+
+        // Derived
+        f0: 0, // Natural freq
+
+        // Analysis
+        maxAmp: 0,
+        history: [], // For local drawing
+        experimentalData: [], // For chart
+      };
+
+      // --- CHART SETUP ---
+      const chartCtx = document.getElementById("resChart").getContext("2d");
+      const resChart = new Chart(chartCtx, {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Lý thuyết",
+              data: [],
+              showLine: true,
+              borderColor: "rgba(255, 255, 255, 0.5)",
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false,
+            },
+            {
+              label: "Thực nghiệm",
+              data: [],
+              backgroundColor: "#3b82f6",
+              pointRadius: 4,
+            },
+            {
+              label: "Hiện tại",
+              data: [],
+              backgroundColor: "#ef4444",
+              pointRadius: 6,
+              pointStyle: "rectRot",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              type: "linear",
+              position: "bottom",
+              title: { display: true, text: "Tần số f (Hz)", color: "#94a3b8" },
+              grid: { color: "#334155" },
+              ticks: { color: "#94a3b8" },
+            },
+            y: {
+              title: { display: true, text: "Biên độ A (m)", color: "#94a3b8" },
+              grid: { color: "#334155" },
+              ticks: { color: "#94a3b8" },
+              beginAtZero: true,
+            },
+          },
+          plugins: {
+            legend: { labels: { color: "#e2e8f0" } },
+          },
+        },
+      });
+
+      // --- PHYSICS ENGINE (RK4) ---
+      function getAcc(t, x, v) {
+        const omega = 2 * Math.PI * state.f;
+        const F_driving = state.F0 * Math.cos(omega * t);
+        const F_damping = -state.c * v;
+        const F_spring = -state.k * x;
+        return (F_driving + F_damping + F_spring) / state.m;
+      }
+
+      function updatePhysics() {
+        if (!state.running) return;
+
+        const dt = config.dt;
+
+        // RK4 Integration
+        const k1v = getAcc(state.t, state.x, state.v);
+        const k1x = state.v;
+
+        const k2v = getAcc(
+          state.t + 0.5 * dt,
+          state.x + 0.5 * dt * k1x,
+          state.v + 0.5 * dt * k1v
+        );
+        const k2x = state.v + 0.5 * dt * k1v;
+
+        const k3v = getAcc(
+          state.t + 0.5 * dt,
+          state.x + 0.5 * dt * k2x,
+          state.v + 0.5 * dt * k2v
+        );
+        const k3x = state.v + 0.5 * dt * k2v;
+
+        const k4v = getAcc(
+          state.t + dt,
+          state.x + dt * k3x,
+          state.v + dt * k3v
+        );
+        const k4x = state.v + dt * k3v;
+
+        state.v += (dt / 6) * (k1v + 2 * k2v + 2 * k3v + k4v);
+        state.x += (dt / 6) * (k1x + 2 * k2x + 2 * k3x + k4x);
+        state.t += dt;
+
+        // Amplitude tracking (simple peak detection over a window)
+        state.history.push(Math.abs(state.x));
+        if (state.history.length > 200) state.history.shift();
+        state.maxAmp = Math.max(...state.history);
+
+        // Update Charts "Current" point
+        resChart.data.datasets[2].data = [{ x: state.f, y: state.maxAmp }];
+        if (state.t % 0.1 < 0.02) resChart.update("none"); // Throttle update
+      }
+
+      // --- RENDERING ---
+      function draw() {
+        // Resize
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight - 250; // Leave space for chart
+
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw Wall
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(cx - 50, 20, 100, 20);
+
+        // Draw Spring
+        const scale = config.pixelsPerMeter;
+        const xPix = state.x * scale;
+        const equilibriumY = cy;
+        const blockY = equilibriumY + xPix;
+        const topY = 40;
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 2;
+        ctx.moveTo(cx, topY);
+
+        // Zigzag
+        const segments = 12;
+        const springLen = blockY - topY;
+        for (let i = 1; i <= segments; i++) {
+          const y = topY + (springLen / segments) * i;
+          const xOffset = (i % 2 === 0 ? 10 : -10) * (i === segments ? 0 : 1);
+          ctx.lineTo(cx + xOffset, y);
+        }
+        ctx.stroke();
+
+        // Draw Mass (Block)
+        const size = 40;
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(cx - size / 2, blockY, size, size);
+
+        // Draw Driving Force Indicator
+        const fHeight = 15 * Math.cos(2 * Math.PI * state.f * state.t);
+        ctx.fillStyle = "#ef4444";
+        // Arrow representing force
+        ctx.beginPath();
+        ctx.moveTo(cx + 30, blockY + size / 2);
+        ctx.lineTo(cx + 30, blockY + size / 2 + fHeight * 2);
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        requestAnimationFrame(draw);
+      }
+
+      // --- LOGIC & HELPERS ---
+      function calculateTheoryCurve() {
+        const data = [];
+        const fStart = 0.1;
+        const fEnd = 3.0;
+        const steps = 100;
+
+        const k = state.k;
+        const m = state.m;
+        const c = state.c;
+        const F0 = state.F0;
+
+        for (let i = 0; i <= steps; i++) {
+          const f = fStart + (fEnd - fStart) * (i / steps);
+          const omega = 2 * Math.PI * f;
+
+          // Formula: A = F0 / sqrt( (k - mw^2)^2 + (cw)^2 )
+          const denominator = Math.sqrt(
+            Math.pow(k - m * omega * omega, 2) + Math.pow(c * omega, 2)
+          );
+
+          data.push({ x: f, y: F0 / denominator });
+        }
+        resChart.data.datasets[0].data = data;
+        resChart.update();
+      }
+
+      function updateUIValues() {
+        document.getElementById("val_f").textContent =
+          state.f.toFixed(2) + " Hz";
+        document.getElementById("val_F0").textContent =
+          state.F0.toFixed(1) + " N";
+        document.getElementById("val_c").textContent = state.c.toFixed(2);
+        document.getElementById("val_k").textContent = state.k + " N/m";
+        document.getElementById("val_m").textContent =
+          state.m.toFixed(1) + " kg";
+
+        // Calculate natural frequency
+        state.f0 = (1 / (2 * Math.PI)) * Math.sqrt(state.k / state.m);
+        document.getElementById("disp_f0").textContent = state.f0.toFixed(2);
+
+        document.getElementById("disp_time").textContent = state.t.toFixed(2);
+        document.getElementById("disp_amp").textContent =
+          state.maxAmp.toFixed(3);
+
+        calculateTheoryCurve();
+      }
+
+      // --- EVENTS ---
+      // Inputs
+      ["f", "F0", "c", "k", "m"].forEach(key => {
+        document.getElementById(`input_${key}`).addEventListener("input", e => {
+          state[key] = parseFloat(e.target.value);
+          if (key !== "f") {
+            // If system params change, reset theory and data
+            resChart.data.datasets[1].data = []; // Clear experimental data
+            calculateTheoryCurve();
+          }
+          updateUIValues();
+        });
+      });
+
+      // Buttons
+      document.getElementById("btnStart").onclick = () => {
+        state.running = !state.running;
+        document.getElementById("btnStart").textContent = state.running
+          ? "⏸ Tạm dừng"
+          : "▶ Tiếp tục";
+        document.getElementById("statusBadge").textContent = state.running
+          ? "Đang chạy"
+          : "Tạm dừng";
+      };
+
+      document.getElementById("btnReset").onclick = () => {
+        state.running = false;
+        state.scanning = false;
+        state.t = 0;
+        state.x = 0;
+        state.v = 0;
+        state.history = [];
+        state.maxAmp = 0;
+        resChart.data.datasets[1].data = []; // Clear experiment
+        document.getElementById("btnStart").textContent = "▶ Bắt đầu";
+        document.getElementById("statusBadge").textContent = "Sẵn sàng";
+        updateUIValues();
+      };
+
+      // Auto Scan Feature
+      document.getElementById("btnScan").onclick = async () => {
+        if (state.scanning) return;
+        state.scanning = true;
+        state.running = true;
+        document.getElementById("statusBadge").textContent =
+          "Đang quét dữ liệu...";
+
+        const fStart = 0.2;
+        const fEnd = 3.0;
+        const step = 0.1;
+
+        // Reset old experiment data
+        resChart.data.datasets[1].data = [];
+
+        for (let f = fStart; f <= fEnd; f += step) {
+          if (!state.scanning) break; // Allow cancel
+
+          state.f = f;
+          document.getElementById("input_f").value = f;
+          updateUIValues();
+
+          // Wait for transient state to pass and amplitude to stabilize
+          // Simple heuristic: wait 1.5 seconds per freq
+          const waitTime = 1500;
+          const startTime = Date.now();
+          state.history = []; // Reset amplitude tracker for new freq
+
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+
+          // Record Point
+          resChart.data.datasets[1].data.push({
+            x: f,
+            y: state.maxAmp,
+          });
+          resChart.update("none");
+        }
+
+        state.scanning = false;
+        state.running = false;
+        document.getElementById("statusBadge").textContent = "Hoàn tất quét";
+        document.getElementById("btnStart").textContent = "▶ Bắt đầu";
+      };
+
+      // Main Loop
+      function loop() {
+        updatePhysics();
+        requestAnimationFrame(loop);
+      }
+
+      // Init
+      updateUIValues();
+      draw();
+      loop();
+    </script>
+  </body>
+</html>

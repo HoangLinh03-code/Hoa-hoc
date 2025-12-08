@@ -1,0 +1,622 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô phỏng Chuyên sâu: Liên kết Hydrogen & Van der Waals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --bg-dark: #0f172a;
+        --panel-bg: rgba(30, 41, 59, 0.7);
+        --border-color: rgba(148, 163, 184, 0.2);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      .glass-panel {
+        background: var(--panel-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+      }
+      .lcd-display {
+        background: #000;
+        color: #0f0;
+        font-family: "Courier New", monospace;
+        border: 2px solid #333;
+        box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
+      }
+      .molecule-container {
+        position: relative;
+        overflow: hidden;
+      }
+      /* Hiệu ứng nhiệt */
+      .heater-coil {
+        height: 6px;
+        background: #475569;
+        transition: all 0.3s;
+        border-radius: 4px;
+      }
+      .heater-coil.on {
+        background: linear-gradient(90deg, #b91c1c, #ef4444, #b91c1c);
+        background-size: 200% 100%;
+        animation: heatPulse 1s infinite linear;
+        box-shadow: 0 -5px 15px rgba(239, 68, 68, 0.5);
+      }
+      @keyframes heatPulse {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -100% 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen p-4 flex flex-col gap-4">
+    <header class="flex justify-between items-center glass-panel p-4">
+      <div>
+        <h1
+          class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
+          VẬT LÝ PHÂN TỬ: ẢNH HƯỞNG CỦA LIÊN KẾT ĐẾN NHIỆT ĐỘ SÔI
+        </h1>
+        <p class="text-sm text-slate-400">
+          Mô phỏng so sánh CH₄, H₂S và H₂O dựa trên số liệu thực nghiệm
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button
+          id="btn-toggle"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded font-semibold transition-colors flex items-center gap-2">
+          <span>▶</span> Bắt đầu Gia nhiệt
+        </button>
+        <button
+          id="btn-reset"
+          class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded font-semibold transition-colors">
+          ⟳ Làm lại
+        </button>
+      </div>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+      <section class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div id="simulation-container" class="contents"></div>
+      </section>
+
+      <section class="lg:col-span-4 flex flex-col gap-4">
+        <div class="glass-panel p-4 flex-grow flex flex-col min-h-[300px]">
+          <h3
+            class="text-sm font-bold text-slate-300 mb-2 border-b border-slate-700 pb-2">
+            📈 ĐỒ THỊ NHIỆT ĐỘ (T) - THỜI GIAN (t)
+          </h3>
+          <div class="relative flex-grow">
+            <canvas id="tempChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 text-sm">
+          <h3
+            class="text-sm font-bold text-amber-400 mb-3 border-b border-slate-700 pb-2">
+            🎓 KIẾN THỨC TRỌNG TÂM
+          </h3>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="text-xs text-slate-400 border-b border-slate-700">
+                  <th class="py-2">Chất</th>
+                  <th>Loại liên kết chính</th>
+                  <th class="text-right">Nhiệt hóa hơi<br />(kJ/mol)</th>
+                  <th class="text-right">Nhiệt độ sôi<br />(°C)</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-300">
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 font-bold text-blue-400">CH₄</td>
+                  <td>Van der Waals (Rất yếu)</td>
+                  <td class="text-right font-mono">8.17</td>
+                  <td class="text-right font-mono">-161.5</td>
+                </tr>
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 font-bold text-yellow-400">H₂S</td>
+                  <td>Lưỡng cực (Trung bình)</td>
+                  <td class="text-right font-mono">18.67</td>
+                  <td class="text-right font-mono">-60.0</td>
+                </tr>
+                <tr>
+                  <td class="py-2 font-bold text-red-400">H₂O</td>
+                  <td>Hydrogen (Rất bền)</td>
+                  <td class="text-right font-mono font-bold text-green-400">
+                    40.65
+                  </td>
+                  <td class="text-right font-mono">100.0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            class="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded text-xs text-blue-200">
+            <strong>💡 Giải thích:</strong>
+            <ul class="list-disc pl-4 mt-1 space-y-1">
+              <li>
+                Đoạn nằm ngang trên đồ thị là giai đoạn
+                <strong>Chuyển pha (Sôi)</strong>.
+              </li>
+              <li>
+                Nước (H₂O) có đoạn nằm ngang dài nhất vì cần rất nhiều năng
+                lượng để phá vỡ mạng lưới <strong>Liên kết Hydrogen</strong> bền
+                vững giữa các phân tử.
+              </li>
+              <li>
+                CH₄ chỉ có tương tác Van der Waals yếu nên sôi rất nhanh và cần
+                ít năng lượng.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // --- SCIENTIFIC CONFIGURATION ---
+      // Dữ liệu được cấu hình để hiển thị rõ sự khác biệt về nhiệt ẩn (độ dài đoạn sôi)
+      const SUBSTANCES = [
+        {
+          id: "ch4",
+          name: "Methane (CH₄)",
+          color: "rgb(59, 130, 246)", // Blue
+          boilingPoint: -161.5,
+          startTemp: -180,
+          heatCapacity: 0.5,
+          enthalpyVap: 20, // Thấp -> Sôi nhanh
+          bondType: "Van der Waals",
+          viscosity: 1,
+        },
+        {
+          id: "h2s",
+          name: "Hydrogen Sulfide (H₂S)",
+          color: "rgb(234, 179, 8)", // Yellow
+          boilingPoint: -60,
+          startTemp: -90,
+          heatCapacity: 0.8,
+          enthalpyVap: 80, // Trung bình
+          bondType: "Dipole-Dipole",
+          viscosity: 2,
+        },
+        {
+          id: "h2o",
+          name: "Water (H₂O)",
+          color: "rgb(239, 68, 68)", // Red
+          boilingPoint: 100,
+          startTemp: 20,
+          heatCapacity: 1.2,
+          enthalpyVap: 400, // Rất cao -> Đoạn đi ngang rất dài
+          bondType: "Hydrogen Bond",
+          viscosity: 3,
+        },
+      ];
+
+      const SIM_CONFIG = {
+        HEATER_POWER: 0.8, // Công suất nhiệt
+        PARTICLE_COUNT: 25, // Giảm số lượng để vẽ chi tiết không bị rối
+      };
+
+      // --- SIMULATION CLASS ---
+      class Simulation {
+        constructor() {
+          this.isRunning = false;
+          this.tickCount = 0;
+          this.substanceStates = [];
+          this.chart = null;
+
+          this.initUI();
+          this.initChart();
+          this.reset();
+
+          // Start Loop
+          this.animate();
+        }
+
+        initUI() {
+          const container = document.getElementById("simulation-container");
+          container.innerHTML = "";
+
+          SUBSTANCES.forEach(sub => {
+            const html = `
+              <div class="glass-panel p-4 flex flex-col relative group">
+                <div class="flex justify-between items-center mb-2">
+                  <h2 class="font-bold text-${
+                    sub.id === "ch4"
+                      ? "blue"
+                      : sub.id === "h2s"
+                      ? "yellow"
+                      : "red"
+                  }-400">${sub.name}</h2>
+                  <div class="lcd-display px-2 py-1 rounded text-right w-24" id="lcd-${
+                    sub.id
+                  }">
+                    ${sub.startTemp.toFixed(1)}°C
+                  </div>
+                </div>
+                
+                <div class="relative w-full h-64 bg-slate-900/50 rounded border border-slate-700 overflow-hidden canvas-container">
+                  <canvas id="canvas-${
+                    sub.id
+                  }" class="absolute top-0 left-0 w-full h-full"></canvas>
+                </div>
+
+                <div class="mt-2 h-1.5 w-full bg-slate-700 rounded overflow-hidden">
+                   <div id="heater-${
+                     sub.id
+                   }" class="heater-coil w-full h-full"></div>
+                </div>
+                
+                <div class="mt-2 text-xs text-center text-slate-400">
+                  Trạng thái: <span id="status-${
+                    sub.id
+                  }" class="font-bold text-white">Lỏng</span>
+                </div>
+              </div>
+            `;
+            container.innerHTML += html;
+          });
+
+          // Bind Buttons
+          const btnToggle = document.getElementById("btn-toggle");
+          btnToggle.onclick = () => {
+            this.isRunning = !this.isRunning;
+            btnToggle.innerHTML = this.isRunning
+              ? "<span>⏸</span> Tạm dừng"
+              : "<span>▶</span> Tiếp tục";
+            this.toggleHeaters(this.isRunning);
+          };
+
+          document.getElementById("btn-reset").onclick = () => {
+            this.isRunning = false;
+            btnToggle.innerHTML = "<span>▶</span> Bắt đầu";
+            this.reset();
+          };
+        }
+
+        toggleHeaters(on) {
+          SUBSTANCES.forEach(sub => {
+            document
+              .getElementById(`heater-${sub.id}`)
+              .classList.toggle("on", on);
+          });
+        }
+
+        initChart() {
+          const ctx = document.getElementById("tempChart").getContext("2d");
+          this.chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: SUBSTANCES.map(sub => ({
+                label: sub.name,
+                data: [],
+                borderColor: sub.color,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.1,
+              })),
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: false,
+              scales: {
+                x: {
+                  title: { display: true, text: "Thời gian (đơn vị mô phỏng)" },
+                  ticks: { color: "#94a3b8" },
+                  grid: { color: "#334155" },
+                },
+                y: {
+                  title: { display: true, text: "Nhiệt độ (°C)" },
+                  ticks: { color: "#94a3b8" },
+                  grid: { color: "#334155" },
+                },
+              },
+              plugins: { legend: { labels: { color: "#e2e8f0" } } },
+            },
+          });
+        }
+
+        reset() {
+          this.tickCount = 0;
+          this.substanceStates = SUBSTANCES.map(sub => ({
+            ...sub,
+            currentTemp: sub.startTemp,
+            phase: "liquid",
+            energyAccumulated: 0,
+            particles: this.createParticles(sub),
+          }));
+
+          if (this.chart) {
+            this.chart.data.labels = [];
+            this.chart.data.datasets.forEach(ds => (ds.data = []));
+            this.chart.update();
+          }
+          this.updateDisplay();
+          this.draw();
+          this.toggleHeaters(false);
+        }
+
+        createParticles(sub) {
+          return Array.from({ length: SIM_CONFIG.PARTICLE_COUNT }, () => ({
+            x: Math.random() * 100,
+            y: 80 + Math.random() * 20,
+            vx: (Math.random() - 0.5) * sub.viscosity,
+            vy: (Math.random() - 0.5) * sub.viscosity,
+            angle: Math.random() * Math.PI * 2, // Góc quay phân tử
+            vAngle: (Math.random() - 0.5) * 0.1, // Vận tốc quay
+          }));
+        }
+
+        updatePhysics() {
+          if (!this.isRunning) return;
+
+          this.substanceStates.forEach((state, idx) => {
+            const Q = SIM_CONFIG.HEATER_POWER;
+
+            if (state.phase === "liquid") {
+              // Gia nhiệt lỏng
+              const dt = Q / state.heatCapacity;
+              state.currentTemp += dt;
+
+              if (state.currentTemp >= state.boilingPoint) {
+                state.currentTemp = state.boilingPoint; // Giữ nhiệt độ
+                state.phase = "boiling";
+              }
+            } else if (state.phase === "boiling") {
+              // NHẬN NHIỆT ẨN: Nhiệt độ KHÔNG TĂNG
+              state.energyAccumulated += Q;
+
+              // Chỉ khi đủ nhiệt hóa hơi mới chuyển sang khí
+              if (state.energyAccumulated >= state.enthalpyVap) {
+                state.phase = "gas";
+              }
+            } else {
+              // Gia nhiệt khí
+              const dt = Q / (state.heatCapacity * 0.5);
+              state.currentTemp += dt;
+            }
+
+            this.updateParticles(state);
+          });
+
+          // Cập nhật biểu đồ (giảm tần suất để đỡ lag)
+          if (this.tickCount % 5 === 0) {
+            this.chart.data.labels.push(this.tickCount);
+            this.substanceStates.forEach((s, i) => {
+              this.chart.data.datasets[i].data.push(s.currentTemp);
+            });
+
+            if (this.chart.data.labels.length > 60) {
+              this.chart.options.scales.x.min = this.tickCount - 60;
+              this.chart.options.scales.x.max = this.tickCount;
+            }
+            this.chart.update("none");
+          }
+
+          this.tickCount++;
+          this.updateDisplay();
+        }
+
+        updateParticles(state) {
+          const ke = (state.currentTemp + 273) / 250; // Hệ số động năng
+
+          state.particles.forEach(p => {
+            p.x += p.vx * ke;
+            p.y += p.vy * ke;
+            p.angle += p.vAngle * ke;
+
+            // Xử lý biên
+            if (p.x < 2 || p.x > 98) p.vx *= -1;
+
+            if (state.phase === "liquid") {
+              p.vy += 0.05; // Trọng lực
+              if (p.y > 90) {
+                p.y = 90;
+                p.vy *= -0.5;
+              }
+
+              // Sôi: hạt bắt đầu bay lên
+              if (state.phase === "boiling" && Math.random() < 0.02) {
+                // Nếu đang sôi, một số hạt ngẫu nhiên nhận đủ năng lượng bứt ra
+                // Logic đơn giản hóa: chuyển sang trạng thái bay hơi cục bộ
+              }
+            } else if (state.phase === "boiling") {
+              // Trong giai đoạn sôi, hỗn hợp lỏng-khí
+              // Tăng dao động mạnh
+              p.x += Math.random() - 0.5;
+              p.y += Math.random() - 0.5;
+
+              // Hiệu ứng bay hơi dần theo tiến độ
+              const boilProgress = state.energyAccumulated / state.enthalpyVap;
+              if (Math.random() < boilProgress * 0.1) {
+                p.vy -= 0.5; // Bay lên
+              } else {
+                // Vẫn bị giữ ở dưới
+                if (p.y > 90) {
+                  p.y = 90;
+                  p.vy *= -0.5;
+                }
+              }
+            } else {
+              // Gas: Bay tự do
+              if (p.y < 5) p.vy = Math.abs(p.vy);
+              if (p.y > 95) p.vy = -Math.abs(p.vy);
+            }
+
+            p.x = Math.max(0, Math.min(100, p.x));
+            p.y = Math.max(0, Math.min(100, p.y));
+          });
+        }
+
+        draw() {
+          this.substanceStates.forEach(state => {
+            const canvas = document.getElementById(`canvas-${state.id}`);
+            const ctx = canvas.getContext("2d");
+            if (canvas.width !== canvas.offsetWidth) {
+              canvas.width = canvas.offsetWidth;
+              canvas.height = canvas.offsetHeight;
+            }
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Vẽ liên kết (chỉ vẽ khi không phải khí hoàn toàn)
+            if (state.phase !== "gas") {
+              this.drawBonds(ctx, state.particles, w, h, state.id);
+            }
+
+            // Vẽ từng phân tử theo hình dạng chuẩn
+            state.particles.forEach(p => {
+              this.drawMolecule(ctx, p, w, h, state.id);
+            });
+          });
+        }
+
+        // HÀM MỚI: Vẽ liên kết đứt nét giữa các phân tử gần nhau
+        drawBonds(ctx, particles, w, h, type) {
+          // Cấu hình hiển thị liên kết
+          let maxDist = 0;
+          if (type === "h2o") {
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.6)"; // Liên kết H mạnh, rõ
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 3]);
+            maxDist = 15; // Khoảng cách tương tác
+          } else if (type === "h2s") {
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"; // Liên kết yếu hơn
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 5]);
+            maxDist = 12;
+          } else {
+            return; // CH4 (VdW) quá yếu, không vẽ hoặc vẽ cực mờ
+          }
+
+          // Duyệt các cặp (O(N^2) nhưng N nhỏ nên OK)
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const p1 = particles[i];
+              const p2 = particles[j];
+              const dx = ((p1.x - p2.x) / 100) * w;
+              const dy = ((p1.y - p2.y) / 100) * h;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < maxDist * (w / 100)) {
+                // Scale theo màn hình
+                ctx.beginPath();
+                ctx.moveTo((p1.x / 100) * w, (p1.y / 100) * h);
+                ctx.lineTo((p2.x / 100) * w, (p2.y / 100) * h);
+                ctx.stroke();
+              }
+            }
+          }
+          ctx.setLineDash([]);
+        }
+
+        // HÀM MỚI: Vẽ hình dáng phân tử
+        drawMolecule(ctx, p, w, h, type) {
+          const cx = (p.x / 100) * w;
+          const cy = (p.y / 100) * h;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(p.angle);
+
+          if (type === "h2o") {
+            // Nước: O đỏ to, 2 H trắng nhỏ tạo góc
+            // O
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // H
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(-5, 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(5, 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (type === "h2s") {
+            // H2S: S vàng to hơn chút, 2 H trắng
+            // S
+            ctx.fillStyle = "#eab308";
+            ctx.beginPath();
+            ctx.arc(0, 0, 7, 0, Math.PI * 2);
+            ctx.fill();
+            // H
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(-6, 6, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(6, 6, 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // CH4: C xanh, 4 H xung quanh (tứ diện chiếu 2D)
+            // C
+            ctx.fillStyle = "#3b82f6";
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // 4 H
+            ctx.fillStyle = "white";
+            [
+              [0, -5],
+              [0, 5],
+              [-5, 0],
+              [5, 0],
+            ].forEach(pos => {
+              ctx.beginPath();
+              ctx.arc(pos[0], pos[1], 2.5, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          }
+          ctx.restore();
+        }
+
+        updateDisplay() {
+          this.substanceStates.forEach(state => {
+            const lcd = document.getElementById(`lcd-${state.id}`);
+            lcd.innerText = state.currentTemp.toFixed(0) + "°C";
+
+            const statusDiv = document.getElementById(`status-${state.id}`);
+            if (state.phase === "liquid") {
+              statusDiv.innerText = "Lỏng";
+              statusDiv.className = "font-bold text-blue-400";
+              lcd.style.color = "#0f0";
+            } else if (state.phase === "boiling") {
+              statusDiv.innerText = "SÔI (Chuyển pha)";
+              statusDiv.className = "font-bold text-yellow-400 animate-pulse";
+              lcd.style.color = "yellow";
+            } else {
+              statusDiv.innerText = "Khí";
+              statusDiv.className = "font-bold text-red-400";
+              lcd.style.color = "red";
+            }
+          });
+        }
+
+        animate() {
+          this.updatePhysics();
+          this.draw();
+          requestAnimationFrame(() => this.animate());
+        }
+      }
+
+      window.onload = () => new Simulation();
+    </script>
+  </body>
+</html>

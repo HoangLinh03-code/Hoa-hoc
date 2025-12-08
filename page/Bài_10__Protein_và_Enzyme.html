@@ -1,0 +1,736 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab Khám Phá: Protein & Enzyme</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+      body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        font-family: "Inter", sans-serif;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Shelf */
+      .shelf {
+        background: #1e293b;
+        padding: 15px 20px;
+        display: flex;
+        gap: 20px;
+        border-bottom: 2px solid #334155;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+        align-items: center;
+      }
+
+      .chemical-bottle {
+        width: 65px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 5px;
+        user-select: none;
+      }
+      .chemical-bottle:hover {
+        transform: translateY(-5px);
+        border-color: #60a5fa;
+        box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+      }
+      .chemical-bottle:active {
+        transform: scale(0.95);
+      }
+
+      .bottle-label {
+        background: #e2e8f0;
+        color: #0f172a;
+        padding: 2px 4px;
+        font-size: 9px;
+        font-weight: bold;
+        border-radius: 4px;
+        text-align: center;
+        width: 90%;
+      }
+      .liquid-color {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70%;
+        border-radius: 0 0 5px 5px;
+        opacity: 0.6;
+        z-index: -1;
+      }
+
+      /* Main Area */
+      .workspace {
+        flex: 1;
+        position: relative;
+        background: radial-gradient(circle at center, #334155 0%, #0f172a 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Wiki/Collection Sidebar */
+      .wiki-sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 320px;
+        background: rgba(15, 23, 42, 0.95);
+        border-left: 1px solid #334155;
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        overflow-y: auto;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .wiki-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        opacity: 0.5; /* Locked state */
+        filter: grayscale(1);
+        transition: all 0.5s;
+      }
+
+      .wiki-card.unlocked {
+        opacity: 1;
+        filter: grayscale(0);
+        border-color: #3b82f6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        animation: flash 1s;
+      }
+
+      @keyframes flash {
+        0% {
+          background-color: #3b82f6;
+        }
+        100% {
+          background-color: #1e293b;
+        }
+      }
+
+      .wiki-title {
+        font-weight: bold;
+        color: #60a5fa;
+        font-size: 14px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .wiki-desc {
+        font-size: 12px;
+        color: #94a3b8;
+        line-height: 1.4;
+      }
+      .wiki-eq {
+        font-family: monospace;
+        background: #0f172a;
+        padding: 5px;
+        border-radius: 4px;
+        margin-top: 5px;
+        font-size: 11px;
+        color: #cbd5e1;
+      }
+
+      /* Discovery Modal */
+      .discovery-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: #1e293b;
+        border: 2px solid #3b82f6;
+        border-radius: 16px;
+        padding: 30px;
+        width: 500px;
+        text-align: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      }
+
+      .discovery-modal.active {
+        opacity: 1;
+        pointer-events: all;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .discovery-icon {
+        font-size: 50px;
+        color: #fbbf24;
+        margin-bottom: 15px;
+        animation: bounce 1s infinite;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* Canvas Controls */
+      .controls-bar {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 15px;
+        background: rgba(30, 41, 59, 0.8);
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: 1px solid #475569;
+      }
+
+      .btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+      }
+      .btn-danger {
+        background: #ef4444;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .btn.active {
+        background: #f59e0b;
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shelf">
+      <div class="text-sm font-bold text-slate-400 mr-4">NGUYÊN LIỆU:</div>
+
+      <div class="chemical-bottle" onclick="addChemical('protein')">
+        <div class="liquid-color" style="background: #fefce8"></div>
+        <div class="bottle-label">Lòng trắng trứng</div>
+      </div>
+
+      <div class="chemical-bottle" onclick="addChemical('hno3')">
+        <div class="liquid-color" style="background: #fbbf24"></div>
+        <div class="bottle-label">HNO₃ Đặc</div>
+      </div>
+
+      <div class="chemical-bottle" onclick="addChemical('naoh')">
+        <div class="liquid-color" style="background: #e2e8f0"></div>
+        <div class="bottle-label">NaOH 10%</div>
+      </div>
+
+      <div class="chemical-bottle" onclick="addChemical('cuso4')">
+        <div class="liquid-color" style="background: #3b82f6"></div>
+        <div class="bottle-label">CuSO₄ 2%</div>
+      </div>
+
+      <div class="chemical-bottle" onclick="addChemical('water')">
+        <div class="liquid-color" style="background: #bae6fd"></div>
+        <div class="bottle-label">H₂O</div>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <canvas id="simCanvas"></canvas>
+
+      <div class="controls-bar">
+        <button class="btn" id="burnerBtn" onclick="toggleBurner()">
+          <i class="fas fa-fire"></i> Đèn Cồn
+        </button>
+        <button class="btn btn-danger" onclick="cleanTube()">
+          <i class="fas fa-sync-alt"></i> Rửa Ống Nghiệm
+        </button>
+      </div>
+
+      <div class="wiki-sidebar">
+        <h3
+          class="text-lg font-bold text-white mb-4 border-b border-slate-600 pb-2">
+          <i class="fas fa-book-open text-blue-400 mr-2"></i>Sổ Tay Phản Ứng
+        </h3>
+        <div id="wikiContainer"></div>
+        <div class="text-xs text-slate-500 mt-4 text-center">
+          Hãy thí nghiệm để mở khóa các thẻ kiến thức!
+        </div>
+      </div>
+    </div>
+
+    <div class="discovery-modal" id="discoveryModal">
+      <div class="discovery-icon"><i class="fas fa-lightbulb"></i></div>
+      <h2 class="text-2xl font-bold text-white mb-2" id="modalTitle">
+        Phát Hiện Mới!
+      </h2>
+      <p class="text-blue-300 font-semibold mb-4" id="modalSub">
+        Bạn vừa tìm ra phản ứng Biure
+      </p>
+      <p class="text-slate-300 text-sm mb-6 leading-relaxed" id="modalDesc">
+        Trong môi trường kiềm, các ion Cu2+ tạo phức với các liên kết peptide
+        tạo thành màu tím đặc trưng.
+      </p>
+      <button
+        class="btn bg-green-500 hover:bg-green-600 mx-auto"
+        onclick="closeModal()">
+        Đã hiểu & Ghi vào sổ tay
+      </button>
+    </div>
+
+    <script>
+      // --- DATABASE KIẾN THỨC ---
+      const KNOWLEDGE_BASE = {
+        biure: {
+          id: "biure",
+          title: "Phản ứng màu Biure",
+          sub: "Nhận biết liên kết Peptide",
+          desc: "Trong môi trường Kiềm (NaOH), ion Cu²⁺ phản ứng với các nhóm peptide (-CO-NH-) trong protein tạo thành phức chất màu tím đặc trưng.",
+          eq: "Protein + Cu(OH)₂/OH⁻ → Phức màu tím",
+          unlocked: false,
+        },
+        xantho_cold: {
+          id: "xantho_cold",
+          title: "Đông tụ bởi Axit",
+          sub: "Biến tính Protein",
+          desc: "HNO₃ đặc làm thay đổi điện tích và phá vỡ lớp vỏ hydrat hóa của protein, khiến chúng kết tụ lại thành kết tủa trắng.",
+          eq: "Albumin + H⁺ → Kết tủa trắng",
+          unlocked: false,
+        },
+        xantho_hot: {
+          id: "xantho_hot",
+          title: "Phản ứng Xanthoprotein",
+          sub: "Nhận biết gốc Benzen",
+          desc: "Dưới tác dụng của nhiệt, HNO₃ phản ứng với các gốc amino acid chứa vòng benzen (như Tyrosine) tạo thành hợp chất Nitro màu vàng.",
+          eq: "C₆H₅- + HNO₃ → O₂N-C₆H₄- (Vàng) + H₂O",
+          unlocked: false,
+        },
+        heat_coag: {
+          id: "heat_coag",
+          title: "Đông tụ bởi Nhiệt",
+          sub: "Hiện tượng vật lý",
+          desc: "Nhiệt độ cao phá vỡ các liên kết Hydro yếu giữ cấu trúc không gian của protein, làm chuỗi polypeptide duỗi ra và rối vào nhau (đông tụ).",
+          eq: "Protein (tan) →t°→ Protein (đông tụ)",
+          unlocked: false,
+        },
+        cuoh2: {
+          id: "cuoh2",
+          title: "Kết tủa Đồng(II) Hydroxit",
+          sub: "Phản ứng Vô cơ (Sai lầm phổ biến)",
+          desc: "Bạn đã tạo ra Cu(OH)₂ màu xanh lơ nhưng không có Protein để tạo phức màu tím. Đây chỉ là phản ứng trao đổi bình thường giữa Bazơ và Muối.",
+          eq: "2NaOH + CuSO₄ → Cu(OH)₂↓ (Xanh) + Na₂SO₄",
+          unlocked: false,
+        },
+      };
+
+      // Render Wiki Cards (Locked state initially)
+      const wikiContainer = document.getElementById("wikiContainer");
+      Object.values(KNOWLEDGE_BASE).forEach(item => {
+        const div = document.createElement("div");
+        div.id = `card-${item.id}`;
+        div.className = "wiki-card";
+        div.innerHTML = `
+          <div class="wiki-title">
+            <span>${item.title}</span>
+            <i class="fas fa-lock text-xs"></i>
+          </div>
+          <div class="wiki-desc">???</div>
+        `;
+        wikiContainer.appendChild(div);
+      });
+
+      // --- SIMULATION ENGINE ---
+      const canvas = document.getElementById("simCanvas");
+      const ctx = canvas.getContext("2d");
+      let width, height;
+
+      const STATE = {
+        contents: { protein: 0, hno3: 0, naoh: 0, cuso4: 0, water: 0 },
+        temp: 25,
+        burner: false,
+
+        // Visual properties
+        color: { r: 220, g: 230, b: 240, a: 0.1 },
+        precipitate: 0, // 0-1
+        precipitateColor: [255, 255, 255],
+
+        // Animation
+        bubbles: [],
+        pouring: null,
+      };
+
+      // Resize
+      function resize() {
+        const p = canvas.parentElement;
+        canvas.width = p.clientWidth;
+        canvas.height = p.clientHeight;
+        width = canvas.width;
+        height = canvas.height;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // --- LOGIC HÓA HỌC & CHECK GIẢI THÍCH ---
+      function updateReaction() {
+        const c = STATE.contents;
+        const total = c.protein + c.hno3 + c.naoh + c.cuso4 + c.water;
+
+        if (total === 0) {
+          STATE.color = { r: 220, g: 230, b: 240, a: 0.1 };
+          STATE.precipitate = 0;
+          return;
+        }
+
+        // 1. Logic pha màu cơ bản (trước khi phản ứng)
+        let r = 220,
+          g = 230,
+          b = 240,
+          a = 0.2; // Nước/Protein trong
+        let ppt = 0;
+        let pptColor = [255, 255, 255];
+
+        // Màu hóa chất cơ bản
+        if (c.cuso4 > 0) {
+          r = 59;
+          g = 130;
+          b = 246;
+          a = 0.5 * (c.cuso4 / total);
+        } // Xanh dương
+        if (c.hno3 > 0) {
+          r = 253;
+          g = 224;
+          b = 71;
+          a = Math.max(a, 0.2 * (c.hno3 / total));
+        } // Hơi vàng
+
+        // 2. Logic Phản ứng & Unlock Kiến thức
+
+        // TRƯỜNG HỢP 1: BIURE (Tím)
+        // Điều kiện: Protein + NaOH (Kiềm) + CuSO4
+        if (c.protein > 0 && c.naoh > 0 && c.cuso4 > 0) {
+          // Kiểm tra tỷ lệ: NaOH phải đủ dư để tạo môi trường kiềm
+          if (c.naoh >= c.cuso4) {
+            r = 147;
+            g = 51;
+            b = 234;
+            a = 0.9; // Tím
+            unlockKnowledge("biure");
+          } else {
+            // Nếu thiếu kiềm, vẫn còn tủa xanh Cu(OH)2
+            r = 59;
+            g = 130;
+            b = 246;
+            a = 0.7;
+            ppt = 0.5;
+            pptColor = [100, 200, 255];
+          }
+        }
+
+        // TRƯỜNG HỢP 2: XANTHOPROTEIN (Vàng)
+        // Điều kiện: Protein + HNO3
+        else if (c.protein > 0 && c.hno3 > 0) {
+          if (STATE.temp > 60) {
+            // Nóng -> Vàng
+            r = 250;
+            g = 204;
+            b = 21;
+            a = 0.95; // Vàng đậm
+            ppt = 0.8;
+            pptColor = [250, 204, 21];
+            unlockKnowledge("xantho_hot");
+          } else {
+            // Lạnh -> Tủa trắng
+            r = 255;
+            g = 255;
+            b = 255;
+            a = 0.8; // Trắng đục
+            ppt = 0.8;
+            pptColor = [255, 255, 255];
+            unlockKnowledge("xantho_cold");
+          }
+        }
+
+        // TRƯỜNG HỢP 3: ĐÔNG TỤ NHIỆT (Trắng)
+        // Điều kiện: Protein + Nhiệt (>70) + Không có NaOH (kiềm làm tan protein)
+        else if (
+          c.protein > 0 &&
+          STATE.temp > 75 &&
+          c.naoh === 0 &&
+          c.hno3 === 0
+        ) {
+          r = 255;
+          g = 255;
+          b = 255;
+          a = 0.9;
+          ppt = 0.9;
+          pptColor = [255, 255, 255];
+          unlockKnowledge("heat_coag");
+        }
+
+        // TRƯỜNG HỢP 4: Cu(OH)2 (Sai lầm thường gặp)
+        // Điều kiện: Không có Protein, nhưng có NaOH + CuSO4
+        else if (c.protein === 0 && c.naoh > 0 && c.cuso4 > 0) {
+          r = 14;
+          g = 165;
+          b = 233;
+          a = 0.6; // Xanh lơ trong
+          ppt = 0.8;
+          pptColor = [14, 165, 233]; // Tủa xanh lơ
+          unlockKnowledge("cuoh2");
+        }
+
+        // Apply state visuals (smooth transition could be added here)
+        STATE.color = { r, g, b, a };
+        STATE.precipitate = ppt;
+        STATE.precipitateColor = pptColor;
+      }
+
+      // --- HỆ THỐNG UNLOCK ---
+      function unlockKnowledge(id) {
+        if (!KNOWLEDGE_BASE[id].unlocked) {
+          KNOWLEDGE_BASE[id].unlocked = true;
+
+          // 1. Show Modal
+          const data = KNOWLEDGE_BASE[id];
+          document.getElementById("modalTitle").innerText = data.title;
+          document.getElementById("modalSub").innerText = data.sub;
+          document.getElementById("modalDesc").innerText = data.desc;
+          document.getElementById("discoveryModal").classList.add("active");
+
+          // 2. Update Sidebar Card
+          const card = document.getElementById(`card-${id}`);
+          card.classList.add("unlocked");
+          card.innerHTML = `
+                <div class="wiki-title">
+                    <span>${data.title}</span>
+                    <i class="fas fa-check text-green-400"></i>
+                </div>
+                <div class="wiki-desc">${data.desc}</div>
+                <div class="wiki-eq">${data.eq}</div>
+            `;
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("discoveryModal").classList.remove("active");
+      }
+
+      // --- VISUALIZATION LOOP ---
+      function loop() {
+        ctx.clearRect(0, 0, width, height);
+        const cx = width / 2;
+        const cy = height / 2 + 60;
+
+        // Logic Vật lý
+        if (STATE.burner) {
+          if (STATE.temp < 100) STATE.temp += 0.4;
+        } else {
+          if (STATE.temp > 25) STATE.temp -= 0.1;
+        }
+
+        updateReaction();
+
+        // Vẽ đèn cồn
+        drawBurner(cx, cy + 120);
+
+        // Vẽ ống nghiệm
+        drawTube(cx, cy - 80);
+
+        // Animation rót
+        if (STATE.pouring) {
+          drawPouring(cx, cy - 80);
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      function drawTube(x, y) {
+        const w = 70;
+        const h = 220;
+
+        // Lượng nước
+        const total = Object.values(STATE.contents).reduce((a, b) => a + b, 0);
+        const liquidH = Math.min(total * 2, h - 20); // Scale height
+        const liquidY = y + h - liquidH;
+
+        ctx.save();
+
+        // 1. Chất lỏng
+        if (liquidH > 0) {
+          ctx.beginPath();
+          ctx.roundRect(x - w / 2, y, w, h, [0, 0, 30, 30]);
+          ctx.clip(); // Cắt theo hình ống nghiệm
+
+          const c = STATE.color;
+          ctx.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`;
+          ctx.fillRect(x - w / 2, liquidY, w, liquidH);
+
+          // Tủa/Đục
+          if (STATE.precipitate > 0) {
+            const pc = STATE.precipitateColor;
+            ctx.fillStyle = `rgba(${pc[0]}, ${pc[1]}, ${pc[2]}, 0.8)`;
+            for (let i = 0; i < 40 * STATE.precipitate; i++) {
+              // Random noise
+              const px = x - w / 2 + Math.random() * w;
+              const py = liquidY + Math.random() * liquidH;
+              ctx.beginPath();
+              ctx.arc(px, py, 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Sôi
+          if (STATE.temp > 90) {
+            if (Math.random() > 0.8)
+              STATE.bubbles.push({
+                x: x + (Math.random() - 0.5) * 40,
+                y: y + h - 10,
+              });
+            ctx.strokeStyle = "rgba(255,255,255,0.6)";
+            STATE.bubbles.forEach((b, i) => {
+              b.y -= 3;
+              ctx.beginPath();
+              ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+              ctx.stroke();
+              if (b.y < liquidY) STATE.bubbles.splice(i, 1);
+            });
+          }
+        }
+
+        // 2. Vỏ thủy tinh
+        ctx.restore();
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(x - w / 2, y, w, h, [0, 0, 30, 30]);
+        ctx.stroke();
+
+        // 3. Nhiệt độ
+        ctx.fillStyle = STATE.temp > 50 ? "#ef4444" : "#94a3b8";
+        ctx.font = "bold 14px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText(`${Math.round(STATE.temp)}°C`, x + w / 2 + 30, y + h);
+      }
+
+      function drawBurner(x, y) {
+        if (STATE.burner) {
+          // Ngọn lửa
+          const h = 50 + Math.random() * 5;
+          const grad = ctx.createRadialGradient(x, y, 5, x, y - h, 20);
+          grad.addColorStop(0, "#fbbf24");
+          grad.addColorStop(0.6, "#ef4444");
+          grad.addColorStop(1, "transparent");
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(x - 15, y);
+          ctx.quadraticCurveTo(x, y - h * 1.5, x + 15, y);
+          ctx.fill();
+        }
+        // Đế đèn
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fillRect(x - 20, y, 40, 30);
+      }
+
+      function drawPouring(targetX, targetY) {
+        STATE.pouring.frame--;
+        if (STATE.pouring.frame <= 0) {
+          STATE.pouring = null;
+          return;
+        }
+
+        ctx.strokeStyle = STATE.pouring.color;
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(targetX - 60, targetY - 100); // Vị trí lọ ảo
+        ctx.quadraticCurveTo(targetX, targetY - 80, targetX, targetY + 20);
+        ctx.stroke();
+      }
+
+      // --- CONTROLS ---
+      function addChemical(type) {
+        if (
+          STATE.contents.protein +
+            STATE.contents.hno3 +
+            STATE.contents.naoh +
+            STATE.contents.cuso4 +
+            STATE.contents.water >
+          100
+        ) {
+          alert("Ống nghiệm đầy! Hãy rửa ống nghiệm.");
+          return;
+        }
+
+        STATE.contents[type] += 15;
+
+        // Màu nước rót giả định
+        let color = "#fff";
+        if (type === "cuso4") color = "#3b82f6";
+        if (type === "hno3") color = "#fbbf24";
+
+        STATE.pouring = { frame: 20, color: color };
+      }
+
+      function toggleBurner() {
+        STATE.burner = !STATE.burner;
+        const btn = document.getElementById("burnerBtn");
+        if (STATE.burner) {
+          btn.classList.add("active");
+          btn.innerHTML = `<i class="fas fa-fire-alt"></i> Tắt Lửa`;
+        } else {
+          btn.classList.remove("active");
+          btn.innerHTML = `<i class="fas fa-fire"></i> Đèn Cồn`;
+        }
+      }
+
+      function cleanTube() {
+        STATE.contents = { protein: 0, hno3: 0, naoh: 0, cuso4: 0, water: 0 };
+        STATE.temp = 25;
+        STATE.color = { r: 220, g: 230, b: 240, a: 0.1 };
+        STATE.precipitate = 0;
+        // Keep discoveries unlocked
+      }
+
+      // Start
+      loop();
+    </script>
+  </body>
+</html>

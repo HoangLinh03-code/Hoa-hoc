@@ -3,11 +3,28 @@
 // COLOR MAPPING
 function getColorForType(type) {
   const colors = {
-    metal: "#88C0BE",
-    nonmetal: "#E19CA8",
-    noble: "#E0C210",
+    // Khớp với chú thích "Kim loại nhóm A" (#c2e69d)
+    alkali: "#c2e69d",
+
+    // Khớp với chú thích "Kim loại chuyển tiếp" (#a0d468)
+    transition: "#a0d468",
+
+    // Khớp với chú thích "Á kim" (#eb9c52)
+    metalloid: "#eb9c52",
+
+    // Khớp với chú thích "Phi kim" (#e19ca8)
+    nonmetal: "#e19ca8",
+
+    // Khớp với chú thích "Khí hiếm" (#e0c210)
+    noble: "#e0c210",
+
+    // Lanthanide & Actinide (Lấy theo màu xanh Teal của ảnh bạn gửi trước đó)
+    lanthanide: "#72b2ee",
+    actinide: "#72b2ee",
   };
-  return colors[type] || "#88C0BE";
+
+  // Trả về màu tương ứng, nếu không tìm thấy thì trả về màu mặc định (Kim loại nhóm A)
+  return colors[type] || "#c2e69d";
 }
 function darkenHexColor(hex, percent) {
   if (!hex) return "#ccc";
@@ -144,12 +161,32 @@ function createPeriodicTable() {
       } else if (z === "LAN") {
         const cell = document.createElement("div");
         cell.className = "element-cell placeholder-cell";
-        cell.innerHTML = `<div class="placeholder-range">57-71</div><div class="placeholder-symbol">La-Lu</div><div class="placeholder-name">Lanthanide</div>`;
+
+        // Chỉ cần set thuộc tính lọc
+        cell.setAttribute("data-period", "6");
+        cell.setAttribute("data-group", "IIIB");
+
+        // CẬP NHẬT: Thêm class "number-bg-dark" vào div đầu tiên
+        cell.innerHTML = `
+        <div class="placeholder-range number-bg-dark">57-71</div>
+        <div class="placeholder-symbol">La-Lu</div>
+        <div class="placeholder-name">Lanthanide**</div>
+      `;
         tableContainer.appendChild(cell);
       } else if (z === "ACT") {
         const cell = document.createElement("div");
         cell.className = "element-cell placeholder-cell";
-        cell.innerHTML = `<div class="placeholder-range">89-103</div><div class="placeholder-symbol">Ac-Lr</div><div class="placeholder-name">Actinide</div>`;
+
+        // Chỉ cần set thuộc tính lọc
+        cell.setAttribute("data-period", "7");
+        cell.setAttribute("data-group", "IIIB");
+
+        // CẬP NHẬT: Thêm class "number-bg-dark" vào div đầu tiên
+        cell.innerHTML = `
+        <div class="placeholder-range number-bg-dark">89-103</div>
+        <div class="placeholder-symbol">Ac-Lr</div>
+        <div class="placeholder-name">Actinide***</div>
+      `;
         tableContainer.appendChild(cell);
       } else {
         const element = elements.find(el => el.z === z);
@@ -181,56 +218,96 @@ function createPeriodicTable() {
 }
 
 function calculateMolarMass() {
-  const formula = document.getElementById("formulaInput").value;
+  const formulaInput = document.getElementById("formulaInput");
   const resultDiv = document.getElementById("molarMassResult");
+  const formula = formulaInput.value.trim(); // Xóa khoảng trắng thừa đầu đuôi
 
-  // Tạo một "map" để tra cứu khối lượng nhanh
-  // Bạn chỉ cần chạy cái này một lần nếu tối ưu, nhưng để đây cho đơn giản
-  const massMap = new Map();
-  elements.forEach(el => {
-    massMap.set(el.symbol, el.mass);
-  });
+  // 1. Kiểm tra đầu vào trống
+  if (!formula) {
+    resultDiv.textContent = "Vui lòng nhập công thức hóa học (Ví dụ: H2SO4).";
+    resultDiv.style.color = "#d97706"; // text-amber-600
+    return;
+  }
 
   try {
+    // 2. Kiểm tra dữ liệu elements có tồn tại không
+    if (typeof elements === "undefined" || !Array.isArray(elements)) {
+      throw new Error("Dữ liệu nguyên tố chưa được tải. Hãy tải lại trang.");
+    }
+
+    // 3. Tạo map tra cứu khối lượng (Đặt trong try để bắt lỗi nếu có)
+    const massMap = new Map();
+    elements.forEach(el => {
+      massMap.set(el.symbol, el.mass);
+    });
+
+    // 4. Tính toán
     const totalMass = parseFormula(formula, massMap);
-    resultDiv.textContent = `Kết quả: ${formula} = ${totalMass.toFixed(
-      4
-    )} g/mol`;
-    resultDiv.style.color = "#1f2937"; // text-gray-800
+
+    // 5. Kiểm tra kết quả = 0 (Thường do nhập sai chữ hoa/thường)
+    if (totalMass === 0) {
+      throw new Error(
+        "Không tìm thấy nguyên tố hợp lệ. Hãy chắc chắn bạn VIẾT HOA chữ cái đầu của nguyên tố (Ví dụ: 'Na' thay vì 'na', 'O' thay vì 'o')."
+      );
+    }
+
+    resultDiv.innerHTML = `Kết quả: <span class="text-purple-700">${formula}</span> = <span class="text-2xl text-red-600">${formatNumber(
+      totalMass.toFixed(4)
+    )}</span> g/mol`;
+    resultDiv.style.color = "#1f2937";
   } catch (error) {
-    resultDiv.textContent = `Lỗi: ${error.message}. Hãy kiểm tra lại công thức.`;
+    console.error(error); // Log lỗi ra console để dễ debug
+    resultDiv.textContent = `Lỗi: ${error.message}`;
     resultDiv.style.color = "#ef4444"; // text-red-500
   }
 }
 
 function parseFormula(formula, massMap) {
   let totalMass = 0;
-
-  // Regex để tìm các nhóm (trong ngoặc) hoặc các nguyên tố
-  const regex = /(\([^\)]+\)\d*)|([A-Z][a-z]*)(\d*)/g;
-  let match;
-
-  // Xử lý chuỗi công thức không có khoảng trắng
+  // Loại bỏ tất cả khoảng trắng giữa công thức
   const cleanFormula = formula.replace(/\s/g, "");
 
+  // Regex giải thích:
+  // (\([^\)]+\)\d*) : Bắt nhóm trong ngoặc, vd: (OH)2
+  // ([A-Z][a-z]*)   : Bắt nguyên tố, BẮT BUỘC chữ cái đầu viết hoa (VD: H, He)
+  // (\d*)           : Bắt số lượng nguyên tử (VD: 2, 4)
+  const regex = /(\([^\)]+\)\d*)|([A-Z][a-z]*)(\d*)/g;
+
+  let match;
+  let lastIndex = 0; // Dùng để kiểm tra xem có ký tự nào bị bỏ qua không
+
   while ((match = regex.exec(cleanFormula)) !== null) {
+    // Kiểm tra tính hợp lệ: Nếu regex nhảy cóc qua các ký tự không hợp lệ (như chữ thường 'h2o')
+    if (match.index !== lastIndex) {
+      // Phát hiện ký tự lạ không khớp pattern
+      // Bạn có thể throw Error ở đây nếu muốn chặt chẽ, hoặc để nó tự bỏ qua
+    }
+    lastIndex = regex.lastIndex;
+
     if (match[1]) {
-      // Trường hợp 1: Nhóm trong ngoặc, ví dụ: (OH)3
+      // TRƯỜNG HỢP 1: Nhóm trong ngoặc (VD: (OH)2 )
+      // Tách nội dung trong ngoặc và số lượng
       const groupMatch = match[1].match(/\(([^\)]+)\)(\d*)/);
-      const groupFormula = groupMatch[1];
-      const groupCount = groupMatch[2] ? parseInt(groupMatch[2]) : 1;
-      totalMass += parseFormula(groupFormula, massMap) * groupCount;
-    } else {
-      // Trường hợp 2: Nguyên tố, ví dụ: H2 hoặc Fe
+      if (groupMatch) {
+        const groupFormula = groupMatch[1];
+        const groupCount = groupMatch[2] ? parseInt(groupMatch[2]) : 1;
+        // Đệ quy để tính khối lượng trong ngoặc
+        totalMass += parseFormula(groupFormula, massMap) * groupCount;
+      }
+    } else if (match[2]) {
+      // TRƯỜNG HỢP 2: Nguyên tố đơn lẻ (VD: H2, Cu)
       const elementSymbol = match[2];
       const elementCount = match[3] ? parseInt(match[3]) : 1;
 
       if (!massMap.has(elementSymbol)) {
-        throw new Error(`Nguyên tố '${elementSymbol}' không tồn tại.`);
+        throw new Error(
+          `Nguyên tố '${elementSymbol}' không tồn tại trong bảng tuần hoàn`
+        );
       }
       totalMass += massMap.get(elementSymbol) * elementCount;
     }
   }
+
   return totalMass;
 }
 // UPDATED: Cấu trúc HTML phẳng, hiện đại
@@ -248,8 +325,10 @@ function createElementCell(element) {
   cell.setAttribute("data-group", element.group);
 
   cell.innerHTML = `
-<div class="element-number" style="background-color: ${darkerColor};">${element.z}</div>
-<div class="element-mass">${element.mass}</div>
+<div class="element-number" style="background-color: ${darkerColor};">${
+    element.z
+  }</div>
+<div class="element-mass">${formatNumber(element.mass)}</div>
 <div class="element-symbol">${element.symbol}</div>
 <div class="element-name">${element.name}</div>
 `;
@@ -260,127 +339,125 @@ function createElementCell(element) {
 
 // SHOW ELEMENT DETAILS
 // SHOW ELEMENT DETAILS
+// SHOW ELEMENT DETAILS
 function showElementDetails(element) {
   const modal = document.getElementById("elementModal");
   const content = document.getElementById("modalContent");
 
   content.innerHTML = `
-<h2 class="text-4xl font-black text-center mb-6" style="color: ${
-    element.color || getColorForType(element.type)
-  }">
-${element.symbol} - ${element.name}
-</h2>
-<div class="grid md:grid-cols-2 gap-8 items-center"> <div>
-<h3 class="text-xl font-bold mb-4 text-purple-700 border-b-2 border-purple-100 pb-2">Thông tin cơ bản</h3>
-<div class="space-y-2 text-gray-700">
-<p class="flex justify-between"><strong>Số hiệu nguyên tử:</strong> <span>${
-    element.z
-  }</span></p>
-<p class="flex justify-between"><strong>Ký hiệu:</strong> <span>${
-    element.symbol
-  }</span></p>
-<p class="flex justify-between"><strong>Tên nguyên tố:</strong> <span>${
-    element.name
-  }</span></p>
-<p class="flex justify-between"><strong>Nguyên tử khối:</strong> <span>${
-    element.mass
-  }</span></p>
-<p class="flex justify-between"><strong>Độ âm điện:</strong> <span>${
-    element.electronegativity || "N/A"
-  }</span></p>
-<p class="flex justify-between"><strong>Chu kì:</strong> <span>${
-    element.period
-  }</span></p>
-<p class="flex justify-between"><strong>Nhóm:</strong> <span>${
-    element.group
-  }</span></p>
-<div class="mt-2 pt-2 border-t border-gray-100">
-<p class="text-sm text-gray-500">Cấu hình electron:</p>
-<p class="font-mono font-semibold text-purple-600">${element.config}</p>
-</div>
-</div>
-</div>
+    <h2 class="text-4xl font-black text-center mb-6" style="color: ${
+      element.color || getColorForType(element.type)
+    }">
+      ${element.symbol} - ${element.name}
+    </h2>
+    
+    <div class="grid md:grid-cols-2 gap-6 items-start"> 
+      
+      <div class="md:col-span-2">
+        <h3 class="text-xl font-bold mb-4 text-purple-700 border-b-2 border-purple-100 pb-2">Thông tin cơ bản</h3>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-gray-700">
+           <p class="flex justify-between"><strong>Số hiệu nguyên tử:</strong> <span>${
+             element.z
+           }</span></p>
+           <p class="flex justify-between"><strong>Ký hiệu hóa học:</strong> <span>${
+             element.symbol
+           }</span></p>
+           <p class="flex justify-between"><strong>Tên nguyên tố:</strong> <span>${
+             element.name
+           }</span></p>
+           <p class="flex justify-between"><strong>Nguyên tử khối trung bình:</strong> <span>${formatNumber(
+             element.mass
+           )}</span></p>
+           <p class="flex justify-between"><strong>Độ âm điện:</strong> <span>${
+             formatNumber(element.electronegativity) || "N/A"
+           }</span></p>
+           <p class="flex justify-between"><strong>Chu kì:</strong> <span>${
+             element.period
+           }</span></p>
+           <p class="flex justify-between"><strong>Nhóm:</strong> <span>${
+             element.group
+           }</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-100">
+            <p class="text-sm text-gray-500">Cấu hình electron:</p>
+            <p class="font-mono font-semibold text-purple-600 text-lg">${
+              element.config
+            }</p>
+        </div>
+      </div>
 
-<div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-4 shadow-inner">
-<h3 class="text-xl font-bold mb-2 text-purple-700">Mô hình nguyên tử</h3>
-<svg viewBox="0 0 300 300" class="w-[300px] h-[300px] overflow-visible">
-${drawAtomModel(element)}
-</svg>
-</div>
+      <div class="md:col-span-2 flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 shadow-inner mt-4">
+        <h3 class="text-xl font-bold mb-4 text-purple-700">Mô hình nguyên tử</h3>
+        
+        <svg viewBox="0 0 400 400" class="w-full max-w-[450px] h-auto overflow-visible">
+          ${drawAtomModel(element)}
+        </svg>
+      </div>
 
-</div>
-`;
+    </div>
+  `;
 
   modal.style.display = "block";
 }
-
-// DRAW ATOM MODEL
-// --- DRAW ATOM MODEL (FIX: THẲNG HÀNG & CÂN ĐỐI) ---
+// --- DRAW ATOM MODEL (CẬP NHẬT KÍCH THƯỚC LỚN) ---
 function drawAtomModel(element) {
-  const cx = 150; // Tâm X
-  const cy = 150; // Tâm Y
-  const containerSize = 300;
+  // SỬA: Tâm hình tròn đổi thành 200 (vì khung là 400x400)
+  const cx = 200;
+  const cy = 200;
 
-  // Cấu hình kích thước
-  const maxRadius = 135;
   const baseRadius = 40;
+  const spacing = 22; // Tăng khoảng cách lên một chút cho thoáng
 
   let svg = "";
 
-  // 1. ĐỊNH NGHĨA GRADIENT (Giữ nguyên)
+  // 1. ĐỊNH NGHĨA GRADIENT
   svg += `
-<defs>
-<radialGradient id="nucleusGrad" cx="30%" cy="30%" r="70%">
-<stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-<stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
-</radialGradient>
-<radialGradient id="electronGrad" cx="30%" cy="30%" r="70%">
-<stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
-<stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
-</radialGradient>
-</defs>
-`;
+    <defs>
+      <radialGradient id="nucleusGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
+      </radialGradient>
+      <radialGradient id="electronGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+      </radialGradient>
+    </defs>
+  `;
 
-  // 2. TÍNH TOÁN KHOẢNG CÁCH (Giữ nguyên logic chống tràn)
+  // 2. VẼ CÁC LỚP
   const shells = getElectronShells(element);
-  const numShells = shells.length;
 
-  let spacing = 0;
-  if (numShells > 1) {
-    spacing = (maxRadius - baseRadius) / (numShells - 1);
-  }
-
-  // 3. VẼ CÁC LỚP
   shells.forEach((electronCount, index) => {
     const radius = baseRadius + index * spacing;
 
-    // Vẽ vòng tròn quỹ đạo
-    svg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.6" />`;
+    // Vòng quỹ đạo
+    svg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.6" />`;
 
-    // Vẽ các Electron
-    // --- SỬA ĐỔI TẠI ĐÂY ---
-    // Thay vì xoay lệch (index % 2...), ta cố định tất cả bắt đầu từ góc -90 độ (đỉnh 12h)
+    // Electron
     const startAngleOffset = -90;
-
     for (let i = 0; i < electronCount; i++) {
-      // Chia đều 360 độ cho số lượng electron
       const angle = startAngleOffset + (i * 360) / electronCount;
       const radian = (angle * Math.PI) / 180;
 
       const x = cx + radius * Math.cos(radian);
       const y = cy + radius * Math.sin(radian);
 
-      svg += `<circle cx="${x}" cy="${y}" r="4" fill="url(#electronGrad)" />`;
+      // Tăng kích thước electron lên r=5 cho dễ nhìn
+      svg += `<circle cx="${x}" cy="${y}" r="5" fill="url(#electronGrad)" />`;
     }
   });
 
-  // 4. VẼ HẠT NHÂN
-  svg += `<circle cx="${cx}" cy="${cy}" r="22" fill="url(#nucleusGrad)" stroke="#b91c1c" stroke-width="2" />`;
-  svg += `<text x="${cx}" y="${cy}" dy=".35em" text-anchor="middle" fill="white" font-size="14" font-weight="bold" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">+${element.z}</text>`;
+  // 3. VẼ HẠT NHÂN
+  svg += `<circle cx="${cx}" cy="${cy}" r="25" fill="url(#nucleusGrad)" stroke="#b91c1c" stroke-width="2" />`;
+  svg += `<text x="${cx}" y="${cy}" dy=".35em" text-anchor="middle" fill="white" font-size="16" font-weight="bold" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">+${element.z}</text>`;
 
   return svg;
 }
-
+function formatNumber(num) {
+  if (num === null || num === undefined) return "N/A";
+  // Chuyển thành string rồi thay dấu chấm bằng phẩy
+  return num.toString().replace(".", ",");
+}
 // GET ELECTRON SHELLS
 function getElectronShells(element) {
   const z = element.z;
