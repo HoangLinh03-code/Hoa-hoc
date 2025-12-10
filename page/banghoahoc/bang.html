@@ -83,6 +83,19 @@
 
     <!-- PERIODIC TABLE -->
     <div class="table-wrapper shadow-2xl">
+      <div class="table-controls">
+        <button
+          class="filter-btn btn-active"
+          onclick="filterMainCategory('all', this)">
+          Toàn bộ bảng
+        </button>
+        <button class="filter-btn" onclick="filterMainCategory('A', this)">
+          Nguyên tố nhóm A
+        </button>
+        <button class="filter-btn" onclick="filterMainCategory('B', this)">
+          Nguyên tố nhóm B
+        </button>
+      </div>
       <div class="table-grid" id="groupHeaders"></div>
       <div class="table-grid" id="periodicTable"></div>
       <div class="main-content">

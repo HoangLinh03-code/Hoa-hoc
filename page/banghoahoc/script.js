@@ -56,7 +56,7 @@ function createPeriodicTable() {
   tableContainer.innerHTML = "";
   bottomRowsContainer.innerHTML = "";
 
-  // 1. VẼ BẢNG CHÍNH (GRID)
+  // 1. VẼ BẢNG CHÍNH (GRID) - (Giữ nguyên layout cũ)
   const layout = [
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
     [3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10],
@@ -110,13 +110,11 @@ function createPeriodicTable() {
   ];
 
   groups.forEach((group, i) => {
-    if (i > 8 && i <= 10) return; // Bỏ qua các cột trống của nhóm VIIIB
+    if (i > 8 && i <= 10) return;
     if (group === "") {
-      // Tạo một div trống để chiếm chỗ trong Grid nhưng KHÔNG có class group-header
       const emptyCell = document.createElement("div");
-      // Không gán sự kiện click, không gán hover
       headersContainer.appendChild(emptyCell);
-      return; // Dừng xử lý cho vòng lặp này
+      return;
     }
     const header = document.createElement("div");
     header.className = "group-header";
@@ -126,29 +124,58 @@ function createPeriodicTable() {
     } else {
       header.textContent = group;
     }
-    // Merge cột cho nhóm VIIIB
     if (group === "VIIIB") header.style.gridColumn = "9 / 12";
 
-    // == TÍNH NĂNG MỚI: CLICK FILTER ==
+    // == PHẦN SỬA ĐỔI LOGIC CLICK TẠI ĐÂY ==
     header.onclick = function () {
+      // 1. Kiểm tra trạng thái
       const isActive = this.classList.contains("header-active");
-      clearHeaderHighlights(); // Xóa highlight cũ
-      if (isActive) {
+      // Kiểm tra xem có bao nhiêu cột đang sáng?
+      // Nếu > 1 nghĩa là đang ở chế độ xem "Nguyên tố nhóm A/B" chứ không phải xem 1 cột
+      const activeHeadersCount = document.querySelectorAll(
+        ".group-header.header-active"
+      ).length;
+      const isBroadFilterMode = activeHeadersCount > 1;
+
+      // Reset giao diện trước
+      clearHeaderHighlights();
+      const allButtons = document.querySelectorAll(".filter-btn");
+      allButtons.forEach(btn => btn.classList.remove("btn-active"));
+
+      // 2. LOGIC QUYẾT ĐỊNH
+      // Nếu cột này đang sáng, NHƯNG không phải do chế độ nhóm lớn (chỉ có 1 mình nó sáng)
+      // -> Thì mới coi là hành động "Tắt filter" (Reset về All)
+      if (isActive && !isBroadFilterMode) {
         filterByPeriod(0); // Hiện lại tất cả
-        return; // Dừng lại, không lọc nữa
+
+        // Active lại nút "Toàn bộ bảng"
+        const btnAll = document.querySelector("button[onclick*=\"'all'\"]");
+        if (btnAll) btnAll.classList.add("btn-active");
+
+        return;
       }
 
-      // Filter theo nhóm
+      // == TRƯỜNG HỢP 2: BẬT FILTER NHÓM CỤ THỂ
       filterByGroup(group);
-      this.classList.add("header-active"); // Highlight header vừa bấm
+      this.classList.add("header-active");
+
+      // Logic: Nếu nhóm chứa chữ "A" -> Active nút A, nếu "B" -> Active nút B
+      if (group.includes("A")) {
+        const btnA = document.querySelector("button[onclick*=\"'A'\"]");
+        if (btnA) btnA.classList.add("btn-active");
+      } else if (group.includes("B")) {
+        const btnB = document.querySelector("button[onclick*=\"'B'\"]");
+        if (btnB) btnB.classList.add("btn-active");
+      }
     };
+    // ==========================================
 
     headersContainer.appendChild(header);
   });
 
-  // --- VẼ CÁC Ô GRID VÀ NHÃN CHU KÌ (HÀNG NGANG) ---
+  // ... (Phần còn lại của hàm createPeriodicTable giữ nguyên không đổi) ...
   layout.forEach((row, rowIndex) => {
-    // Label Chu kỳ (1, 2, 3...)
+    // ... (Giữ nguyên code vẽ row và periodLabel)
     const periodNum = rowIndex + 1;
     const periodLabel = document.createElement("div");
     periodLabel.className = "period-label";
@@ -158,53 +185,44 @@ function createPeriodicTable() {
     } else {
       periodLabel.textContent = periodNum;
     }
-    // == TÍNH NĂNG MỚI: CLICK FILTER ==
+
     periodLabel.onclick = function () {
       const isActive = this.classList.contains("header-active");
-      clearHeaderHighlights(); // Xóa highlight cũ
+      clearHeaderHighlights();
+
+      // Cũng reset button về Toàn bộ khi bấm chu kì (để tránh hiểu nhầm đang lọc nhóm)
+      const allButtons = document.querySelectorAll(".filter-btn");
+      allButtons.forEach(btn => btn.classList.remove("btn-active"));
+      const btnAll = document.querySelector("button[onclick*=\"'all'\"]");
+      if (btnAll) btnAll.classList.add("btn-active");
+
       if (isActive) {
-        filterByPeriod(0); // Hiện lại tất cả
-        return; // Dừng lại, không lọc nữa
+        filterByPeriod(0);
+        return;
       }
-      filterByPeriod(periodNum); // Filter theo chu kì
-      this.classList.add("header-active"); // Highlight số chu kì vừa bấm
+      filterByPeriod(periodNum);
+      this.classList.add("header-active");
     };
 
     tableContainer.appendChild(periodLabel);
 
-    // Vẽ các ô nguyên tố (Giữ nguyên logic cũ)
+    // ... (Giữ nguyên phần vẽ element cell) ...
     row.forEach(z => {
       if (z === 0) {
         tableContainer.appendChild(document.createElement("div"));
       } else if (z === "LAN") {
         const cell = document.createElement("div");
         cell.className = "element-cell placeholder-cell";
-
-        // Chỉ cần set thuộc tính lọc
         cell.setAttribute("data-period", "6");
         cell.setAttribute("data-group", "IIIB");
-
-        // CẬP NHẬT: Thêm class "number-bg-dark" vào div đầu tiên
-        cell.innerHTML = `
-        <div class="placeholder-range number-bg-dark">57-71</div>
-        <div class="placeholder-symbol">La-Lu</div>
-        <div class="placeholder-name">Lanthanide**</div>
-      `;
+        cell.innerHTML = `<div class="placeholder-range number-bg-dark">57-71</div><div class="placeholder-symbol">La-Lu</div><div class="placeholder-name">Lanthanide**</div>`;
         tableContainer.appendChild(cell);
       } else if (z === "ACT") {
         const cell = document.createElement("div");
         cell.className = "element-cell placeholder-cell";
-
-        // Chỉ cần set thuộc tính lọc
         cell.setAttribute("data-period", "7");
         cell.setAttribute("data-group", "IIIB");
-
-        // CẬP NHẬT: Thêm class "number-bg-dark" vào div đầu tiên
-        cell.innerHTML = `
-        <div class="placeholder-range number-bg-dark">89-103</div>
-        <div class="placeholder-symbol">Ac-Lr</div>
-        <div class="placeholder-name">Actinide***</div>
-      `;
+        cell.innerHTML = `<div class="placeholder-range number-bg-dark">89-103</div><div class="placeholder-symbol">Ac-Lr</div><div class="placeholder-name">Actinide***</div>`;
         tableContainer.appendChild(cell);
       } else {
         const element = elements.find(el => el.z === z);
@@ -213,7 +231,7 @@ function createPeriodicTable() {
     });
   });
 
-  // 2. VẼ 2 HÀNG PHỤ (LANTHANIDE/ACTINIDE) - Giữ nguyên
+  // ... (Phần createBottomRow giữ nguyên) ...
   function createBottomRow(labelName, startZ, endZ) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "bottom-row";
@@ -559,4 +577,62 @@ function openTab(event, tabName) {
   // Hiển thị tab được chọn và đặt nút của nó là active
   document.getElementById(tabName).classList.add("active");
   event.currentTarget.classList.add("active");
+}
+
+// --- LỌC THEO PHÂN LOẠI CHÍNH (A/B/ALL) ---
+function filterMainCategory(type, btnElement) {
+  // 1. Xử lý UI cho các nút (đổi màu nút đang bấm)
+  const buttons = document.querySelectorAll(".filter-btn");
+  buttons.forEach(btn => btn.classList.remove("btn-active"));
+  btnElement.classList.add("btn-active");
+
+  // 2. Xóa các highlight cũ của Header và Chu kì
+  clearHeaderHighlights();
+  // Reset cả biến activeColIndex nếu bạn đang dùng code mới nhất tôi gửi
+  if (typeof activeColIndex !== "undefined") activeColIndex = 0;
+
+  // 3. Logic lọc
+  const cells = document.querySelectorAll(".element-cell");
+
+  cells.forEach(cell => {
+    const group = cell.getAttribute("data-group");
+    if (!group) return; // Bỏ qua nếu không có group
+
+    let shouldShow = false;
+
+    if (type === "all") {
+      shouldShow = true;
+    } else if (type === "A") {
+      // Hiện nếu nhóm chứa chữ "A" (VD: IA, VIIA...)
+      if (group.includes("A")) shouldShow = true;
+    } else if (type === "B") {
+      // Hiện nếu nhóm chứa chữ "B" (VD: IIIB, VB...)
+      // Lưu ý: Lanthanide/Actinide cũng thuộc nhóm IIIB nên sẽ hiện ở đây
+      if (group.includes("B")) shouldShow = true;
+    }
+
+    // Áp dụng style
+    if (shouldShow) {
+      cell.style.opacity = "1";
+      if (type !== "all") cell.classList.add("active-filter");
+      else cell.classList.remove("active-filter");
+    } else {
+      cell.style.opacity = "0.1"; // Làm mờ hẳn đi để nổi bật nhóm kia
+      cell.classList.remove("active-filter");
+    }
+  });
+  // 5. [MỚI] ACTIVE CÁC CỘT HEADER TƯƠNG ỨNG
+  if (type !== "all") {
+    const headers = document.querySelectorAll(".group-header");
+    headers.forEach(header => {
+      // Lấy nội dung text của header (Ví dụ: "NhómIA" hoặc "VIIIB")
+      const headerText = header.textContent;
+
+      // Kiểm tra: Nếu lọc A mà header có chữ A -> Active
+      // Nếu lọc B mà header có chữ B -> Active
+      if (headerText.includes(type)) {
+        header.classList.add("header-active");
+      }
+    });
+  }
 }
