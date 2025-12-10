@@ -88,7 +88,7 @@ function createPeriodicTable() {
 
   // --- XỬ LÝ HEADER NHÓM (CỘT DỌC) ---
   const groups = [
-    "CK/N",
+    "",
     "IA",
     "IIA",
     "IIIB",
@@ -111,27 +111,36 @@ function createPeriodicTable() {
 
   groups.forEach((group, i) => {
     if (i > 8 && i <= 10) return; // Bỏ qua các cột trống của nhóm VIIIB
-
+    if (group === "") {
+      // Tạo một div trống để chiếm chỗ trong Grid nhưng KHÔNG có class group-header
+      const emptyCell = document.createElement("div");
+      // Không gán sự kiện click, không gán hover
+      headersContainer.appendChild(emptyCell);
+      return; // Dừng xử lý cho vòng lặp này
+    }
     const header = document.createElement("div");
     header.className = "group-header";
     header.textContent = group;
-
+    if (group === "IA") {
+      header.innerHTML = `<span class="floating-label-group">Nhóm</span>${group}`;
+    } else {
+      header.textContent = group;
+    }
     // Merge cột cho nhóm VIIIB
     if (group === "VIIIB") header.style.gridColumn = "9 / 12";
 
     // == TÍNH NĂNG MỚI: CLICK FILTER ==
     header.onclick = function () {
+      const isActive = this.classList.contains("header-active");
       clearHeaderHighlights(); // Xóa highlight cũ
-
-      if (group === "CK/N") {
-        // Nếu bấm vào góc CK/N -> Reset về hiện tất cả
-        filterByPeriod(0);
-        // Không add class active để trả về trạng thái bình thường
-      } else {
-        // Filter theo nhóm
-        filterByGroup(group);
-        this.classList.add("header-active"); // Highlight header vừa bấm
+      if (isActive) {
+        filterByPeriod(0); // Hiện lại tất cả
+        return; // Dừng lại, không lọc nữa
       }
+
+      // Filter theo nhóm
+      filterByGroup(group);
+      this.classList.add("header-active"); // Highlight header vừa bấm
     };
 
     headersContainer.appendChild(header);
@@ -144,10 +153,19 @@ function createPeriodicTable() {
     const periodLabel = document.createElement("div");
     periodLabel.className = "period-label";
     periodLabel.textContent = periodNum;
-
+    if (periodNum === 1) {
+      periodLabel.innerHTML = `<span class="floating-label-period">Chu kì</span>${periodNum}`;
+    } else {
+      periodLabel.textContent = periodNum;
+    }
     // == TÍNH NĂNG MỚI: CLICK FILTER ==
     periodLabel.onclick = function () {
+      const isActive = this.classList.contains("header-active");
       clearHeaderHighlights(); // Xóa highlight cũ
+      if (isActive) {
+        filterByPeriod(0); // Hiện lại tất cả
+        return; // Dừng lại, không lọc nữa
+      }
       filterByPeriod(periodNum); // Filter theo chu kì
       this.classList.add("header-active"); // Highlight số chu kì vừa bấm
     };

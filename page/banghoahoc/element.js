@@ -42,7 +42,7 @@ const elements = [
   {
     z: 4,
     symbol: "Be",
-    name: "Berylium",
+    name: "Beryllium",
     mass: 9.0122,
     config: "[He] 2s²",
     valence: 2,
@@ -172,7 +172,7 @@ const elements = [
   {
     z: 14,
     symbol: "Si",
-    name: "Silicium",
+    name: "Silicon",
     mass: 28.085,
     config: "[Ne] 3s² 3p²",
     valence: 4,
@@ -705,7 +705,7 @@ const elements = [
   {
     z: 55,
     symbol: "Cs",
-    name: "Cesium",
+    name: "Caesium",
     mass: 132.91,
     config: "[Xe] 6s¹",
     valence: 1,
