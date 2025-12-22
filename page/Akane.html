@@ -1,0 +1,801 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bài 23. ALKANE - Phản ứng Cháy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+        },
+        svg: { fontCache: "global" },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @keyframes glow {
+        0%,
+        100% {
+          box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
+        }
+      }
+
+      .animate-float {
+        animation: float 3s ease-in-out infinite;
+      }
+      .animate-glow {
+        animation: glow 2s ease-in-out infinite;
+      }
+
+      canvas {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 1rem;
+      }
+
+      .formula-box {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .theory-section {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+    <!-- Header -->
+    <nav
+      class="bg-white/90 backdrop-blur-lg border-b border-slate-200 shadow-lg sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">🧪</span>
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Bài 23. ALKANE</h1>
+            <p class="text-sm text-slate-600">
+              Phản ứng cháy của Butane (C₄H₁₀)
+            </p>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <!-- Simulation Area -->
+      <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+            <span class="text-3xl">⚗️</span>
+            Thí nghiệm mô phỏng
+          </h2>
+          <div
+            id="statusBadge"
+            class="px-4 py-2 rounded-full bg-slate-100 text-slate-600 font-semibold text-sm">
+            Chưa bắt đầu
+          </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="relative mb-6">
+          <canvas
+            id="simCanvas"
+            width="1000"
+            height="550"
+            class="w-full shadow-xl"></canvas>
+
+          <!-- Progress Bar -->
+          <div class="absolute bottom-4 left-4 right-4">
+            <div class="bg-slate-800/80 backdrop-blur-md rounded-lg p-3">
+              <div class="flex justify-between mb-2">
+                <span class="text-white text-sm font-semibold"
+                  >Tiến độ thí nghiệm</span
+                >
+                <span id="progressPercent" class="text-white text-sm font-bold"
+                  >0%</span
+                >
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2.5">
+                <div
+                  id="progressBar"
+                  class="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 h-2.5 rounded-full transition-all duration-500"
+                  style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            id="btnStep1"
+            class="btn-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3">
+            <span class="text-2xl">🔥</span>
+            <span>Bước 1: Đốt cháy Butane</span>
+          </button>
+
+          <button
+            id="btnStep2"
+            disabled
+            class="btn-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3">
+            <span class="text-2xl">💧</span>
+            <span>Bước 2: Thử nước vôi trong</span>
+          </button>
+
+          <button
+            id="btnReset"
+            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3">
+            <span class="text-2xl">↺</span>
+            <span>Làm lại</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Theory Section -->
+      <div class="theory-section rounded-2xl shadow-2xl p-8">
+        <h2
+          class="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3">
+          <span class="text-3xl">📚</span>
+          Kiến thức thí nghiệm
+        </h2>
+
+        <div id="theoryContent" class="space-y-6">
+          <!-- Initial State -->
+          <div class="bg-white/70 rounded-xl p-6 border-2 border-blue-200">
+            <p class="text-slate-600 text-center text-lg">
+              👆 Nhấn <strong>"Bước 1"</strong> để bắt đầu quan sát thí nghiệm
+              đốt cháy Butane
+            </p>
+          </div>
+
+          <!-- General Info -->
+          <div class="bg-white rounded-xl p-6 border-l-4 border-purple-500">
+            <h3 class="text-xl font-bold text-purple-800 mb-3">
+              🔬 Giới thiệu
+            </h3>
+            <p class="text-slate-700 leading-relaxed mb-3">
+              <strong>Butane (C₄H₁₀)</strong> là một alkane có 4 nguyên tử
+              carbon, thuộc nhóm hydrocarbon no. Khi đốt cháy hoàn toàn trong
+              không khí (oxi), butane tạo ra carbon dioxide (CO₂) và nước (H₂O),
+              đồng thời tỏa ra nhiều nhiệt.
+            </p>
+            <div
+              class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+              <p class="text-amber-900 text-sm">
+                <strong>💡 Lưu ý:</strong> Phản ứng cháy của alkane là phản ứng
+                tỏa nhiệt mạnh, ngọn lửa cháy hoàn toàn có màu xanh nhạt (không
+                có khói đen).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ==========================================
+      // ALKANE COMBUSTION SIMULATION ENGINE
+      // ==========================================
+
+      const CONFIG = {
+        colors: {
+          flame: {
+            core: "#ffffff",
+            inner: "#3b82f6",
+            outer: "rgba(59, 130, 246, 0.3)",
+          },
+          water: "rgba(200, 220, 255, 0.4)",
+          co2: "rgba(200, 200, 200, 0.3)",
+          limewater: {
+            clear: "rgba(200, 230, 255, 0.3)",
+            cloudy: "rgba(255, 255, 255, 0.9)",
+          },
+          glass: "rgba(255, 255, 255, 0.15)",
+        },
+      };
+
+      const state = {
+        phase: "IDLE",
+        time: 0,
+        lighter: { x: 150, y: 450, targetX: 150, targetY: 450, active: false },
+        flask: {
+          x: 500,
+          y: 250,
+          inverted: true,
+          condensation: 0,
+          liquidLevel: 0,
+          turbidity: 0,
+        },
+        beaker: { x: 800, y: 400, visible: false, tilt: 0 },
+        particles: [],
+        progress: 0,
+      };
+
+      class Particle {
+        constructor(x, y, type) {
+          this.x = x;
+          this.y = y;
+          this.type = type;
+          this.life = 1.0;
+          this.vx = (Math.random() - 0.5) * 8;
+          this.vy =
+            type === "flame"
+              ? -(Math.random() * 30 + 20)
+              : -(Math.random() * 15 + 10);
+          this.size =
+            type === "flame" ? Math.random() * 8 + 6 : Math.random() * 4 + 2;
+        }
+
+        update(dt) {
+          this.x += this.vx * dt;
+          this.y += this.vy * dt;
+          this.life -= dt * (this.type === "flame" ? 2.0 : 1.5);
+          this.size *= 0.97;
+        }
+
+        draw(ctx) {
+          if (this.life <= 0) return;
+
+          ctx.save();
+          ctx.globalAlpha = this.life;
+
+          if (this.type === "flame") {
+            const grad = ctx.createRadialGradient(
+              this.x,
+              this.y,
+              0,
+              this.x,
+              this.y,
+              this.size
+            );
+            grad.addColorStop(0, CONFIG.colors.flame.core);
+            grad.addColorStop(0.3, CONFIG.colors.flame.inner);
+            grad.addColorStop(1, CONFIG.colors.flame.outer);
+            ctx.fillStyle = grad;
+          } else if (this.type === "water") {
+            ctx.fillStyle = "rgba(180, 220, 255, 0.8)";
+          } else {
+            ctx.fillStyle = "rgba(220, 220, 220, 0.6)";
+          }
+
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function drawLighter(ctx) {
+        ctx.save();
+        ctx.translate(state.lighter.x, state.lighter.y);
+
+        // Body
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(-12, -60, 24, 60);
+        ctx.fillStyle = "#dc2626";
+        ctx.fillRect(-10, -58, 20, 56);
+
+        // Top nozzle
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(-5, -70, 10, 12);
+
+        // Button
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillRect(-8, -40, 16, 8);
+
+        ctx.restore();
+      }
+
+      function drawFlask(ctx) {
+        const { x, y, inverted, condensation } = state.flask;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        if (inverted) {
+          ctx.rotate(Math.PI);
+        }
+
+        // Flask outline
+        ctx.beginPath();
+        ctx.moveTo(-40, -100);
+        ctx.lineTo(-40, -20);
+        ctx.quadraticCurveTo(-80, 0, -80, 60);
+        ctx.lineTo(-80, 100);
+        ctx.lineTo(80, 100);
+        ctx.lineTo(80, 60);
+        ctx.quadraticCurveTo(80, 0, 40, -20);
+        ctx.lineTo(40, -100);
+        ctx.closePath();
+
+        // Liquid (if upright)
+        if (!inverted && state.flask.liquidLevel > 0) {
+          ctx.save();
+          ctx.clip();
+          const turbid = state.flask.turbidity;
+          ctx.fillStyle =
+            turbid > 0
+              ? `rgba(${200 + turbid * 55}, ${230 + turbid * 25}, 255, ${
+                  0.3 + turbid * 0.6
+                })`
+              : CONFIG.colors.limewater.clear;
+          ctx.fillRect(
+            -80,
+            100 - state.flask.liquidLevel * 100,
+            160,
+            state.flask.liquidLevel * 100
+          );
+          ctx.restore();
+        }
+
+        // Condensation
+        if (condensation > 0) {
+          ctx.save();
+          ctx.clip();
+          ctx.fillStyle = `rgba(255, 255, 255, ${condensation * 0.5})`;
+          ctx.fillRect(-80, -100, 160, 200);
+          ctx.restore();
+        }
+
+        // Glass
+        ctx.fillStyle = CONFIG.colors.glass;
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Highlight
+        ctx.beginPath();
+        ctx.arc(-50, 20, 30, 0, Math.PI);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.lineWidth = 6;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawBeaker(ctx) {
+        if (!state.beaker.visible) return;
+
+        const { x, y, tilt } = state.beaker;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(tilt);
+
+        // Beaker body
+        ctx.beginPath();
+        ctx.moveTo(-30, -40);
+        ctx.lineTo(-30, 40);
+        ctx.quadraticCurveTo(-30, 50, 0, 50);
+        ctx.quadraticCurveTo(30, 50, 30, 40);
+        ctx.lineTo(30, -40);
+
+        // Liquid
+        ctx.fillStyle = CONFIG.colors.limewater.clear;
+        ctx.fillRect(-28, 0, 56, 48);
+
+        ctx.fillStyle = CONFIG.colors.glass;
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawStand(ctx) {
+        // Vertical pole
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(650, 50, 12, 450);
+
+        // Base
+        ctx.fillRect(600, 490, 112, 15);
+
+        // Clamp
+        ctx.fillStyle = "#64748b";
+        ctx.beginPath();
+        ctx.rect(500, 180, 150, 10);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.rect(640, 180, 12, 50);
+        ctx.fill();
+      }
+
+      function update(dt) {
+        state.time += dt;
+
+        // Move lighter
+        const dx = state.lighter.targetX - state.lighter.x;
+        const dy = state.lighter.targetY - state.lighter.y;
+        state.lighter.x += dx * 5 * dt;
+        state.lighter.y += dy * 5 * dt;
+
+        // Phase logic
+        if (state.phase === "BURNING") {
+          // Spawn flame particles
+          if (Math.random() < 0.6) {
+            state.particles.push(
+              new Particle(
+                state.lighter.x + (Math.random() - 0.5) * 10,
+                state.lighter.y - 70,
+                "flame"
+              )
+            );
+          }
+
+          // Build condensation
+          if (state.flask.condensation < 1.0) {
+            state.flask.condensation += dt * 0.2;
+          }
+
+          if (state.time > 5.0 && state.phase === "BURNING") {
+            state.phase = "RETRACT";
+            state.lighter.targetX = 150;
+            state.lighter.targetY = 450;
+            state.lighter.active = false;
+            updateProgress(50);
+            setTimeout(() => {
+              document.getElementById("btnStep2").disabled = false;
+              updateStatus("Hoàn thành bước 1", "success");
+            }, 1000);
+          }
+        }
+
+        if (state.phase === "POURING") {
+          // Move beaker to flask
+          if (state.beaker.x > 520) {
+            state.beaker.x -= 150 * dt;
+            state.beaker.y -= 100 * dt;
+          } else {
+            // Tilt and pour
+            if (state.beaker.tilt > -0.8) {
+              state.beaker.tilt -= dt * 1.5;
+            } else {
+              // Fill flask
+              if (state.flask.liquidLevel < 0.5) {
+                state.flask.liquidLevel += dt * 0.3;
+                if (Math.random() < 0.4) {
+                  state.particles.push(
+                    new Particle(
+                      state.flask.x + (Math.random() - 0.5) * 30,
+                      state.flask.y + 80,
+                      "water"
+                    )
+                  );
+                }
+              } else {
+                state.phase = "REACTING";
+                state.time = 0;
+              }
+            }
+          }
+        }
+
+        if (state.phase === "REACTING") {
+          // Turbidity increase
+          if (state.flask.turbidity < 1.0) {
+            state.flask.turbidity += dt * 0.4;
+            state.flask.condensation = Math.max(
+              0,
+              state.flask.condensation - dt * 0.5
+            );
+          } else if (state.flask.turbidity >= 1.0 && state.progress < 100) {
+            updateProgress(100);
+            updateStatus("Hoàn thành!", "complete");
+            updateTheoryComplete();
+          }
+        }
+
+        // Update particles
+        state.particles.forEach(p => p.update(dt));
+        state.particles = state.particles.filter(p => p.life > 0);
+      }
+
+      function render() {
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw stand
+        drawStand(ctx);
+
+        // Draw flask
+        drawFlask(ctx);
+
+        // Draw particles
+        state.particles.forEach(p => p.draw(ctx));
+
+        // Draw lighter
+        drawLighter(ctx);
+
+        // Draw beaker
+        drawBeaker(ctx);
+      }
+
+      let lastTime = 0;
+      function animate(time) {
+        const dt = Math.min((time - lastTime) / 1000, 0.05);
+        lastTime = time;
+
+        update(dt);
+        render();
+
+        requestAnimationFrame(animate);
+      }
+
+      function updateStatus(text, type) {
+        const badge = document.getElementById("statusBadge");
+        const colors = {
+          idle: "bg-slate-100 text-slate-600",
+          running: "bg-blue-100 text-blue-700",
+          success: "bg-green-100 text-green-700",
+          complete: "bg-purple-100 text-purple-700",
+        };
+        badge.className = `px-4 py-2 rounded-full font-semibold text-sm ${
+          colors[type] || colors.idle
+        }`;
+        badge.textContent = text;
+      }
+
+      function updateProgress(percent) {
+        state.progress = percent;
+        document.getElementById("progressBar").style.width = `${percent}%`;
+        document.getElementById("progressPercent").textContent = `${percent}%`;
+      }
+
+      function updateTheoryStep1() {
+        document.getElementById("theoryContent").innerHTML = `
+                <div class="bg-white rounded-xl p-6 border-l-4 border-orange-500">
+                    <h3 class="text-xl font-bold text-orange-800 mb-4">🔥 Bước 1: Phản ứng cháy của Butane</h3>
+                    
+                    <div class="formula-box">
+                        <p class="text-center text-lg font-mono">
+                            $$2C_4H_{10} + 13O_2 \\xrightarrow{t^o} 8CO_2 + 10H_2O$$
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-3 text-slate-700">
+                        <p><strong>Hiện tượng quan sát được:</strong></p>
+                        <ul class="list-disc pl-6 space-y-2">
+                            <li>Butane cháy với ngọn lửa màu <strong class="text-blue-600">xanh nhạt</strong> (chứng tỏ cháy hoàn toàn)</li>
+                            <li>Thành bình đựng sản phẩm xuất hiện <strong class="text-blue-600">hơi nước ngưng tụ</strong> (sương mù)</li>
+                            <li>Phản ứng tỏa nhiều nhiệt</li>
+                        </ul>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                            <p class="text-blue-900 text-sm">
+                                <strong>📌 Giải thích:</strong> Butane (C₄H₁₀) phản ứng với oxygen (O₂) trong không khí tạo ra:
+                                <br>• <strong>CO₂</strong> (carbon dioxide) - khí không màu
+                                <br>• <strong>H₂O</strong> (nước) - ở dạng hơi, ngưng tụ thành giọt nước trên thành bình lạnh
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        if (window.MathJax) MathJax.typesetPromise();
+      }
+
+      function updateTheoryStep2() {
+        document.getElementById("theoryContent").innerHTML = `
+                <div class="bg-white rounded-xl p-6 border-l-4 border-green-500">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">🧪 Bước 2: Nhận biết CO₂ bằng nước vôi trong</h3>
+                    
+                    <div class="formula-box">
+                        <p class="text-center text-lg font-mono">
+                            $$CO_2 + Ca(OH)_2 \\rightarrow CaCO_3 \\downarrow + H_2O$$
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-3 text-slate-700">
+                        <p><strong>Hiện tượng quan sát được:</strong></p>
+                        <ul class="list-disc pl-6 space-y-2">
+                            <li>Nước vôi trong ban đầu <strong class="text-green-600">trong suốt</strong></li>
+                            <li>Sau khi dẫn khí CO₂ vào, dung dịch chuyển sang màu <strong class="text-green-600">trắng đục</strong></li>
+                            <li>Xuất hiện <strong class="text-green-600">kết tủa trắng</strong> CaCO₃ lơ lửng trong dung dịch</li>
+                        </ul>
+                        
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                            <p class="text-green-900 text-sm">
+                                <strong>📌 Giải thích:</strong> Đây là phản ứng đặc trưng để nhận biết khí CO₂:
+                                <br>• <strong>Ca(OH)₂</strong> (calcium hydroxide) - nước vôi trong
+                                <br>• <strong>CaCO₃</strong> (calcium carbonate) - kết tủa trắng, không tan trong nước
+                                <br>• Phản ứng này chứng minh sản phẩm cháy của butane có chứa CO₂
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        if (window.MathJax) MathJax.typesetPromise();
+      }
+
+      function updateTheoryComplete() {
+        document.getElementById("theoryContent").innerHTML = `
+                <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 border-2 border-purple-300">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-4">✅ Kết luận thí nghiệm</h3>
+                    
+                    <div class="space-y-4 text-slate-800">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">1️⃣ Phản ứng cháy tổng quát của Alkane:</h4>
+                            <div class="formula-box">
+                                <p class="text-center text-lg font-mono">
+                                    $$C_nH_{2n+2} + \\dfrac{3n+1}{2}O_2 \\xrightarrow{t^o} nCO_2 + (n+1)H_2O$$
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">2️⃣ Đặc điểm phản ứng cháy Alkane:</h4>
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li>Là phản ứng <strong>tỏa nhiệt</strong> mạnh</li>
+                                <li>Cháy hoàn toàn cho ngọn lửa <strong>xanh nhạt</strong>, không có khói</li>
+                                <li>Sản phẩm luôn là <strong>CO₂</strong> và <strong>H₂O</strong></li>
+                                <li>Tỷ lệ mol CO₂ : H₂O = n : (n+1)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">3️⃣ Cách nhận biết sản phẩm:</h4>
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li><strong>H₂O:</strong> Làm xanh giấy quỳ tím ẩm → đỏ (nếu có tạp chất axit) hoặc thấy hơi nước ngưng tụ</li>
+                                <li><strong>CO₂:</strong> Làm đục nước vôi trong: Ca(OH)₂ + CO₂ → CaCO₃↓ + H₂O</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-lg p-4">
+                            <p class="text-amber-900">
+                                <strong>💡 Ứng dụng thực tế:</strong> Phản ứng cháy của alkane được sử dụng rộng rãi làm nhiên liệu:
+                                <br>• Khí Butane trong bật lửa, bình gas mini
+                                <br>• Khí Methane (CH₄) trong gas tự nhiên cho nhà bếp
+                                <br>• Propane (C₃H₈) trong bình gas dân dụng
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        if (window.MathJax) MathJax.typesetPromise();
+      }
+
+      // Event Handlers
+      document.getElementById("btnStep1").onclick = () => {
+        if (state.phase !== "IDLE") return;
+
+        state.phase = "MOVING_LIGHTER";
+        state.lighter.targetX = 420;
+        state.lighter.targetY = 340;
+        state.lighter.active = true;
+
+        document.getElementById("btnStep1").disabled = true;
+        updateStatus("Đang đốt cháy...", "running");
+        updateProgress(20);
+        updateTheoryStep1();
+
+        setTimeout(() => {
+          state.phase = "BURNING";
+          state.time = 0;
+        }, 800);
+      };
+
+      document.getElementById("btnStep2").onclick = () => {
+        if (state.phase !== "RETRACT" && state.phase !== "IDLE") return;
+
+        state.flask.inverted = false;
+        state.beaker.visible = true;
+        state.phase = "POURING";
+
+        document.getElementById("btnStep2").disabled = true;
+        updateStatus("Đang thử nước vôi...", "running");
+        updateProgress(70);
+        updateTheoryStep2();
+      };
+
+      document.getElementById("btnReset").onclick = () => {
+        // Reset state
+        state.phase = "IDLE";
+        state.time = 0;
+        state.lighter = {
+          x: 150,
+          y: 450,
+          targetX: 150,
+          targetY: 450,
+          active: false,
+        };
+        state.flask = {
+          x: 500,
+          y: 250,
+          inverted: true,
+          condensation: 0,
+          liquidLevel: 0,
+          turbidity: 0,
+        };
+        state.beaker = { x: 800, y: 400, visible: false, tilt: 0 };
+        state.particles = [];
+        state.progress = 0;
+
+        // Reset UI
+        document.getElementById("btnStep1").disabled = false;
+        document.getElementById("btnStep2").disabled = true;
+        updateStatus("Chưa bắt đầu", "idle");
+        updateProgress(0);
+
+        document.getElementById("theoryContent").innerHTML = `
+                <div class="bg-white/70 rounded-xl p-6 border-2 border-blue-200">
+                    <p class="text-slate-600 text-center text-lg">
+                        👆 Nhấn <strong>"Bước 1"</strong> để bắt đầu quan sát thí nghiệm đốt cháy Butane
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border-l-4 border-purple-500">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3">🔬 Giới thiệu</h3>
+                    <p class="text-slate-700 leading-relaxed mb-3">
+                        <strong>Butane (C₄H₁₀)</strong> là một alkane có 4 nguyên tử carbon, thuộc nhóm hydrocarbon no. 
+                        Khi đốt cháy hoàn toàn trong không khí (oxi), butane tạo ra carbon dioxide (CO₂) và nước (H₂O), 
+                        đồng thời tỏa ra nhiều nhiệt.
+                    </p>
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                        <p class="text-amber-900 text-sm">
+                            <strong>💡 Lưu ý:</strong> Phản ứng cháy của alkane là phản ứng tỏa nhiệt mạnh, 
+                            ngọn lửa cháy hoàn toàn có màu xanh nhạt (không có khói đen).
+                        </p>
+                    </div>
+                </div>
+            `;
+      };
+
+      // Initialize
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>
