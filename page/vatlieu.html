@@ -1,0 +1,836 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thí Nghiệm Hóa Học 9: Tính Dẻo (Top-Down Hammer)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+      rel="stylesheet" />
+
+    <style>
+      body {
+        font-family: "Be Vietnam Pro", sans-serif;
+        background-color: #f1f5f9;
+      }
+
+      .canvas-container {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        aspect-ratio: 5/3;
+        margin: 0 auto;
+        background-color: #f8fafc;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+      .btn-mode {
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+      }
+      .btn-mode.active {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        border-bottom-color: #1d4ed8;
+      }
+
+      #hammerUI {
+        pointer-events: none;
+      }
+      #hammerUI button {
+        pointer-events: auto;
+      }
+
+      .hammer-btn:active {
+        transform: scale(0.95);
+      }
+      .hammer-btn:disabled {
+        opacity: 0.5;
+        filter: grayscale(100%);
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col text-slate-800">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      <div
+        class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🧪</span>
+          <div>
+            <h1 class="font-bold text-lg">Tính Chất Kim Loại</h1>
+            <span class="text-xs text-slate-500">Bài 18 - Hóa Học 9</span>
+          </div>
+        </div>
+        <div
+          class="px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-bold border border-blue-100">
+          <span id="progressDisplay">0/8</span> Vật liệu hoàn thành
+        </div>
+      </div>
+    </nav>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div class="flex justify-center">
+        <div
+          class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+          <button
+            onclick="setMode('electricity')"
+            id="btnElec"
+            class="btn-mode active px-6 py-2.5 rounded-lg font-semibold text-sm">
+            ⚡ Dẫn Điện
+          </button>
+          <button
+            onclick="setMode('heat')"
+            id="btnHeat"
+            class="btn-mode px-6 py-2.5 rounded-lg font-semibold text-sm">
+            🌡️ Dẫn Nhiệt
+          </button>
+          <button
+            onclick="setMode('malleability')"
+            id="btnMall"
+            class="btn-mode px-6 py-2.5 rounded-lg font-semibold text-sm">
+            🔨 Tính Dẻo
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-container shadow-lg">
+        <canvas id="simCanvas" width="1000" height="600"></canvas>
+
+        <div class="absolute top-4 left-4 pointer-events-none">
+          <div
+            class="bg-white/90 backdrop-blur px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+            <p id="instructionText" class="text-sm font-medium text-slate-700">
+              👆 Kéo vật liệu vào mạch điện.
+            </p>
+          </div>
+        </div>
+
+        <div
+          id="hammerUI"
+          class="absolute top-1/2 right-12 transform -translate-y-1/2 hidden flex-col items-center gap-3 z-10">
+          <button
+            id="btnHammerAction"
+            class="hammer-btn bg-slate-800 hover:bg-slate-900 text-white w-20 h-20 rounded-full shadow-2xl flex items-center justify-center text-3xl border-4 border-slate-100 transition-all">
+            🔨
+          </button>
+        </div>
+
+        <div
+          class="absolute bottom-0 w-full bg-white/95 border-t border-slate-200 py-2 text-center pointer-events-none">
+          <span
+            class="text-xs font-bold text-slate-400 uppercase tracking-widest"
+            >Khay Vật Liệu</span
+          >
+        </div>
+      </div>
+
+      <div
+        id="statusLog"
+        class="w-full bg-white border-l-4 border-blue-500 shadow-sm rounded-r-lg p-4 text-sm font-medium text-slate-700 transition-all">
+        Chưa có dữ liệu. Hãy kéo vật liệu lên để bắt đầu.
+      </div>
+
+      <div class="pt-8 border-t border-slate-200">
+        <h2
+          class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+          📚 Góc Chuyên Gia
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="font-bold text-lg text-slate-800 mb-2">⚡ Dẫn Điện</h3>
+            <p class="text-sm text-slate-600">Ag > Cu > Au > Al > Fe.</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="font-bold text-lg text-slate-800 mb-2">🌡️ Dẫn Nhiệt</h3>
+            <p class="text-sm text-slate-600">
+              Kim loại dẫn điện tốt thường dẫn nhiệt tốt.
+            </p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="font-bold text-lg text-slate-800 mb-2">🔨 Tính Dẻo</h3>
+            <p class="text-sm text-slate-600">
+              Au dẻo nhất. Fe cứng nhất trong nhóm này.
+            </p>
+          </div>
+        </div>
+        <div class="mt-8 text-center pb-8">
+          <button
+            onclick="document.getElementById('resultModal').classList.remove('hidden')"
+            class="px-8 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95">
+            📑 Bảng Tổng Kết
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <div id="resultModal" class="fixed inset-0 z-[100] hidden">
+      <div
+        class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        onclick="document.getElementById('resultModal').classList.add('hidden')"></div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl px-4">
+        <div
+          class="bg-white rounded-2xl shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+          <div
+            class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
+            <h3 class="text-xl font-bold text-slate-800">Kết Quả Thí Nghiệm</h3>
+            <button
+              onclick="document.getElementById('resultModal').classList.add('hidden')"
+              class="text-2xl text-slate-400 hover:text-slate-600">
+              &times;
+            </button>
+          </div>
+          <div class="p-6">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-blue-50 text-blue-900 font-bold">
+                <tr>
+                  <th class="px-4 py-3 rounded-l-lg">Vật liệu</th>
+                  <th class="px-4 py-3 text-center">Dẫn điện</th>
+                  <th class="px-4 py-3 text-center">Dẫn nhiệt</th>
+                  <th class="px-4 py-3 text-center rounded-r-lg">
+                    Tính chất cơ học
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="resultBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <div class="bg-slate-50 px-6 py-4 text-right">
+            <button
+              onclick="document.getElementById('resultModal').classList.add('hidden')"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const CONFIG = {
+        width: 1000,
+        height: 600,
+        materials: [
+          {
+            id: "au",
+            name: "Vàng (Au)",
+            color: "#FCD34D",
+            cond: 0.8,
+            heat: 0.8,
+            mall: 1,
+            maxHits: 4,
+            info: "đã được dát cực mỏng. Vàng là kim loại dẻo nhất.",
+          },
+          {
+            id: "ag",
+            name: "Bạc (Ag)",
+            color: "#E2E8F0",
+            cond: 1.0,
+            heat: 1.0,
+            mall: 1,
+            maxHits: 6,
+            info: "đã dẹt ra. Bạc có tính dẻo rất cao, chỉ sau vàng.",
+          },
+          {
+            id: "cu",
+            name: "Đồng (Cu)",
+            color: "#F97316",
+            cond: 0.9,
+            heat: 0.9,
+            mall: 1,
+            maxHits: 8,
+            info: "đã biến dạng tốt. Đồng dẻo, dễ kéo sợi làm dây dẫn.",
+          },
+          {
+            id: "al",
+            name: "Nhôm (Al)",
+            color: "#CBD5E1",
+            cond: 0.6,
+            heat: 0.6,
+            mall: 1,
+            maxHits: 8,
+            info: "đã cán mỏng thành lá. Nhôm rất dẻo và nhẹ.",
+          },
+          {
+            id: "fe",
+            name: "Sắt (Fe)",
+            color: "#64748B",
+            cond: 0.4,
+            heat: 0.4,
+            mall: 1,
+            maxHits: 12,
+            info: "mới chỉ hơi dẹt. Sắt cứng, muốn rèn phải nung nóng.",
+          },
+          {
+            id: "wood",
+            name: "Gỗ",
+            color: "#92400E",
+            cond: 0,
+            heat: 0.05,
+            mall: 0,
+            maxHits: 1,
+            info: "vẫn nguyên vẹn. Gỗ không dẻo.",
+          },
+          {
+            id: "plas",
+            name: "Nhựa",
+            color: "#3B82F6",
+            cond: 0,
+            heat: 0.02,
+            mall: 0,
+            maxHits: 1,
+            info: "vẫn y nguyên. Nhựa chỉ có tính đàn hồi.",
+          },
+          {
+            id: "porc",
+            name: "Sứ",
+            color: "#F1F5F9",
+            cond: 0,
+            heat: 0.05,
+            mall: -1,
+            maxHits: 1,
+            info: "vỡ vụn. Sứ giòn, không chịu được va đập.",
+          },
+        ],
+      };
+
+      // Tọa độ Đe (Anvil)
+      const ANVIL_X = 500;
+      const ANVIL_Y = 400;
+
+      // Tọa độ Trục xoay của búa (Pivot Point) - Đặt cao bên phải
+      const PIVOT_X = ANVIL_X + 100;
+      const PIVOT_Y = ANVIL_Y - 150;
+
+      // Tính toán góc va chạm để mặt búa phẳng với đe
+      // Vector từ Pivot đến mặt đe: dx = -100, dy = 150
+      // Góc cần xoay: Math.atan2(150, -100)
+      const HIT_ANGLE =
+        Math.atan2(ANVIL_Y - PIVOT_Y, ANVIL_X - PIVOT_X) - Math.PI / 2;
+      // Trừ đi PI/2 vì ta vẽ búa thẳng đứng hướng xuống ở góc 0
+
+      const REST_ANGLE = HIT_ANGLE - 0.5; // Góc nghỉ (hơi nhấc lên)
+      const COCK_ANGLE = HIT_ANGLE - 2.0; // Góc lấy đà (giơ cao lên trời)
+
+      const state = {
+        mode: "electricity",
+        materials: [],
+        activeMat: null,
+        dragging: null,
+        dragOffset: { x: 0, y: 0 },
+        bulbLevel: 0,
+        temp: 25,
+        hammer: { active: false, angle: REST_ANGLE },
+        tested: new Set(),
+      };
+
+      class Material {
+        constructor(def, x, y) {
+          this.def = def;
+          this.x = x;
+          this.y = y;
+          this.w = 80;
+          this.h = 24;
+          this.originX = x;
+          this.originY = y;
+          this.hits = 0;
+          this.currentTemp = 25;
+          this.isBroken = false;
+          this.shards = [];
+          this.bounceY = 0;
+        }
+
+        draw(ctx) {
+          if (this.isBroken) {
+            this.shards.forEach(s => {
+              ctx.save();
+              ctx.translate(this.x + s.dx + 40, this.y + s.dy);
+              ctx.rotate(s.rot);
+              ctx.fillStyle = this.def.color;
+              ctx.beginPath();
+              ctx.moveTo(-6, -6);
+              ctx.lineTo(6, -2);
+              ctx.lineTo(0, 8);
+              ctx.fill();
+              ctx.restore();
+              s.dy += 2;
+              s.dx += s.vx;
+              s.rot += 0.1;
+            });
+            return;
+          }
+
+          let color = this.def.color;
+          if (state.mode === "heat" && this.currentTemp > 30) {
+            const f = (this.currentTemp - 25) / 75;
+            color = f > 0.4 ? "#ef4444" : color;
+          }
+
+          const drawY = this.y + this.bounceY;
+          ctx.fillStyle = "rgba(0,0,0,0.1)";
+          ctx.fillRect(this.x + 3, drawY + 3, this.w, this.h);
+          ctx.fillStyle = color;
+          ctx.strokeStyle = "#334155";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(this.x, drawY, this.w, this.h, 4);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "rgba(255,255,255,0.3)";
+          ctx.beginPath();
+          ctx.roundRect(this.x, drawY, this.w, this.h / 2, [4, 4, 0, 0]);
+          ctx.fill();
+
+          ctx.fillStyle = ["porc", "ag", "al", "white"].includes(this.def.id)
+            ? "#334155"
+            : "#fff";
+          ctx.font = "bold 12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(this.def.name, this.x + this.w / 2, drawY + 17);
+
+          if (
+            state.mode === "malleability" &&
+            state.activeMat === this &&
+            this.def.mall > 0
+          ) {
+            const pct = this.hits / this.def.maxHits;
+            ctx.fillStyle = "#cbd5e1";
+            ctx.fillRect(this.x, this.y - 6, this.w, 3);
+            ctx.fillStyle = pct >= 1 ? "#22c55e" : "#3b82f6";
+            ctx.fillRect(this.x, this.y - 6, this.w * pct, 3);
+          }
+        }
+
+        reset() {
+          this.x = this.originX;
+          this.y = this.originY;
+          this.w = 80;
+          this.hits = 0;
+          this.currentTemp = 25;
+          this.isBroken = false;
+          this.shards = [];
+          this.bounceY = 0;
+        }
+      }
+
+      const canvas = document.getElementById("simCanvas");
+      const ctx = canvas.getContext("2d");
+
+      function init() {
+        let startX = 60;
+        state.materials = CONFIG.materials.map(d => {
+          const m = new Material(d, startX, 530);
+          startX += 110;
+          return m;
+        });
+      }
+
+      function drawElec() {
+        const cx = 500;
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(130, 150);
+        ctx.lineTo(130, 80);
+        ctx.lineTo(cx - 50, 80);
+        ctx.moveTo(cx + 50, 80);
+        ctx.lineTo(850, 80);
+        ctx.lineTo(850, 250);
+        ctx.lineTo(cx + 55, 250);
+        ctx.moveTo(cx - 55, 250);
+        ctx.lineTo(130, 250);
+        ctx.lineTo(130, 210);
+        ctx.stroke();
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(100, 150, 60, 60);
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "24px Arial";
+        ctx.fillText("⚡", 125, 190);
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(cx - 65, 245, 10, 10);
+        ctx.fillRect(cx + 55, 245, 10, 10);
+        const glow = state.bulbLevel * 50;
+        if (glow > 1) {
+          const g = ctx.createRadialGradient(cx, 80, 10, cx, 80, glow + 20);
+          g.addColorStop(0, "rgba(250, 204, 21, 0.9)");
+          g.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(cx, 80, glow + 20, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = state.bulbLevel > 0.1 ? "#fef08a" : "#cbd5e1";
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, 80, 25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        if (!state.activeMat) drawZone(cx, 250, "Kéo vào đây");
+      }
+
+      function drawHeat() {
+        const cx = 500;
+        ctx.fillStyle = "rgba(186, 230, 253, 0.5)";
+        ctx.fillRect(cx + 50, 200, 120, 150);
+        ctx.strokeStyle = "#0ea5e9";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(cx + 50, 200, 120, 150);
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(cx + 50, 360, 120, 20);
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.fillText("BẾP 100°C", cx + 90, 375);
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(cx - 150, 150, 10, 250);
+        ctx.fillRect(cx - 150, 290, 150, 8);
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.fillRect(cx - 250, 100, 80, 60);
+        ctx.strokeRect(cx - 250, 100, 80, 60);
+        ctx.fillStyle = state.temp > 50 ? "#ef4444" : "#2563eb";
+        ctx.font = "bold 24px Arial";
+        ctx.fillText(Math.round(state.temp) + "°C", cx - 230, 140);
+        if (!state.activeMat) drawZone(cx - 50, 294, "Đặt lên đây");
+      }
+
+      // === FIX HÀM VẼ BÚA: TOP-DOWN STRIKE ===
+      function drawMall() {
+        const cx = ANVIL_X;
+        const cy = ANVIL_Y;
+
+        // Vẽ Đe (Anvil)
+        ctx.fillStyle = "#334155";
+        ctx.beginPath();
+        ctx.moveTo(cx - 80, cy);
+        ctx.lineTo(cx + 80, cy);
+        ctx.lineTo(cx + 60, cy + 60);
+        ctx.lineTo(cx - 60, cy + 60);
+        ctx.fill();
+
+        // Vẽ Búa
+        if (
+          state.hammer.active ||
+          (state.activeMat && state.mode === "malleability")
+        ) {
+          ctx.save();
+          // Di chuyển canvas đến điểm Pivot (Trên cao bên phải)
+          ctx.translate(PIVOT_X, PIVOT_Y);
+
+          // Xoay canvas theo góc búa
+          ctx.rotate(state.hammer.angle);
+
+          // Vẽ Cán búa (vẽ từ pivot hướng xuống)
+          // Độ dài cán (khoảng cách từ pivot đến tâm đe)
+          // Tính toán độ dài cán búa cần thiết để chạm mặt đe
+          const hammerLen =
+            Math.sqrt(
+              Math.pow(ANVIL_X - PIVOT_X, 2) + Math.pow(ANVIL_Y - PIVOT_Y, 2)
+            ) - 20;
+
+          ctx.fillStyle = "#854d0e"; // Cán gỗ
+          ctx.fillRect(-6, 0, 12, hammerLen); // Vẽ cán hướng dọc theo trục Y (đã xoay)
+
+          // Vẽ Đầu búa (Cục sắt) ở cuối cán
+          ctx.fillStyle = "#1e293b";
+          // Đầu búa nằm vuông góc với cán
+          ctx.fillRect(-30, hammerLen, 60, 40);
+
+          ctx.restore();
+        }
+
+        if (!state.activeMat) drawZone(cx, cy - 12, "Đặt lên đe");
+      }
+
+      function drawZone(x, y, txt) {
+        ctx.strokeStyle = "#94a3b8";
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(x - 45, y - 15, 90, 30);
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Arial";
+        ctx.fillText(txt, x - 30, y + 35);
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, 1000, 600);
+        if (state.mode === "electricity") drawElec();
+        else if (state.mode === "heat") drawHeat();
+        else drawMall();
+
+        if (state.activeMat) {
+          const m = state.activeMat;
+          if (state.mode === "electricity")
+            state.bulbLevel += (m.def.cond - state.bulbLevel) * 0.1;
+          if (state.mode === "heat") {
+            const t = m.def.heat > 0.1 ? 100 : 30;
+            state.temp += (t - state.temp) * 0.02;
+            m.currentTemp = state.temp;
+          }
+          if (state.mode === "malleability" && m.def.mall > 0) {
+            const targetW = 80 + (m.hits / m.def.maxHits) * 70;
+            m.w += (targetW - m.w) * 0.2;
+            m.x = 500 - m.w / 2;
+          }
+        } else {
+          state.bulbLevel *= 0.9;
+          state.temp += (25 - state.temp) * 0.05;
+        }
+
+        state.materials.forEach(m => m.draw(ctx));
+        requestAnimationFrame(loop);
+      }
+
+      function getPos(e) {
+        const r = canvas.getBoundingClientRect();
+        return {
+          x: (e.clientX - r.left) * (1000 / r.width),
+          y: (e.clientY - r.top) * (600 / r.height),
+        };
+      }
+
+      canvas.addEventListener("mousedown", e => {
+        const p = getPos(e);
+        for (let i = state.materials.length - 1; i >= 0; i--) {
+          const m = state.materials[i];
+          if (
+            p.x >= m.x &&
+            p.x <= m.x + m.w &&
+            p.y >= m.y &&
+            p.y <= m.y + m.h
+          ) {
+            if (m.isBroken) return;
+            state.dragging = m;
+            state.dragOffset = { x: p.x - m.x, y: p.y - m.y };
+            if (state.activeMat === m) {
+              state.activeMat = null;
+              document.getElementById("hammerUI").classList.add("hidden");
+              m.currentTemp = 25;
+            }
+            break;
+          }
+        }
+      });
+
+      canvas.addEventListener("mousemove", e => {
+        if (state.dragging) {
+          const p = getPos(e);
+          state.dragging.x = p.x - state.dragOffset.x;
+          state.dragging.y = p.y - state.dragOffset.y;
+        }
+      });
+
+      window.addEventListener("mouseup", e => {
+        if (!state.dragging) return;
+        const m = state.dragging;
+        let ok = false;
+
+        if (
+          state.mode === "electricity" &&
+          Math.abs(m.y - 250) < 60 &&
+          Math.abs(m.x + m.w / 2 - 500) < 100
+        ) {
+          m.x = 500 - m.w / 2;
+          m.y = 250 - m.h / 2;
+          state.activeMat = m;
+          ok = true;
+          log(
+            m.def.cond > 0
+              ? `${m.def.name}: Mạch kín -> Đèn sáng!`
+              : `${m.def.name}: Cách điện -> Đèn tắt.`
+          );
+        } else if (
+          state.mode === "heat" &&
+          Math.abs(m.y - 290) < 60 &&
+          Math.abs(m.x - 400) < 100
+        ) {
+          m.x = 450;
+          m.y = 290 - m.h;
+          state.activeMat = m;
+          ok = true;
+          log(`${m.def.name}: Đang hấp thụ nhiệt...`);
+        } else if (
+          state.mode === "malleability" &&
+          Math.abs(m.y - 400) < 60 &&
+          Math.abs(m.x + m.w / 2 - 500) < 100
+        ) {
+          m.x = 500 - m.w / 2;
+          m.y = 400 - m.h;
+          state.activeMat = m;
+          ok = true;
+          document.getElementById("hammerUI").classList.remove("hidden");
+          document.getElementById("btnHammerAction").disabled = false;
+          log(`${m.def.name}: Đã đặt lên đe. Hãy nhấn búa để thử.`);
+        }
+
+        if (!ok) {
+          m.reset();
+          state.activeMat = null;
+          document.getElementById("hammerUI").classList.add("hidden");
+        } else {
+          state.tested.add(m.def.id);
+          updateResult();
+        }
+        state.dragging = null;
+      });
+
+      // === LOGIC NÚT BÚA: GIƠ CAO LÊN TRỜI RỒI BỔ XUỐNG ===
+      document.getElementById("btnHammerAction").onclick = () => {
+        if (!state.activeMat || state.hammer.active) return;
+        state.hammer.active = true;
+
+        let f = 0;
+        const iv = setInterval(() => {
+          f++;
+          // Giai đoạn 1: Giơ cao lên trời (Cock back)
+          if (f < 8) {
+            const p = f / 8;
+            // Từ REST_ANGLE lùi về COCK_ANGLE (lên cao)
+            state.hammer.angle = REST_ANGLE + (COCK_ANGLE - REST_ANGLE) * p;
+          }
+          // Giai đoạn 2: Bổ mạnh xuống (Smash)
+          else if (f < 12) {
+            const p = (f - 8) / 4;
+            // Từ COCK_ANGLE (cao) bổ xuống HIT_ANGLE (thấp)
+            state.hammer.angle = COCK_ANGLE + (HIT_ANGLE - COCK_ANGLE) * p;
+          }
+          // Giai đoạn 3: Giữ tại chỗ va chạm & Dừng
+          else {
+            clearInterval(iv);
+            state.hammer.active = false;
+            // Đảm bảo góc cuối cùng là góc va chạm
+            state.hammer.angle = HIT_ANGLE;
+
+            handleHit(state.activeMat);
+
+            // Từ từ đưa búa về vị trí nghỉ (nhấc nhẹ lên)
+            setTimeout(() => {
+              const returnIv = setInterval(() => {
+                if (state.hammer.active) {
+                  clearInterval(returnIv);
+                  return;
+                }
+                state.hammer.angle += (REST_ANGLE - state.hammer.angle) * 0.1;
+                if (Math.abs(state.hammer.angle - REST_ANGLE) < 0.01) {
+                  state.hammer.angle = REST_ANGLE;
+                  clearInterval(returnIv);
+                }
+              }, 20);
+            }, 200);
+          }
+        }, 15);
+      };
+
+      function handleHit(m) {
+        if (m.def.mall < 0) {
+          m.isBroken = true;
+          m.shards = Array.from({ length: 8 }, () => ({
+            dx: (Math.random() - 0.5) * 50,
+            dy: (Math.random() - 0.5) * 30,
+            vx: (Math.random() - 0.5) * 5,
+            rot: Math.random() * 6,
+          }));
+          log(
+            `Sau cú đập mạnh, ${m.def.name} đã VỠ VỤN! (Giòn) - Đang dọn dẹp...`
+          );
+          document.getElementById("hammerUI").classList.add("hidden");
+          setTimeout(() => {
+            m.reset();
+            state.activeMat = null;
+            log(`${m.def.name}: Đã thu hồi mảnh vỡ.`);
+          }, 1500);
+          return;
+        }
+
+        if (m.def.mall === 0) {
+          m.bounceY = 5;
+          setTimeout(() => (m.bounceY = 0), 100);
+          log(`Sau cú đập, ${m.def.name} nảy lên nhưng ${m.def.info}`);
+          return;
+        }
+
+        m.hits++;
+        const isDone = m.hits >= m.def.maxHits;
+        if (isDone) {
+          log(`Sau ${m.hits} búa thì ${m.def.name} ${m.def.info}`);
+          document.getElementById("btnHammerAction").disabled = true;
+        } else {
+          let description = "đang dẹt dần ra...";
+          if (m.def.id === "fe")
+            description = "vẫn còn rất cứng, biến dạng không đáng kể.";
+          if (m.def.id === "au") description = "đã mỏng đi thấy rõ.";
+          log(`Sau ${m.hits} búa thì ${m.def.name} ${description}`);
+        }
+      }
+
+      function log(msg) {
+        document.getElementById("statusLog").innerText = msg;
+      }
+      function setMode(m) {
+        state.mode = m;
+        state.activeMat = null;
+        state.materials.forEach(x => x.reset());
+        document.getElementById("hammerUI").classList.add("hidden");
+        ["btnElec", "btnHeat", "btnMall"].forEach(x =>
+          document.getElementById(x).classList.remove("active")
+        );
+        const map = {
+          electricity: "btnElec",
+          heat: "btnHeat",
+          malleability: "btnMall",
+        };
+        document.getElementById(map[m]).classList.add("active");
+        const ins = {
+          electricity: "Kéo vật liệu vào mạch điện.",
+          heat: "Đặt vật liệu lên giá đỡ đun nóng.",
+          malleability: "Đặt vật liệu lên đe sắt.",
+        };
+        document.getElementById("instructionText").innerText = ins[m];
+        log("Đã chuyển chế độ.");
+      }
+
+      function updateResult() {
+        document.getElementById(
+          "progressDisplay"
+        ).innerText = `${state.tested.size}/8`;
+        const tb = document.getElementById("resultBody");
+        tb.innerHTML = "";
+        CONFIG.materials.forEach(m => {
+          let mallTxt = "";
+          if (m.mall > 0)
+            mallTxt = '<span class="text-green-600 font-bold">Dẻo</span>';
+          else if (m.mall === 0)
+            mallTxt = '<span class="text-blue-600">Đàn hồi</span>';
+          else mallTxt = '<span class="text-red-600 font-bold">Giòn/Vỡ</span>';
+          const row = `<tr class="hover:bg-slate-50 border-b last:border-0">
+            <td class="px-4 py-3 font-medium">${m.name}</td>
+            <td class="px-4 py-3 text-center">${m.cond > 0.5 ? "✅" : "❌"}</td>
+            <td class="px-4 py-3 text-center">${m.heat > 0.5 ? "✅" : "❌"}</td>
+            <td class="px-4 py-3 text-center">${mallTxt}</td>
+          </tr>`;
+          tb.innerHTML += row;
+        });
+      }
+
+      init();
+      setMode("electricity");
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
