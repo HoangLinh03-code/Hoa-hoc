@@ -5,7 +5,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bài 23. ALKANE - Phản ứng Cháy</title>
+    <title>Mô Phỏng: Phản Ứng Cháy Alkane (Fixed UI)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       window.MathJax = {
@@ -24,197 +24,127 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
       body {
-        font-family: "Inter", system-ui, sans-serif;
+        font-family: "Inter", sans-serif;
       }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-8px);
-        }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
       }
-
-      @keyframes glow {
-        0%,
-        100% {
-          box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-        }
-        50% {
-          box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
-        }
+      .scroll-custom::-webkit-scrollbar {
+        width: 6px;
       }
-
-      .animate-float {
-        animation: float 3s ease-in-out infinite;
+      .scroll-custom::-webkit-scrollbar-track {
+        background: #f1f5f9;
       }
-      .animate-glow {
-        animation: glow 2s ease-in-out infinite;
+      .scroll-custom::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
       }
-
       canvas {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border-radius: 1rem;
-      }
-
-      .formula-box {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border-left: 4px solid #f59e0b;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 1rem 0;
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-        transition: all 0.3s ease;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
-      }
-
-      .btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .theory-section {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        background: radial-gradient(
+          circle at 50% 40%,
+          #959ba0 0%,
+          #cbd5e1 100%
+        );
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.05);
       }
     </style>
   </head>
-  <body
-    class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
-    <!-- Header -->
-    <nav
-      class="bg-white/90 backdrop-blur-lg border-b border-slate-200 shadow-lg sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-6 py-4">
-        <div class="flex items-center gap-4">
-          <span class="text-4xl">🧪</span>
-          <div>
-            <h1 class="text-2xl font-bold text-slate-900">Bài 23. ALKANE</h1>
-            <p class="text-sm text-slate-600">
-              Phản ứng cháy của Butane (C₄H₁₀)
-            </p>
-          </div>
+  <body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
+    <header
+      class="h-14 bg-white border-b border-slate-200 flex items-center px-6 justify-between flex-shrink-0 z-20 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+          C4
+        </div>
+        <h1 class="text-lg font-bold text-slate-800">
+          Phản ứng cháy của Butane ($C_4H_{10}$)
+        </h1>
+      </div>
+      <span
+        id="stepIndicator"
+        class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-bold uppercase"
+        >Bước 1: Chuẩn bị</span
+      >
+    </header>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <div
+        class="h-[60%] relative w-full bg-slate-200 border-b border-slate-300">
+        <canvas id="simCanvas" class="w-full h-full block"></canvas>
+        <div
+          class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-30">
+          <button
+            id="btnBurn"
+            class="glass-panel px-6 py-2 rounded-full shadow-lg hover:bg-orange-50 text-orange-600 font-bold transition-all active:scale-95 flex items-center gap-2 border-orange-200">
+            🔥 1. Đốt Butane
+          </button>
+          <button
+            id="btnTest"
+            disabled
+            class="glass-panel px-6 py-2 rounded-full shadow-lg hover:bg-blue-50 text-blue-600 font-bold transition-all active:scale-95 disabled:opacity-50 disabled:grayscale flex items-center gap-2 border-blue-200">
+            🧪 2. Thử Tính Chất
+          </button>
+          <button
+            id="btnReset"
+            class="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-lg text-slate-600 hover:rotate-180 transition-transform">
+            ↺
+          </button>
         </div>
       </div>
-    </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-      <!-- Simulation Area -->
-      <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
-            <span class="text-3xl">⚗️</span>
-            Thí nghiệm mô phỏng
-          </h2>
+      <div class="h-[40%] flex bg-white z-10">
+        <div class="w-1/3 border-r border-slate-200 flex flex-col bg-slate-50">
           <div
-            id="statusBadge"
-            class="px-4 py-2 rounded-full bg-slate-100 text-slate-600 font-semibold text-sm">
-            Chưa bắt đầu
+            class="p-3 bg-white border-b border-slate-200 font-bold text-slate-700 flex items-center gap-2 text-sm shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span
+            >Hiện tượng quan sát
           </div>
-        </div>
-
-        <!-- Canvas -->
-        <div class="relative mb-6">
-          <canvas
-            id="simCanvas"
-            width="1000"
-            height="550"
-            class="w-full shadow-xl"></canvas>
-
-          <!-- Progress Bar -->
-          <div class="absolute bottom-4 left-4 right-4">
-            <div class="bg-slate-800/80 backdrop-blur-md rounded-lg p-3">
-              <div class="flex justify-between mb-2">
-                <span class="text-white text-sm font-semibold"
-                  >Tiến độ thí nghiệm</span
-                >
-                <span id="progressPercent" class="text-white text-sm font-bold"
-                  >0%</span
-                >
-              </div>
-              <div class="w-full bg-slate-700 rounded-full h-2.5">
-                <div
-                  id="progressBar"
-                  class="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 h-2.5 rounded-full transition-all duration-500"
-                  style="width: 0%"></div>
-              </div>
+          <div
+            id="observationLog"
+            class="p-4 space-y-3 overflow-y-auto scroll-custom flex-1">
+            <div
+              class="text-xs text-slate-400 italic text-center border border-dashed border-slate-300 p-3 rounded">
+              Chưa có dữ liệu thí nghiệm.
             </div>
           </div>
         </div>
 
-        <!-- Control Buttons -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
-            id="btnStep1"
-            class="btn-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3">
-            <span class="text-2xl">🔥</span>
-            <span>Bước 1: Đốt cháy Butane</span>
-          </button>
-
-          <button
-            id="btnStep2"
-            disabled
-            class="btn-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3">
-            <span class="text-2xl">💧</span>
-            <span>Bước 2: Thử nước vôi trong</span>
-          </button>
-
-          <button
-            id="btnReset"
-            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3">
-            <span class="text-2xl">↺</span>
-            <span>Làm lại</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Theory Section -->
-      <div class="theory-section rounded-2xl shadow-2xl p-8">
-        <h2
-          class="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3">
-          <span class="text-3xl">📚</span>
-          Kiến thức thí nghiệm
-        </h2>
-
-        <div id="theoryContent" class="space-y-6">
-          <!-- Initial State -->
-          <div class="bg-white/70 rounded-xl p-6 border-2 border-blue-200">
-            <p class="text-slate-600 text-center text-lg">
-              👆 Nhấn <strong>"Bước 1"</strong> để bắt đầu quan sát thí nghiệm
-              đốt cháy Butane
-            </p>
+        <div class="w-2/3 flex flex-col bg-white">
+          <div
+            class="p-3 border-b border-slate-200 font-bold text-slate-700 text-sm bg-white shadow-sm">
+            📚 Kiến thức trọng tâm
           </div>
-
-          <!-- General Info -->
-          <div class="bg-white rounded-xl p-6 border-l-4 border-purple-500">
-            <h3 class="text-xl font-bold text-purple-800 mb-3">
-              🔬 Giới thiệu
-            </h3>
-            <p class="text-slate-700 leading-relaxed mb-3">
-              <strong>Butane (C₄H₁₀)</strong> là một alkane có 4 nguyên tử
-              carbon, thuộc nhóm hydrocarbon no. Khi đốt cháy hoàn toàn trong
-              không khí (oxi), butane tạo ra carbon dioxide (CO₂) và nước (H₂O),
-              đồng thời tỏa ra nhiều nhiệt.
-            </p>
+          <div class="p-5 overflow-y-auto scroll-custom grid grid-cols-2 gap-6">
             <div
-              class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
-              <p class="text-amber-900 text-sm">
-                <strong>💡 Lưu ý:</strong> Phản ứng cháy của alkane là phản ứng
-                tỏa nhiệt mạnh, ngọn lửa cháy hoàn toàn có màu xanh nhạt (không
-                có khói đen).
+              class="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm col-span-2">
+              <h3 class="text-xs font-bold text-blue-500 uppercase mb-2">
+                Phương trình hóa học
+              </h3>
+              <div class="text-center text-slate-800 font-medium text-lg">
+                $$C_4H_{10} + \frac{13}{2}O_2 \xrightarrow{t^o} 4CO_2 + 5H_2O$$
+              </div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h3 class="text-xs font-bold text-slate-500 uppercase mb-1">
+                Sản phẩm cháy
+              </h3>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                Phản ứng tỏa nhiều nhiệt. Sản phẩm gồm khí $CO_2$ và hơi nước
+                $H_2O$.
+              </p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h3 class="text-xs font-bold text-slate-500 uppercase mb-1">
+                Nhận biết CO2
+              </h3>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                Dùng nước vôi trong dư: $$CO_2 + Ca(OH)_2 \rightarrow CaCO_3
+                \downarrow + H_2O$$
               </p>
             </div>
           </div>
@@ -223,91 +153,164 @@
     </main>
 
     <script>
-      // ==========================================
-      // ALKANE COMBUSTION SIMULATION ENGINE
-      // ==========================================
-
-      const CONFIG = {
+      const CFG = {
+        flask: { w: 60, h: 90, neckW: 24, neckH: 40 },
         colors: {
-          flame: {
-            core: "#ffffff",
-            inner: "#3b82f6",
-            outer: "rgba(59, 130, 246, 0.3)",
-          },
-          water: "rgba(200, 220, 255, 0.4)",
-          co2: "rgba(200, 200, 200, 0.3)",
-          limewater: {
-            clear: "rgba(200, 230, 255, 0.3)",
-            cloudy: "rgba(255, 255, 255, 0.9)",
-          },
-          glass: "rgba(255, 255, 255, 0.15)",
+          glass: "rgba(255, 255, 255, 0.3)",
+          glassStroke: "#64748b",
+          liquidClear: "rgba(200, 230, 255, 0.7)",
+          liquidCloudy: "#f1f5f9",
+          stopper: "#475569",
+          stand: "#334155",
         },
       };
 
-      const state = {
+      const STATE = {
+        w: 0,
+        h: 0,
         phase: "IDLE",
-        time: 0,
-        lighter: { x: 150, y: 450, targetX: 150, targetY: 450, active: false },
-        flask: {
-          x: 500,
-          y: 250,
-          inverted: true,
-          condensation: 0,
-          liquidLevel: 0,
-          turbidity: 0,
+        t: 0,
+        objects: {
+          flask: {
+            x: 0,
+            y: 0,
+            angle: 180,
+            liquid: 0,
+            mist: 0,
+            turbidity: 0,
+            hasStopper: false,
+          },
+          lighter: { x: 0, y: 0, on: false },
+          beaker: { x: 0, y: 0, visible: false, angle: 0 },
+          stand: { x: 0, y: 0 },
         },
-        beaker: { x: 800, y: 400, visible: false, tilt: 0 },
         particles: [],
-        progress: 0,
       };
+
+      const canvas = document.getElementById("simCanvas");
+      const ctx = canvas.getContext("2d");
+
+      function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        STATE.w = canvas.width;
+        STATE.h = canvas.height;
+        resetPositions();
+      }
+      window.addEventListener("resize", resize);
+
+      function resetPositions() {
+        const cx = STATE.w / 2;
+        const cy = STATE.h / 2;
+        STATE.objects.stand = { x: cx, y: cy + 120 };
+        STATE.objects.flask = {
+          x: cx,
+          y: cy - 10,
+          angle: 180,
+          liquid: 0,
+          mist: 0,
+          turbidity: 0,
+          hasStopper: false,
+        };
+        STATE.objects.lighter = { x: cx - 250, y: cy + 100, on: false };
+        STATE.objects.beaker = {
+          x: cx + 250,
+          y: cy + 50,
+          visible: false,
+          angle: 0,
+        };
+      }
 
       class Particle {
-        constructor(x, y, type) {
+        constructor(x, y) {
           this.x = x;
           this.y = y;
-          this.type = type;
+          // Vận tốc bay lên nhanh hơn để tạo áp lực khí
+          this.vx = (Math.random() - 0.5) * 2.5;
+          this.vy = -Math.random() * 2 - 2;
           this.life = 1.0;
-          this.vx = (Math.random() - 0.5) * 8;
-          this.vy =
-            type === "flame"
-              ? -(Math.random() * 30 + 20)
-              : -(Math.random() * 15 + 10);
-          this.size =
-            type === "flame" ? Math.random() * 8 + 6 : Math.random() * 4 + 2;
+          this.size = Math.random() * 6 + 3;
+          this.inFlask = false; // Trạng thái xác định khí đã lọt vào bình chưa
         }
 
-        update(dt) {
-          this.x += this.vx * dt;
-          this.y += this.vy * dt;
-          this.life -= dt * (this.type === "flame" ? 2.0 : 1.5);
-          this.size *= 0.97;
+        update(flask) {
+          // Cập nhật vị trí
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // Giảm tuổi thọ chậm hơn để khí tồn tại lâu trong bình
+          this.life -= 0.008;
+          this.size *= 0.98;
+
+          // Xử lý vật lý va chạm với bình
+          this.checkCollision(flask);
+        }
+
+        checkCollision(flask) {
+          // Tọa độ tương đối so với tâm bình
+          const dx = this.x - flask.x;
+          const dy = this.y - flask.y;
+
+          // Định nghĩa biên dạng bình (Ước lượng)
+          const bulbRadius = 54; // Bán kính phần bầu
+          const neckWidth = 20; // Bán kính phần cổ
+          const topLimit = -65; // Đỉnh bình (đáy bầu khi lật ngược)
+          const mouthY = 80; // Miệng bình
+
+          // 1. Kiểm tra xem hạt đã bay vào vùng miệng bình chưa
+          if (this.y < flask.y + mouthY) {
+            this.inFlask = true;
+          }
+
+          if (this.inFlask) {
+            // A. Va chạm trần bình (Đáy bầu)
+            if (dy < topLimit) {
+              this.y = flask.y + topLimit; // Đẩy ra khỏi tường
+              this.vy = Math.abs(this.vy) * 0.6; // Nảy xuống và giảm tốc (mất năng lượng)
+              this.vx += Math.random() - 0.5; // Tản sang hai bên
+            }
+
+            // B. Va chạm thành bên (Giả lập hình dáng bình)
+            // Nếu ở phần bầu (trên cao)
+            if (dy < 20) {
+              if (Math.abs(dx) > bulbRadius) {
+                // Đảo chiều vận tốc X khi đập vào thành
+                this.vx = -this.vx * 0.8;
+                // Giữ hạt nằm trong bình
+                this.x = dx > 0 ? flask.x + bulbRadius : flask.x - bulbRadius;
+              }
+            }
+            // Nếu ở phần cổ (dưới thấp)
+            else {
+              if (Math.abs(dx) > neckWidth) {
+                this.vx = -this.vx * 0.8;
+                this.x = dx > 0 ? flask.x + neckWidth : flask.x - neckWidth;
+              }
+            }
+
+            // C. Hiệu ứng nhiễu loạn khí động học (Turbulence)
+            // Khí nóng trong bình kín sẽ hỗn loạn, không bay thẳng
+            this.vx += (Math.random() - 0.5) * 0.5;
+          }
         }
 
         draw(ctx) {
-          if (this.life <= 0) return;
-
           ctx.save();
           ctx.globalAlpha = this.life;
+          // Màu khói thực tế hơn (trắng xám pha chút cam lửa ở tâm)
+          const g = ctx.createRadialGradient(
+            this.x,
+            this.y,
+            0,
+            this.x,
+            this.y,
+            this.size
+          );
+          g.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+          g.addColorStop(0.3, "rgba(255, 200, 150, 0.5)");
+          g.addColorStop(1, "transparent");
 
-          if (this.type === "flame") {
-            const grad = ctx.createRadialGradient(
-              this.x,
-              this.y,
-              0,
-              this.x,
-              this.y,
-              this.size
-            );
-            grad.addColorStop(0, CONFIG.colors.flame.core);
-            grad.addColorStop(0.3, CONFIG.colors.flame.inner);
-            grad.addColorStop(1, CONFIG.colors.flame.outer);
-            ctx.fillStyle = grad;
-          } else if (this.type === "water") {
-            ctx.fillStyle = "rgba(180, 220, 255, 0.8)";
-          } else {
-            ctx.fillStyle = "rgba(220, 220, 220, 0.6)";
-          }
-
+          ctx.fillStyle = g;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
           ctx.fill();
@@ -315,487 +318,330 @@
         }
       }
 
-      function drawLighter(ctx) {
-        ctx.save();
-        ctx.translate(state.lighter.x, state.lighter.y);
-
-        // Body
-        ctx.fillStyle = "#ef4444";
-        ctx.fillRect(-12, -60, 24, 60);
-        ctx.fillStyle = "#dc2626";
-        ctx.fillRect(-10, -58, 20, 56);
-
-        // Top nozzle
-        ctx.fillStyle = "#64748b";
-        ctx.fillRect(-5, -70, 10, 12);
-
-        // Button
-        ctx.fillStyle = "#fbbf24";
-        ctx.fillRect(-8, -40, 16, 8);
-
-        ctx.restore();
-      }
-
-      function drawFlask(ctx) {
-        const { x, y, inverted, condensation } = state.flask;
-
-        ctx.save();
-        ctx.translate(x, y);
-
-        if (inverted) {
-          ctx.rotate(Math.PI);
+      function update() {
+        STATE.t++;
+        const { flask, lighter, beaker, stand } = STATE.objects;
+        for (let i = STATE.particles.length - 1; i >= 0; i--) {
+          STATE.particles[i].update(flask); // Truyền flask vào đây
+          if (STATE.particles[i].life <= 0) STATE.particles.splice(i, 1);
         }
-
-        // Flask outline
-        ctx.beginPath();
-        ctx.moveTo(-40, -100);
-        ctx.lineTo(-40, -20);
-        ctx.quadraticCurveTo(-80, 0, -80, 60);
-        ctx.lineTo(-80, 100);
-        ctx.lineTo(80, 100);
-        ctx.lineTo(80, 60);
-        ctx.quadraticCurveTo(80, 0, 40, -20);
-        ctx.lineTo(40, -100);
-        ctx.closePath();
-
-        // Liquid (if upright)
-        if (!inverted && state.flask.liquidLevel > 0) {
-          ctx.save();
-          ctx.clip();
-          const turbid = state.flask.turbidity;
-          ctx.fillStyle =
-            turbid > 0
-              ? `rgba(${200 + turbid * 55}, ${230 + turbid * 25}, 255, ${
-                  0.3 + turbid * 0.6
-                })`
-              : CONFIG.colors.limewater.clear;
-          ctx.fillRect(
-            -80,
-            100 - state.flask.liquidLevel * 100,
-            160,
-            state.flask.liquidLevel * 100
-          );
-          ctx.restore();
-        }
-
-        // Condensation
-        if (condensation > 0) {
-          ctx.save();
-          ctx.clip();
-          ctx.fillStyle = `rgba(255, 255, 255, ${condensation * 0.5})`;
-          ctx.fillRect(-80, -100, 160, 200);
-          ctx.restore();
-        }
-
-        // Glass
-        ctx.fillStyle = CONFIG.colors.glass;
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // Highlight
-        ctx.beginPath();
-        ctx.arc(-50, 20, 30, 0, Math.PI);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.lineWidth = 6;
-        ctx.stroke();
-
-        ctx.restore();
-      }
-
-      function drawBeaker(ctx) {
-        if (!state.beaker.visible) return;
-
-        const { x, y, tilt } = state.beaker;
-
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(tilt);
-
-        // Beaker body
-        ctx.beginPath();
-        ctx.moveTo(-30, -40);
-        ctx.lineTo(-30, 40);
-        ctx.quadraticCurveTo(-30, 50, 0, 50);
-        ctx.quadraticCurveTo(30, 50, 30, 40);
-        ctx.lineTo(30, -40);
-
-        // Liquid
-        ctx.fillStyle = CONFIG.colors.limewater.clear;
-        ctx.fillRect(-28, 0, 56, 48);
-
-        ctx.fillStyle = CONFIG.colors.glass;
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.restore();
-      }
-
-      function drawStand(ctx) {
-        // Vertical pole
-        ctx.fillStyle = "#475569";
-        ctx.fillRect(650, 50, 12, 450);
-
-        // Base
-        ctx.fillRect(600, 490, 112, 15);
-
-        // Clamp
-        ctx.fillStyle = "#64748b";
-        ctx.beginPath();
-        ctx.rect(500, 180, 150, 10);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.rect(640, 180, 12, 50);
-        ctx.fill();
-      }
-
-      function update(dt) {
-        state.time += dt;
-
-        // Move lighter
-        const dx = state.lighter.targetX - state.lighter.x;
-        const dy = state.lighter.targetY - state.lighter.y;
-        state.lighter.x += dx * 5 * dt;
-        state.lighter.y += dy * 5 * dt;
-
-        // Phase logic
-        if (state.phase === "BURNING") {
-          // Spawn flame particles
-          if (Math.random() < 0.6) {
-            state.particles.push(
-              new Particle(
-                state.lighter.x + (Math.random() - 0.5) * 10,
-                state.lighter.y - 70,
-                "flame"
-              )
-            );
-          }
-
-          // Build condensation
-          if (state.flask.condensation < 1.0) {
-            state.flask.condensation += dt * 0.2;
-          }
-
-          if (state.time > 5.0 && state.phase === "BURNING") {
-            state.phase = "RETRACT";
-            state.lighter.targetX = 150;
-            state.lighter.targetY = 450;
-            state.lighter.active = false;
-            updateProgress(50);
-            setTimeout(() => {
-              document.getElementById("btnStep2").disabled = false;
-              updateStatus("Hoàn thành bước 1", "success");
-            }, 1000);
-          }
-        }
-
-        if (state.phase === "POURING") {
-          // Move beaker to flask
-          if (state.beaker.x > 520) {
-            state.beaker.x -= 150 * dt;
-            state.beaker.y -= 100 * dt;
-          } else {
-            // Tilt and pour
-            if (state.beaker.tilt > -0.8) {
-              state.beaker.tilt -= dt * 1.5;
-            } else {
-              // Fill flask
-              if (state.flask.liquidLevel < 0.5) {
-                state.flask.liquidLevel += dt * 0.3;
-                if (Math.random() < 0.4) {
-                  state.particles.push(
-                    new Particle(
-                      state.flask.x + (Math.random() - 0.5) * 30,
-                      state.flask.y + 80,
-                      "water"
-                    )
-                  );
-                }
-              } else {
-                state.phase = "REACTING";
-                state.time = 0;
-              }
+        switch (STATE.phase) {
+          case "MOVING_LIGHTER":
+            lerpTo(lighter, flask.x, flask.y + 110, 0.08);
+            if (dist(lighter, { x: flask.x, y: flask.y + 110 }) < 5) {
+              STATE.phase = "BURNING";
+              STATE.t = 1;
+              lighter.on = true;
+              addLog("burn");
             }
-          }
+            break;
+          case "BURNING":
+            if (STATE.t % 2 === 0)
+              STATE.particles.push(
+                new Particle(
+                  lighter.x + (Math.random() - 0.5) * 10,
+                  lighter.y - 65
+                )
+              );
+            if (flask.mist < 0.6) flask.mist += 0.005;
+            if (STATE.t > 150) {
+              lighter.on = false;
+              STATE.phase = "STOPPERING";
+              STATE.t = 0;
+            }
+            break;
+          case "STOPPERING":
+            lerpTo(lighter, 50, STATE.h - 50, 0.1);
+            if (STATE.t > 20 && !flask.hasStopper) {
+              flask.hasStopper = true;
+              document.getElementById("stepIndicator").innerText =
+                "Bước 2: Thử tính chất sản phẩm";
+              document.getElementById("btnTest").disabled = false;
+            }
+            if (STATE.t > 60) STATE.phase = "WAIT_TEST";
+            break;
+          case "FLIPPING":
+            const targetX = stand.x;
+            const targetY = stand.y - CFG.flask.h + 10;
+            lerpTo(flask, targetX, targetY, 0.05);
+            if (flask.angle > 0.5) flask.angle *= 0.92;
+            else flask.angle = 0;
+            if (
+              dist(flask, { x: targetX, y: targetY }) < 2 &&
+              flask.angle < 1
+            ) {
+              STATE.phase = "POURING_SETUP";
+              beaker.visible = true;
+            }
+            break;
+          case "POURING_SETUP":
+            lerpTo(beaker, flask.x + 50, flask.y - 80, 0.08);
+            if (dist(beaker, { x: flask.x + 50, y: flask.y - 80 }) < 5) {
+              STATE.phase = "POURING_ACTION";
+              STATE.t = 0;
+            }
+            break;
+          case "POURING_ACTION":
+            if (STATE.t === 5) flask.hasStopper = false;
+            if (beaker.angle > -50) beaker.angle -= 2;
+            if (STATE.t > 10 && flask.liquid < 1) flask.liquid += 0.03;
+            if (STATE.t > 80) {
+              flask.hasStopper = true;
+              beaker.visible = false;
+              STATE.phase = "SHAKING";
+              STATE.t = 0;
+              document.getElementById("stepIndicator").innerText =
+                "Bước 3: Quan sát hiện tượng";
+            }
+            break;
+          case "SHAKING":
+            flask.x = stand.x + Math.cos(STATE.t * 0.8) * 3;
+            if (flask.turbidity < 1) flask.turbidity += 0.01;
+            flask.mist *= 0.95;
+            if (STATE.t > 120) {
+              STATE.phase = "DONE";
+              flask.x = stand.x;
+              addLog("result");
+            }
+            break;
         }
+      }
 
-        if (state.phase === "REACTING") {
-          // Turbidity increase
-          if (state.flask.turbidity < 1.0) {
-            state.flask.turbidity += dt * 0.4;
-            state.flask.condensation = Math.max(
-              0,
-              state.flask.condensation - dt * 0.5
-            );
-          } else if (state.flask.turbidity >= 1.0 && state.progress < 100) {
-            updateProgress(100);
-            updateStatus("Hoàn thành!", "complete");
-            updateTheoryComplete();
-          }
+      function drawRealisticStand(ctx) {
+        const { stand, flask } = STATE.objects;
+
+        // Vẽ đế và cột thẳng đứng
+        ctx.fillStyle = "#475569";
+        ctx.strokeStyle = "#334155";
+        ctx.beginPath();
+        ctx.moveTo(stand.x - 70, stand.y);
+        ctx.lineTo(stand.x + 70, stand.y);
+        ctx.lineTo(stand.x + 80, stand.y + 15);
+        ctx.lineTo(stand.x - 80, stand.y + 15);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Cột đứng
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillRect(stand.x + 50, stand.y - 350, 10, 350);
+
+        // Vẽ thanh ngang nối từ cột ra kẹp
+        // Tính toán vị trí khớp nối dựa trên vị trí bình
+        const clampWorldY = flask.y + (flask.angle > 90 ? 50 : -50); // Ước lượng vị trí y của kẹp trong không gian
+
+        ctx.save();
+        ctx.fillStyle = "#64748b";
+        // Vẽ thanh ngang từ cột (stand.x + 50) đến vị trí kẹp (flask.x)
+        // Chỉ vẽ khi bình gần giá đỡ để tránh lỗi hình ảnh khi di chuyển
+        if (Math.abs(flask.x - stand.x) < 100) {
+          ctx.fillRect(flask.x, clampWorldY - 5, stand.x + 50 - flask.x, 10);
+          // Vẽ khớp nối
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(stand.x + 45, clampWorldY - 10, 20, 20);
         }
-
-        // Update particles
-        state.particles.forEach(p => p.update(dt));
-        state.particles = state.particles.filter(p => p.life > 0);
+        ctx.restore();
       }
 
-      function render() {
-        const canvas = document.getElementById("simCanvas");
-        const ctx = canvas.getContext("2d");
+      function drawClampFront(ctx) {
+        const { flask } = STATE.objects;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        // Di chuyển gốc toạ độ về tâm bình để vẽ kẹp xoay theo bình
+        ctx.translate(flask.x, flask.y);
+        ctx.rotate((flask.angle * Math.PI) / 180);
 
-        // Draw stand
-        drawStand(ctx);
+        // --- CẤU HÌNH VỊ TRÍ KẸP ---
+        // Cổ bình trong drawFlask từ y=-70 đến y=-20.
+        // Ta đặt kẹp ở khoảng y=-50 (giữa cổ).
+        const cy = -50;
+        const cw = 56; // Chiều rộng kẹp (lớn hơn cổ bình là 48)
+        const ch = 18; // Chiều cao kẹp
 
-        // Draw flask
-        drawFlask(ctx);
+        // 1. Vẽ đai kẹp (Phần chính che khí)
+        ctx.fillStyle = "#475569"; // Màu xám kim loại đậm (Solid color để che khí)
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
 
-        // Draw particles
-        state.particles.forEach(p => p.draw(ctx));
+        ctx.beginPath();
+        // Vẽ hình chữ nhật bo góc ôm lấy cổ
+        ctx.roundRect(-cw / 2, cy, cw, ch, 4);
+        ctx.fill(); // Quan trọng: Lệnh này sẽ che khuất particles
+        ctx.stroke();
 
-        // Draw lighter
-        drawLighter(ctx);
+        // 2. Vẽ chi tiết ốc vặn bên phải (Trang trí cho giống thật)
+        ctx.fillStyle = "#cbd5e1"; // Màu bạc sáng
+        ctx.beginPath();
+        ctx.arc(cw / 2 + 2, cy + ch / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
-        // Draw beaker
-        drawBeaker(ctx);
+        // Vẽ gân kẹp (tạo khối 3D)
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fillRect(-cw / 2 + 5, cy + 5, cw - 10, 2);
+
+        ctx.restore();
       }
 
-      let lastTime = 0;
-      function animate(time) {
-        const dt = Math.min((time - lastTime) / 1000, 0.05);
-        lastTime = time;
-
-        update(dt);
-        render();
-
-        requestAnimationFrame(animate);
+      function drawFlask(ctx, obj) {
+        ctx.save();
+        ctx.translate(obj.x, obj.y);
+        ctx.rotate((obj.angle * Math.PI) / 180);
+        const p = new Path2D();
+        p.moveTo(-24, -70);
+        p.lineTo(-24, -20);
+        p.lineTo(-60, 70);
+        p.quadraticCurveTo(0, 85, 60, 70);
+        p.lineTo(24, -20);
+        p.lineTo(24, -70);
+        p.closePath();
+        if (obj.liquid > 0) {
+          ctx.save();
+          ctx.clip(p);
+          const level = 70 - obj.liquid * 60;
+          ctx.fillStyle =
+            obj.turbidity > 0.5
+              ? CFG.colors.liquidCloudy
+              : CFG.colors.liquidClear;
+          ctx.rotate((-obj.angle * Math.PI) / 180);
+          ctx.fillRect(-100, level, 200, 150);
+          ctx.restore();
+        }
+        if (obj.mist > 0) {
+          ctx.save();
+          ctx.clip(p);
+          ctx.fillStyle = `rgba(255,255,255,${obj.mist})`;
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.fillStyle = CFG.colors.glass;
+        ctx.fill(p);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = CFG.colors.glassStroke;
+        ctx.stroke(p);
+        if (obj.hasStopper) {
+          ctx.fillStyle = CFG.colors.stopper;
+          ctx.beginPath();
+          ctx.moveTo(-22, -70);
+          ctx.lineTo(-26, -80);
+          ctx.lineTo(26, -80);
+          ctx.lineTo(22, -70);
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.ellipse(0, -70, 24, 6, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "#e2e8f0";
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
       }
 
-      function updateStatus(text, type) {
-        const badge = document.getElementById("statusBadge");
-        const colors = {
-          idle: "bg-slate-100 text-slate-600",
-          running: "bg-blue-100 text-blue-700",
-          success: "bg-green-100 text-green-700",
-          complete: "bg-purple-100 text-purple-700",
-        };
-        badge.className = `px-4 py-2 rounded-full font-semibold text-sm ${
-          colors[type] || colors.idle
-        }`;
-        badge.textContent = text;
+      function drawLighter(ctx, obj) {
+        if (
+          !obj.on &&
+          STATE.phase !== "MOVING_LIGHTER" &&
+          STATE.phase !== "STOPPERING"
+        )
+          return;
+        ctx.save();
+        ctx.translate(obj.x, obj.y);
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.roundRect(-12, 0, 24, 60, 4);
+        ctx.fill();
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(-4, -40, 8, 40);
+        ctx.restore();
       }
 
-      function updateProgress(percent) {
-        state.progress = percent;
-        document.getElementById("progressBar").style.width = `${percent}%`;
-        document.getElementById("progressPercent").textContent = `${percent}%`;
+      function drawBeaker(ctx, obj) {
+        if (!obj.visible) return;
+        ctx.save();
+        ctx.translate(obj.x, obj.y);
+        ctx.rotate((obj.angle * Math.PI) / 180);
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.strokeStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.rect(-20, -25, 40, 50);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = CFG.colors.liquidClear;
+        ctx.fillRect(-18, 0, 36, 23);
+        ctx.restore();
       }
 
-      function updateTheoryStep1() {
-        document.getElementById("theoryContent").innerHTML = `
-                <div class="bg-white rounded-xl p-6 border-l-4 border-orange-500">
-                    <h3 class="text-xl font-bold text-orange-800 mb-4">🔥 Bước 1: Phản ứng cháy của Butane</h3>
-                    
-                    <div class="formula-box">
-                        <p class="text-center text-lg font-mono">
-                            $$2C_4H_{10} + 13O_2 \\xrightarrow{t^o} 8CO_2 + 10H_2O$$
-                        </p>
-                    </div>
-                    
-                    <div class="space-y-3 text-slate-700">
-                        <p><strong>Hiện tượng quan sát được:</strong></p>
-                        <ul class="list-disc pl-6 space-y-2">
-                            <li>Butane cháy với ngọn lửa màu <strong class="text-blue-600">xanh nhạt</strong> (chứng tỏ cháy hoàn toàn)</li>
-                            <li>Thành bình đựng sản phẩm xuất hiện <strong class="text-blue-600">hơi nước ngưng tụ</strong> (sương mù)</li>
-                            <li>Phản ứng tỏa nhiều nhiệt</li>
-                        </ul>
-                        
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                            <p class="text-blue-900 text-sm">
-                                <strong>📌 Giải thích:</strong> Butane (C₄H₁₀) phản ứng với oxygen (O₂) trong không khí tạo ra:
-                                <br>• <strong>CO₂</strong> (carbon dioxide) - khí không màu
-                                <br>• <strong>H₂O</strong> (nước) - ở dạng hơi, ngưng tụ thành giọt nước trên thành bình lạnh
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
+      function draw() {
+        ctx.clearRect(0, 0, STATE.w, STATE.h);
+
+        // LỚP 1: Hậu cảnh & Thiết bị phía sau
+        drawRealisticStand(ctx); // Chân đế và trục sau
+        drawBeaker(ctx, STATE.objects.beaker); // Cốc nghiệm
+
+        // LỚP 2: Bình chứa & Nội dung bên trong
+        drawFlask(ctx, STATE.objects.flask); // Bình thủy tinh
+
+        // LỚP 3: Khí (Particles)
+        // Vẽ khí ở đây để nó đè lên bình thủy tinh...
+        STATE.particles.forEach(p => p.draw(ctx));
+
+        // LỚP 4: Tiền cảnh (Che khí)
+        // Vẽ mặt trước kẹp ở đây để nó ĐÈ LÊN khí -> Tạo cảm giác khí ở trong bình
+        drawClampFront(ctx);
+
+        // Lớp 5: Bật lửa (Ngoài cùng)
+        drawLighter(ctx, STATE.objects.lighter);
+
+        requestAnimationFrame(draw);
+      }
+
+      function lerpTo(o, x, y, s) {
+        o.x += (x - o.x) * s;
+        o.y += (y - o.y) * s;
+      }
+      function dist(a, b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
+      function addLog(type) {
+        const div = document.createElement("div");
+        div.className =
+          "p-2 bg-white border border-slate-100 rounded text-sm shadow-sm animate-fade-in mb-2";
+        div.innerHTML =
+          type === "burn"
+            ? `🔥 <b>Đốt cháy:</b> Hơi nước làm mờ thành bình. Khí được giữ lại trong bình.`
+            : `🧪 <b>Kết quả:</b> Nước vôi trong hóa đục ($CaCO_3$). Chứng tỏ có khí $CO_2$.`;
+        const log = document.getElementById("observationLog");
+        if (log.querySelector(".italic")) log.innerHTML = "";
+        log.appendChild(div);
         if (window.MathJax) MathJax.typesetPromise();
       }
 
-      function updateTheoryStep2() {
-        document.getElementById("theoryContent").innerHTML = `
-                <div class="bg-white rounded-xl p-6 border-l-4 border-green-500">
-                    <h3 class="text-xl font-bold text-green-800 mb-4">🧪 Bước 2: Nhận biết CO₂ bằng nước vôi trong</h3>
-                    
-                    <div class="formula-box">
-                        <p class="text-center text-lg font-mono">
-                            $$CO_2 + Ca(OH)_2 \\rightarrow CaCO_3 \\downarrow + H_2O$$
-                        </p>
-                    </div>
-                    
-                    <div class="space-y-3 text-slate-700">
-                        <p><strong>Hiện tượng quan sát được:</strong></p>
-                        <ul class="list-disc pl-6 space-y-2">
-                            <li>Nước vôi trong ban đầu <strong class="text-green-600">trong suốt</strong></li>
-                            <li>Sau khi dẫn khí CO₂ vào, dung dịch chuyển sang màu <strong class="text-green-600">trắng đục</strong></li>
-                            <li>Xuất hiện <strong class="text-green-600">kết tủa trắng</strong> CaCO₃ lơ lửng trong dung dịch</li>
-                        </ul>
-                        
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                            <p class="text-green-900 text-sm">
-                                <strong>📌 Giải thích:</strong> Đây là phản ứng đặc trưng để nhận biết khí CO₂:
-                                <br>• <strong>Ca(OH)₂</strong> (calcium hydroxide) - nước vôi trong
-                                <br>• <strong>CaCO₃</strong> (calcium carbonate) - kết tủa trắng, không tan trong nước
-                                <br>• Phản ứng này chứng minh sản phẩm cháy của butane có chứa CO₂
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        if (window.MathJax) MathJax.typesetPromise();
-      }
-
-      function updateTheoryComplete() {
-        document.getElementById("theoryContent").innerHTML = `
-                <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 border-2 border-purple-300">
-                    <h3 class="text-2xl font-bold text-purple-800 mb-4">✅ Kết luận thí nghiệm</h3>
-                    
-                    <div class="space-y-4 text-slate-800">
-                        <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-bold text-lg text-purple-700 mb-2">1️⃣ Phản ứng cháy tổng quát của Alkane:</h4>
-                            <div class="formula-box">
-                                <p class="text-center text-lg font-mono">
-                                    $$C_nH_{2n+2} + \\dfrac{3n+1}{2}O_2 \\xrightarrow{t^o} nCO_2 + (n+1)H_2O$$
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-bold text-lg text-purple-700 mb-2">2️⃣ Đặc điểm phản ứng cháy Alkane:</h4>
-                            <ul class="list-disc pl-6 space-y-2">
-                                <li>Là phản ứng <strong>tỏa nhiệt</strong> mạnh</li>
-                                <li>Cháy hoàn toàn cho ngọn lửa <strong>xanh nhạt</strong>, không có khói</li>
-                                <li>Sản phẩm luôn là <strong>CO₂</strong> và <strong>H₂O</strong></li>
-                                <li>Tỷ lệ mol CO₂ : H₂O = n : (n+1)</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-bold text-lg text-purple-700 mb-2">3️⃣ Cách nhận biết sản phẩm:</h4>
-                            <ul class="list-disc pl-6 space-y-2">
-                                <li><strong>H₂O:</strong> Làm xanh giấy quỳ tím ẩm → đỏ (nếu có tạp chất axit) hoặc thấy hơi nước ngưng tụ</li>
-                                <li><strong>CO₂:</strong> Làm đục nước vôi trong: Ca(OH)₂ + CO₂ → CaCO₃↓ + H₂O</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-lg p-4">
-                            <p class="text-amber-900">
-                                <strong>💡 Ứng dụng thực tế:</strong> Phản ứng cháy của alkane được sử dụng rộng rãi làm nhiên liệu:
-                                <br>• Khí Butane trong bật lửa, bình gas mini
-                                <br>• Khí Methane (CH₄) trong gas tự nhiên cho nhà bếp
-                                <br>• Propane (C₃H₈) trong bình gas dân dụng
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        if (window.MathJax) MathJax.typesetPromise();
-      }
-
-      // Event Handlers
-      document.getElementById("btnStep1").onclick = () => {
-        if (state.phase !== "IDLE") return;
-
-        state.phase = "MOVING_LIGHTER";
-        state.lighter.targetX = 420;
-        state.lighter.targetY = 340;
-        state.lighter.active = true;
-
-        document.getElementById("btnStep1").disabled = true;
-        updateStatus("Đang đốt cháy...", "running");
-        updateProgress(20);
-        updateTheoryStep1();
-
-        setTimeout(() => {
-          state.phase = "BURNING";
-          state.time = 0;
-        }, 800);
+      document.getElementById("btnBurn").onclick = () => {
+        if (STATE.phase === "IDLE") {
+          STATE.phase = "MOVING_LIGHTER";
+          document.getElementById("btnBurn").disabled = true;
+        }
       };
-
-      document.getElementById("btnStep2").onclick = () => {
-        if (state.phase !== "RETRACT" && state.phase !== "IDLE") return;
-
-        state.flask.inverted = false;
-        state.beaker.visible = true;
-        state.phase = "POURING";
-
-        document.getElementById("btnStep2").disabled = true;
-        updateStatus("Đang thử nước vôi...", "running");
-        updateProgress(70);
-        updateTheoryStep2();
+      document.getElementById("btnTest").onclick = () => {
+        STATE.phase = "FLIPPING";
+        document.getElementById("btnTest").disabled = true;
       };
-
       document.getElementById("btnReset").onclick = () => {
-        // Reset state
-        state.phase = "IDLE";
-        state.time = 0;
-        state.lighter = {
-          x: 150,
-          y: 450,
-          targetX: 150,
-          targetY: 450,
-          active: false,
-        };
-        state.flask = {
-          x: 500,
-          y: 250,
-          inverted: true,
-          condensation: 0,
-          liquidLevel: 0,
-          turbidity: 0,
-        };
-        state.beaker = { x: 800, y: 400, visible: false, tilt: 0 };
-        state.particles = [];
-        state.progress = 0;
-
-        // Reset UI
-        document.getElementById("btnStep1").disabled = false;
-        document.getElementById("btnStep2").disabled = true;
-        updateStatus("Chưa bắt đầu", "idle");
-        updateProgress(0);
-
-        document.getElementById("theoryContent").innerHTML = `
-                <div class="bg-white/70 rounded-xl p-6 border-2 border-blue-200">
-                    <p class="text-slate-600 text-center text-lg">
-                        👆 Nhấn <strong>"Bước 1"</strong> để bắt đầu quan sát thí nghiệm đốt cháy Butane
-                    </p>
-                </div>
-                
-                <div class="bg-white rounded-xl p-6 border-l-4 border-purple-500">
-                    <h3 class="text-xl font-bold text-purple-800 mb-3">🔬 Giới thiệu</h3>
-                    <p class="text-slate-700 leading-relaxed mb-3">
-                        <strong>Butane (C₄H₁₀)</strong> là một alkane có 4 nguyên tử carbon, thuộc nhóm hydrocarbon no. 
-                        Khi đốt cháy hoàn toàn trong không khí (oxi), butane tạo ra carbon dioxide (CO₂) và nước (H₂O), 
-                        đồng thời tỏa ra nhiều nhiệt.
-                    </p>
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
-                        <p class="text-amber-900 text-sm">
-                            <strong>💡 Lưu ý:</strong> Phản ứng cháy của alkane là phản ứng tỏa nhiệt mạnh, 
-                            ngọn lửa cháy hoàn toàn có màu xanh nhạt (không có khói đen).
-                        </p>
-                    </div>
-                </div>
-            `;
+        STATE.phase = "IDLE";
+        STATE.t = 0;
+        STATE.particles = [];
+        resetPositions();
+        document.getElementById("btnBurn").disabled = false;
+        document.getElementById("btnTest").disabled = true;
+        document.getElementById("stepIndicator").innerText = "Bước 1: Chuẩn bị";
+        document.getElementById("observationLog").innerHTML =
+          '<div class="text-xs text-slate-400 italic text-center border border-dashed border-slate-300 p-3 rounded">Chưa có dữ liệu thí nghiệm.</div>';
       };
 
-      // Initialize
-      requestAnimationFrame(animate);
+      resize();
+      draw();
+      setInterval(update, 16);
     </script>
   </body>
 </html>

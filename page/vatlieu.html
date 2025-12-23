@@ -230,7 +230,7 @@
             name: "Vàng (Au)",
             color: "#FCD34D",
             cond: 0.8,
-            heat: 0.8,
+            heat: 0.7,
             mall: 1,
             maxHits: 4,
             info: "đã được dát cực mỏng. Vàng là kim loại dẻo nhất.",
@@ -270,7 +270,7 @@
             name: "Sắt (Fe)",
             color: "#64748B",
             cond: 0.4,
-            heat: 0.4,
+            heat: 0.15,
             mall: 1,
             maxHits: 12,
             info: "mới chỉ hơi dẹt. Sắt cứng, muốn rèn phải nung nóng.",
@@ -280,7 +280,7 @@
             name: "Gỗ",
             color: "#92400E",
             cond: 0,
-            heat: 0.05,
+            heat: 0.01,
             mall: 0,
             maxHits: 1,
             info: "vẫn nguyên vẹn. Gỗ không dẻo.",
@@ -290,7 +290,7 @@
             name: "Nhựa",
             color: "#3B82F6",
             cond: 0,
-            heat: 0.02,
+            heat: 0.005,
             mall: 0,
             maxHits: 1,
             info: "vẫn y nguyên. Nhựa chỉ có tính đàn hồi.",
@@ -300,7 +300,7 @@
             name: "Sứ",
             color: "#F1F5F9",
             cond: 0,
-            heat: 0.05,
+            heat: 0.01,
             mall: -1,
             maxHits: 1,
             info: "vỡ vụn. Sứ giòn, không chịu được va đập.",
@@ -313,18 +313,17 @@
       const ANVIL_Y = 400;
 
       // Tọa độ Trục xoay của búa (Pivot Point) - Đặt cao bên phải
-      const PIVOT_X = ANVIL_X + 100;
-      const PIVOT_Y = ANVIL_Y - 150;
+      const PIVOT_X = ANVIL_X + 120;
+      const PIVOT_Y = ANVIL_Y;
 
       // Tính toán góc va chạm để mặt búa phẳng với đe
       // Vector từ Pivot đến mặt đe: dx = -100, dy = 150
       // Góc cần xoay: Math.atan2(150, -100)
-      const HIT_ANGLE =
-        Math.atan2(ANVIL_Y - PIVOT_Y, ANVIL_X - PIVOT_X) - Math.PI / 2;
+      const HIT_ANGLE = Math.PI / 2;
       // Trừ đi PI/2 vì ta vẽ búa thẳng đứng hướng xuống ở góc 0
 
-      const REST_ANGLE = HIT_ANGLE - 0.5; // Góc nghỉ (hơi nhấc lên)
-      const COCK_ANGLE = HIT_ANGLE - 2.0; // Góc lấy đà (giơ cao lên trời)
+      const REST_ANGLE = Math.PI * 0.75; // Góc nghỉ (hơi nhấc lên)
+      const COCK_ANGLE = Math.PI * 1.2; // Góc lấy đà (giơ cao lên trời)
 
       const state = {
         mode: "electricity",
@@ -400,7 +399,21 @@
             : "#fff";
           ctx.font = "bold 12px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(this.def.name, this.x + this.w / 2, drawY + 17);
+          if (this.h > 15) {
+            ctx.fillStyle = ["porc", "ag", "al", "white"].includes(this.def.id)
+              ? "#334155"
+              : "#fff";
+            // Căn giữa theo chiều dọc thay vì hardcode số 17
+            ctx.fillText(
+              this.def.name,
+              this.x + this.w / 2,
+              drawY + this.h / 2 + 5
+            );
+          } else {
+            // Nếu vật liệu quá mỏng, đưa chữ lên trên đầu (cách 8px) và dùng màu đậm
+            ctx.fillStyle = "#1e293b";
+            ctx.fillText(this.def.name, this.x + this.w / 2, drawY - 8);
+          }
 
           if (
             state.mode === "malleability" &&
@@ -419,6 +432,7 @@
           this.x = this.originX;
           this.y = this.originY;
           this.w = 80;
+          this.h = 24;
           this.hits = 0;
           this.currentTemp = 25;
           this.isBroken = false;
@@ -511,6 +525,7 @@
       }
 
       // === FIX HÀM VẼ BÚA: TOP-DOWN STRIKE ===
+      // === FIX HÀM VẼ BÚA: TOP-DOWN STRIKE ===
       function drawMall() {
         const cx = ANVIL_X;
         const cy = ANVIL_Y;
@@ -530,27 +545,28 @@
           (state.activeMat && state.mode === "malleability")
         ) {
           ctx.save();
-          // Di chuyển canvas đến điểm Pivot (Trên cao bên phải)
+          // Di chuyển canvas đến điểm Pivot (Bên phải đe)
           ctx.translate(PIVOT_X, PIVOT_Y);
 
           // Xoay canvas theo góc búa
           ctx.rotate(state.hammer.angle);
 
-          // Vẽ Cán búa (vẽ từ pivot hướng xuống)
-          // Độ dài cán (khoảng cách từ pivot đến tâm đe)
-          // Tính toán độ dài cán búa cần thiết để chạm mặt đe
-          const hammerLen =
-            Math.sqrt(
-              Math.pow(ANVIL_X - PIVOT_X, 2) + Math.pow(ANVIL_Y - PIVOT_Y, 2)
-            ) - 20;
+          // Tính độ dài cán búa: Từ Pivot đến tâm Đe
+          // Vì Pivot nằm ngang Anvil nên độ dài chính là khoảng cách X
+          const hammerLen = PIVOT_X - ANVIL_X;
 
+          // Vẽ Cán búa (vẽ dọc trục Y local)
           ctx.fillStyle = "#854d0e"; // Cán gỗ
-          ctx.fillRect(-6, 0, 12, hammerLen); // Vẽ cán hướng dọc theo trục Y (đã xoay)
+          ctx.fillRect(-6, 0, 12, hammerLen);
 
           // Vẽ Đầu búa (Cục sắt) ở cuối cán
+          // Vẽ sao cho mặt búa chạm đúng vào điểm hammerLen
           ctx.fillStyle = "#1e293b";
-          // Đầu búa nằm vuông góc với cán
-          ctx.fillRect(-30, hammerLen, 60, 40);
+          ctx.strokeStyle = "#0f172a";
+
+          // Đầu búa kim loại
+          ctx.fillRect(-25, hammerLen - 10, 50, 40);
+          ctx.strokeRect(-25, hammerLen - 10, 50, 40);
 
           ctx.restore();
         }
@@ -579,13 +595,18 @@
           if (state.mode === "electricity")
             state.bulbLevel += (m.def.cond - state.bulbLevel) * 0.1;
           if (state.mode === "heat") {
-            const t = m.def.heat > 0.1 ? 100 : 30;
-            state.temp += (t - state.temp) * 0.02;
+            const targetTemp = m.def.heat > 0.1 ? 100 : 45;
+            const conductivityRate = m.def.heat * 0.03;
+            const speed = Math.max(0.001, conductivityRate);
+            state.temp += (targetTemp - state.temp) * speed;
             m.currentTemp = state.temp;
           }
           if (state.mode === "malleability" && m.def.mall > 0) {
             const targetW = 80 + (m.hits / m.def.maxHits) * 70;
             m.w += (targetW - m.w) * 0.2;
+            const newH = Math.max(4, 1920 / m.w);
+            m.h = newH;
+            m.y = 400 - m.h;
             m.x = 500 - m.w / 2;
           }
         } else {
@@ -607,6 +628,27 @@
 
       canvas.addEventListener("mousedown", e => {
         const p = getPos(e);
+
+        // --- FIX: ƯU TIÊN CLICK VÀO VẬT LIỆU ACTIVE (CÓ PADDING) ---
+        if (state.activeMat) {
+          const m = state.activeMat;
+          // Mở rộng vùng bấm thêm 20px mỗi bên để dễ bấm trúng khi vật liệu mỏng
+          const HIT_PAD = 20;
+
+          if (
+            p.x >= m.x - HIT_PAD &&
+            p.x <= m.x + m.w + HIT_PAD &&
+            p.y >= m.y - HIT_PAD &&
+            p.y <= m.y + m.h + HIT_PAD
+          ) {
+            m.reset();
+            state.activeMat = null;
+            document.getElementById("hammerUI").classList.add("hidden");
+            log("Đã thu hồi vật liệu.");
+            return;
+          }
+        }
+
         for (let i = state.materials.length - 1; i >= 0; i--) {
           const m = state.materials[i];
           if (
@@ -618,6 +660,8 @@
             if (m.isBroken) return;
             state.dragging = m;
             state.dragOffset = { x: p.x - m.x, y: p.y - m.y };
+
+            // Logic cũ: nếu đang drag vật liệu active thì gỡ active (giữ nguyên để kéo đi chỗ khác nếu muốn)
             if (state.activeMat === m) {
               state.activeMat = null;
               document.getElementById("hammerUI").classList.add("hidden");
@@ -641,85 +685,112 @@
         const m = state.dragging;
         let ok = false;
 
+        // Hàm hỗ trợ: Dọn dẹp vật liệu cũ nếu có
+        const checkAndSwap = () => {
+          if (state.activeMat && state.activeMat !== m) {
+            state.activeMat.reset(); // Đưa vật cũ về khay
+          }
+          state.activeMat = m; // Gán vật mới làm active
+          ok = true;
+        };
+
+        // 1. Chế độ Dẫn Điện
         if (
           state.mode === "electricity" &&
           Math.abs(m.y - 250) < 60 &&
           Math.abs(m.x + m.w / 2 - 500) < 100
         ) {
+          checkAndSwap(); // <--- Gọi hàm dọn dẹp
           m.x = 500 - m.w / 2;
           m.y = 250 - m.h / 2;
-          state.activeMat = m;
-          ok = true;
+
           log(
             m.def.cond > 0
               ? `${m.def.name}: Mạch kín -> Đèn sáng!`
               : `${m.def.name}: Cách điện -> Đèn tắt.`
           );
-        } else if (
+        }
+        // 2. Chế độ Dẫn Nhiệt
+        else if (
           state.mode === "heat" &&
           Math.abs(m.y - 290) < 60 &&
           Math.abs(m.x - 400) < 100
         ) {
+          checkAndSwap();
           m.x = 450;
           m.y = 290 - m.h;
-          state.activeMat = m;
-          ok = true;
+          state.temp = 25;
+          m.currentTemp = 25;
           log(`${m.def.name}: Đang hấp thụ nhiệt...`);
-        } else if (
+        }
+        // 3. Chế độ Tính Dẻo
+        else if (
           state.mode === "malleability" &&
           Math.abs(m.y - 400) < 60 &&
           Math.abs(m.x + m.w / 2 - 500) < 100
         ) {
+          checkAndSwap(); // <--- Gọi hàm dọn dẹp
           m.x = 500 - m.w / 2;
           m.y = 400 - m.h;
-          state.activeMat = m;
-          ok = true;
+
           document.getElementById("hammerUI").classList.remove("hidden");
           document.getElementById("btnHammerAction").disabled = false;
           log(`${m.def.name}: Đã đặt lên đe. Hãy nhấn búa để thử.`);
         }
 
+        // Xử lý kết quả sau khi thả chuột
         if (!ok) {
+          // Nếu thả trượt ra ngoài -> Reset chính vật đang cầm
           m.reset();
-          state.activeMat = null;
-          document.getElementById("hammerUI").classList.add("hidden");
+          // Chỉ xóa activeMat nếu chính nó là vật đang cầm (tránh lỗi xóa nhầm vật đang nằm yên trên bàn)
+          if (state.activeMat === m) {
+            state.activeMat = null;
+            document.getElementById("hammerUI").classList.add("hidden");
+          }
         } else {
           state.tested.add(m.def.id);
           updateResult();
         }
         state.dragging = null;
       });
-
-      // === LOGIC NÚT BÚA: GIƠ CAO LÊN TRỜI RỒI BỔ XUỐNG ===
       document.getElementById("btnHammerAction").onclick = () => {
         if (!state.activeMat || state.hammer.active) return;
         state.hammer.active = true;
 
+        // Tính toán góc va chạm thực tế dựa trên độ cao vật liệu
+        // Búa dài 120px (PIVOT_X - ANVIL_X)
+        // Góc bù = arcsin(chiều cao vật liệu / chiều dài búa)
+        const hammerLen = 120;
+        const matHeight = state.activeMat.h || 10;
+        // Tính góc lệch để búa dừng sớm hơn
+        const heightOffset = Math.asin(matHeight / hammerLen);
+        const REAL_HIT_ANGLE = HIT_ANGLE - heightOffset + 0.55;
+
         let f = 0;
         const iv = setInterval(() => {
           f++;
-          // Giai đoạn 1: Giơ cao lên trời (Cock back)
-          if (f < 8) {
-            const p = f / 8;
-            // Từ REST_ANGLE lùi về COCK_ANGLE (lên cao)
-            state.hammer.angle = REST_ANGLE + (COCK_ANGLE - REST_ANGLE) * p;
+          // Giai đoạn 1: Giơ cao (Winding up)
+          if (f < 10) {
+            const p = f / 10;
+            const ease = p * p;
+            state.hammer.angle = REST_ANGLE + (COCK_ANGLE - REST_ANGLE) * ease;
           }
-          // Giai đoạn 2: Bổ mạnh xuống (Smash)
-          else if (f < 12) {
-            const p = (f - 8) / 4;
-            // Từ COCK_ANGLE (cao) bổ xuống HIT_ANGLE (thấp)
-            state.hammer.angle = COCK_ANGLE + (HIT_ANGLE - COCK_ANGLE) * p;
+          // Giai đoạn 2: Bổ xuống (Smash)
+          else if (f < 14) {
+            const p = (f - 10) / 4;
+            const ease = 1 - Math.pow(1 - p, 3);
+            // FIX: Đích đến là REAL_HIT_ANGLE chứ không phải HIT_ANGLE gốc
+            state.hammer.angle =
+              COCK_ANGLE + (REAL_HIT_ANGLE - COCK_ANGLE) * ease;
           }
-          // Giai đoạn 3: Giữ tại chỗ va chạm & Dừng
+          // Giai đoạn 3: Kết thúc
           else {
             clearInterval(iv);
             state.hammer.active = false;
-            // Đảm bảo góc cuối cùng là góc va chạm
-            state.hammer.angle = HIT_ANGLE;
+            state.hammer.angle = REAL_HIT_ANGLE; // Giữ búa nằm trên mặt vật liệu
 
             handleHit(state.activeMat);
 
-            // Từ từ đưa búa về vị trí nghỉ (nhấc nhẹ lên)
             setTimeout(() => {
               const returnIv = setInterval(() => {
                 if (state.hammer.active) {
@@ -732,7 +803,7 @@
                   clearInterval(returnIv);
                 }
               }, 20);
-            }, 200);
+            }, 150);
           }
         }, 15);
       };
