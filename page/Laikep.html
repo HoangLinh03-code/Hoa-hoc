@@ -184,27 +184,47 @@
           </div>
 
           <div class="mt-4 bg-slate-900 p-3 rounded-lg border border-slate-700">
-            <div class="text-xs text-slate-400">Tổng sau cùng (ước tính)</div>
-            <div class="mt-2 flex items-baseline justify-between">
-              <div>
-                <div class="text-xs text-slate-400">Lãi kép</div>
+            <div class="text-xs text-slate-400 mb-2">
+              Tổng sau cùng (ước tính):
+            </div>
+
+            <div class="mb-2">
+              <div class="text-[15px] text-slate-500 uppercase tracking-wider">
+                Lãi kép
+              </div>
+              <div class="w-full h-8 flex items-center overflow-hidden">
                 <div
                   id="compoundTotal"
-                  class="text-lg font-semibold text-teal-300">
-                  —
-                </div>
-              </div>
-              <div>
-                <div class="text-xs text-slate-400">Lãi đơn</div>
-                <div
-                  id="simpleTotal"
-                  class="text-lg font-semibold text-rose-400">
+                  class="text-lg font-semibold text-teal-300 mono transition-all duration-200 origin-left"
+                  style="line-height: 1">
                   —
                 </div>
               </div>
             </div>
-            <div class="mt-2 text-sm text-slate-300">
-              Chênh lệch: <span id="diffLabel" class="font-medium">—</span>
+
+            <div class="mb-2">
+              <div class="text-[15px] text-slate-500 uppercase tracking-wider">
+                Lãi đơn
+              </div>
+              <div class="w-full h-8 flex items-center overflow-hidden">
+                <div
+                  id="simpleTotal"
+                  class="text-lg font-semibold text-rose-400 mono transition-all duration-200 origin-left"
+                  style="line-height: 1">
+                  —
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-2 pt-2 border-t border-slate-800">
+              <div class="text-[10px] text-slate-400">Chênh lệch</div>
+              <div class="w-full h-6 flex items-center overflow-hidden">
+                <span
+                  id="diffLabel"
+                  class="font-medium text-slate-300 mono transition-all origin-left whitespace-nowrap"
+                  >—</span
+                >
+              </div>
             </div>
           </div>
         </section>
@@ -243,19 +263,39 @@
           <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
               <div class="flex items-center justify-between gap-2">
-                <div class="flex-1 overflow-hidden">
-                  <div class="text-xs text-slate-400">Lãi kép (A)</div>
-                  <div
-                    id="compoundNow"
-                    class="text-2xl font-bold text-teal-300 mono truncate">
-                    —
+                <div
+                  class="flex-1 flex flex-col items-center justify-center overflow-hidden">
+                  <h1
+                    class="text-sm font-bold text-slate-200 uppercase tracking-wide">
+                    LÃI KÉP (A)
+                  </h1>
+
+                  <div class="text-[10px] text-slate-500 mb-1">
+                    Tiền gốc + Lãi
                   </div>
-                  <div class="text-xs text-slate-500 mt-1 truncate">
-                    Lãi năm này: <span id="compoundInterestThisYear">—</span>
+
+                  <div class="w-full h-10 flex items-center justify-center">
+                    <div
+                      id="compoundNow"
+                      class="font-bold text-teal-300 mono transition-all duration-200"
+                      style="line-height: 1">
+                      —
+                    </div>
+                  </div>
+
+                  <div
+                    class="text-xs text-slate-500 mt-1 truncate w-full text-center">
+                    <span id="compoundInterestLabel">Lãi phát sinh:</span>
+                    <span
+                      id="compoundInterestThisYear"
+                      class="text-teal-400 font-medium ml-1"
+                      >—</span
+                    >
                   </div>
                 </div>
 
-                <div class="w-5/12 flex-shrink-0">
+                <div
+                  class="w-5/12 flex-shrink-0 border-l border-slate-800 pl-3">
                   <div class="text-xs text-slate-400 mb-1 text-right">
                     Tiến trình
                   </div>
@@ -276,19 +316,39 @@
 
             <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
               <div class="flex items-center justify-between gap-2">
-                <div class="flex-1 overflow-hidden">
-                  <div class="text-xs text-slate-400">Lãi đơn (A)</div>
-                  <div
-                    id="simpleNow"
-                    class="text-2xl font-bold text-rose-400 mono truncate">
-                    —
+                <div
+                  class="flex-1 flex flex-col items-center justify-center overflow-hidden">
+                  <h1
+                    class="text-sm font-bold text-slate-200 uppercase tracking-wide">
+                    LÃI ĐƠN (A)
+                  </h1>
+
+                  <div class="text-[10px] text-slate-500 mb-1">
+                    Tiền gốc + Lãi
                   </div>
-                  <div class="text-xs text-slate-500 mt-1 truncate">
-                    Lãi năm này: <span id="simpleInterestThisYear">—</span>
+
+                  <div class="w-full h-10 flex items-center justify-center">
+                    <div
+                      id="simpleNow"
+                      class="font-bold text-rose-400 mono transition-all duration-200"
+                      style="line-height: 1">
+                      —
+                    </div>
+                  </div>
+
+                  <div
+                    class="text-xs text-slate-500 mt-1 truncate w-full text-center">
+                    <span id="simpleInterestLabel">Lãi phát sinh:</span>
+                    <span
+                      id="simpleInterestThisYear"
+                      class="text-rose-400 font-medium ml-1"
+                      >—</span
+                    >
                   </div>
                 </div>
 
-                <div class="w-5/12 flex-shrink-0">
+                <div
+                  class="w-5/12 flex-shrink-0 border-l border-slate-800 pl-3">
                   <div class="text-xs text-slate-400 mb-1 text-right">
                     Tiến trình
                   </div>
@@ -346,26 +406,26 @@
                 </h5>
                 <ul
                   class="mt-2 list-disc list-inside text-sm text-slate-400 space-y-1">
-                  <li>Giả sử bạn có <strong>100.000.000 ₫</strong>.</li>
+                  <li>Giả sử bạn có <strong>100.000.000 VNĐ</strong>.</li>
                   <li>
                     <strong>Hết Năm 1:</strong> Bạn nhận 10% (10tr) tiền lãi.
-                    Tổng: <strong>110.000.000 ₫</strong>.
+                    Tổng: <strong>110.000.000 VNĐ</strong>.
                   </li>
                   <li>
                     <strong>Hết Năm 2:</strong> Bạn nhận 10% của
                     <strong>110tr</strong> (là 11tr). Tổng:
-                    <strong>121.000.000 ₫</strong>.
+                    <strong>121.000.000 VNĐ</strong>.
                   </li>
                   <li>
                     <strong>Hết Năm 3:</strong> Bạn nhận 10% của
                     <strong>121tr</strong> (là 12.1tr). Tổng:
-                    <strong>133.100.000 ₫</strong>.
+                    <strong>133.100.000 VNĐ</strong>.
                   </li>
                 </ul>
                 <p class="mt-2 text-sm text-slate-300">
                   Nếu dùng lãi đơn, bạn chỉ nhận 10tr mỗi năm (tổng 130tr). Lãi
                   kép đã giúp bạn có thêm
-                  <strong>3.100.000 ₫</strong>.
+                  <strong>3.100.000 VNĐ</strong>.
                 </p>
               </div>
 
@@ -386,9 +446,29 @@
        */
 
       // --- HELPERS ---
+      const formatFullCurrency = num => {
+        return Math.round(num).toLocaleString("vi-VN") + " VNĐ";
+      };
+
+      // Helper mới: Tự động chỉnh size chữ dựa vào độ dài
+      const autoFitFontSize = (element, textLength) => {
+        if (textLength < 12) {
+          element.style.fontSize = "1.5rem"; // ~24px (Số nhỏ)
+        } else if (textLength < 16) {
+          element.style.fontSize = "1.25rem"; // ~20px (Trăm triệu)
+        } else if (textLength < 20) {
+          element.style.fontSize = "1rem"; // ~16px (Chục tỷ)
+        } else if (textLength < 25) {
+          element.style.fontSize = "0.85rem"; // ~13.6px (Trăm tỷ)
+        } else {
+          element.style.fontSize = "0.7rem"; // ~11px (Con số khổng lồ)
+        }
+      };
       const fmtVND = v => {
         if (Math.abs(v) < 1000 && Math.abs(v) > 0) {
-          return v.toLocaleString("vi-VN", { maximumFractionDigits: 2 }) + " ₫";
+          return (
+            v.toLocaleString("vi-VN", { maximumFractionDigits: 2 }) + " VNĐ"
+          );
         }
         let roundedV = Math.round(v);
         const formatted = fmtAxis(roundedV);
@@ -398,35 +478,10 @@
             currency: "VND",
           });
         }
-        return formatted + " ₫";
+        return formatted + " VNĐ";
       };
 
       const fmtAxis = v => {
-        if (v >= 1e15)
-          return (
-            (v / 1e15).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
-            " tr. tỷ"
-          );
-        if (v >= 1e12)
-          return (
-            (v / 1e12).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
-            " k. tỷ"
-          );
-        if (v >= 1e9)
-          return (
-            (v / 1e9).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
-            " tỷ"
-          );
-        if (v >= 1e6)
-          return (
-            (v / 1e6).toLocaleString("vi-VN", { maximumFractionDigits: 2 }) +
-            " tr"
-          );
-        if (v >= 1e3)
-          return (
-            (v / 1e3).toLocaleString("vi-VN", { maximumFractionDigits: 1 }) +
-            " k"
-          );
         return v.toLocaleString("vi-VN");
       };
 
@@ -482,6 +537,8 @@
         sNow: document.getElementById("simpleNow"),
         cIntYear: document.getElementById("compoundInterestThisYear"),
         sIntYear: document.getElementById("simpleInterestThisYear"),
+        cIntLabel: document.getElementById("compoundInterestLabel"),
+        sIntLabel: document.getElementById("simpleInterestLabel"),
 
         progC: document.getElementById("progCompound"),
         progS: document.getElementById("progSimple"),
@@ -529,29 +586,86 @@
       }
 
       // --- CHART ---
+      const createLegendIcon = (color, isDashed = false) => {
+        const drawWidth = 40; // Chiều dài phần hình vẽ thực tế
+        const gap = 20; // Khoảng cách muốn tạo ra (Padding ảo)
+        const width = drawWidth + gap; // Tổng chiều dài Canvas (35px)
+        const height = 20;
+
+        const cvs = document.createElement("canvas");
+        cvs.width = width;
+        cvs.height = height;
+        const ctx = cvs.getContext("2d");
+
+        // 1. Vẽ đường kẻ ngang (Line) - Chỉ vẽ trong phạm vi drawWidth
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        if (isDashed) ctx.setLineDash([5, 3]);
+
+        // Vẽ từ 0 đến drawWidth (20px), để lại phần gap bên phải
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(drawWidth, height / 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // 2. Vẽ hình tròn ở giữa đoạn drawWidth
+        ctx.beginPath();
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        const radius = 4;
+
+        // Tâm tròn nằm giữa drawWidth
+        ctx.arc(drawWidth / 2, height / 2, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        return cvs;
+      };
       const ctx = document.getElementById("interestChart").getContext("2d");
       const chart = new Chart(ctx, {
         type: "line",
         data: {
           labels: [],
           datasets: [
+            // --- DATASET 1: LÃI KÉP (Xanh - Nét liền) ---
             {
               label: "Lãi kép",
               data: [],
               borderColor: "rgb(14,165,233)",
               backgroundColor: "rgba(14,165,233,0.06)",
               tension: 0.3,
-              pointRadius: 2,
-              borderWidth: 2,
+              padding: 10,
+
+              // CẤU HÌNH ĐIỂM TRÒN
+              pointStyle: "circle", // Đổi từ 'line' -> 'circle'
+              pointRadius: 4, // Kích thước chấm
+              pointHoverRadius: 6, // Kích thước khi hover
+              pointBackgroundColor: "#fff", // Nền trắng đè lên đường kẻ
+              pointBorderColor: "rgb(14,165,233)", // Viền xanh
+              pointBorderWidth: 2, // Độ dày viền
+              borderWidth: 2, // Độ dày đường nối
             },
+
+            // --- DATASET 2: LÃI ĐƠN (Đỏ - Nét đứt) ---
             {
               label: "Lãi đơn",
               data: [],
               borderColor: "rgb(239,68,68)",
               backgroundColor: "transparent",
               tension: 0.3,
-              pointRadius: 2,
-              borderDash: [6, 4],
+              borderDash: [6, 4], // Hiệu ứng nét đứt
+              padding: 10,
+
+              // CẤU HÌNH ĐIỂM TRÒN
+              pointStyle: "circle", // Đổi từ 'line' -> 'circle'
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#fff", // Nền trắng
+              pointBorderColor: "rgb(239,68,68)", // Viền đỏ
+              pointBorderWidth: 2,
               borderWidth: 2,
             },
           ],
@@ -561,10 +675,19 @@
           maintainAspectRatio: false,
           animation: false,
           scales: {
-            x: { title: { display: true, text: "Năm" } },
+            x: {
+              title: { display: true, text: "Năm" },
+              grid: { color: "rgba(255,255,255,0.05)" },
+              ticks: { color: "#94a3b8" },
+            },
             y: {
-              title: { display: true, text: "Tiền lãi (VNĐ)" },
-              ticks: { callback: fmtAxis },
+              title: { display: true, text: "Tổng số tiền (VNĐ)" },
+              ticks: {
+                callback: fmtAxis, // Dùng hàm mới (Full số)
+                color: "#94a3b8",
+                padding: 10,
+              },
+              grid: { color: "rgba(255,255,255,0.05)" },
               beginAtZero: false,
             },
           },
@@ -572,11 +695,37 @@
             tooltip: {
               mode: "index",
               intersect: false,
+              backgroundColor: "rgba(15, 23, 42, 0.95)",
+              titleColor: "#e2e8f0",
+              bodyFont: { family: "monospace" },
               callbacks: {
-                label: c => ` ${c.dataset.label}: ${fmtVND(c.parsed.y)}`,
+                // SỬA: Dùng fmtFull để hiện 1.000.000 VNĐ trong tooltip
+                label: c => ` ${c.dataset.label}: ${fmtFull(c.parsed.y)}`,
               },
             },
-            legend: { position: "top" },
+            legend: {
+              /* ... Giữ nguyên cấu hình legend cũ của bạn ... */
+              position: "top",
+              labels: {
+                color: "#cbd5e1",
+                usePointStyle: true,
+                boxWidth: 70,
+                padding: 50,
+                boxPadding: 20,
+                generateLabels: chart => {
+                  const original =
+                    Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                  original.forEach(label => {
+                    const dataset = chart.data.datasets[label.datasetIndex];
+                    label.pointStyle = createLegendIcon(
+                      dataset.borderColor,
+                      dataset.borderDash && dataset.borderDash.length > 0
+                    );
+                  });
+                  return original;
+                },
+              },
+            },
           },
           interaction: { mode: "nearest", axis: "x", intersect: false },
         },
@@ -594,12 +743,10 @@
       function updateDisplay(fullRefresh = false) {
         anim.data = computeData();
         if (anim.yearIndex > appState.t) anim.yearIndex = appState.t;
-
         const sliceIdx = anim.yearIndex + 1;
         chart.data.labels = anim.data.years.slice(0, sliceIdx);
         chart.data.datasets[0].data = anim.data.compound.slice(0, sliceIdx);
         chart.data.datasets[1].data = anim.data.simple.slice(0, sliceIdx);
-
         if (fullRefresh) chart.update();
         else chart.update("none");
 
@@ -609,28 +756,59 @@
 
         const finalC = anim.data.compound[appState.t];
         const finalS = anim.data.simple[appState.t];
-        els.cTotal.textContent = fmtVND(finalC);
-        els.sTotal.textContent = fmtVND(finalS);
-        const diff = finalC - finalS;
-        els.diff.textContent = (diff >= 0 ? "" : "-") + fmtVND(Math.abs(diff));
-      }
 
+        const txtTotalC = fmtFull(finalC);
+        els.cTotal.textContent = txtTotalC;
+        autoResizeFont(els.cTotal, txtTotalC.length);
+
+        const txtTotalS = fmtFull(finalS);
+        els.sTotal.textContent = txtTotalS;
+        autoResizeFont(els.sTotal, txtTotalS.length);
+
+        const diff = finalC - finalS;
+        const txtDiff = (diff >= 0 ? "" : "-") + fmtFull(Math.abs(diff));
+        els.diff.textContent = txtDiff;
+        // Riêng chênh lệch dùng font bé hơn chút
+        if (txtDiff.length > 15) els.diff.style.fontSize = "0.75rem";
+        else els.diff.style.fontSize = "0.9rem";
+      }
+      // 1. Hàm format hiển thị full số, không rút gọn
+      const fmtFull = v => {
+        return Math.round(v).toLocaleString("vi-VN") + " VNĐ";
+      };
+
+      // 2. Hàm tự động chỉnh cỡ chữ dựa vào độ dài chuỗi
+      const autoResizeFont = (el, textLen) => {
+        el.style.whiteSpace = "nowrap"; // Bắt buộc không xuống dòng
+
+        if (textLen < 12) el.style.fontSize = "1.5rem"; // ~24px
+        else if (textLen < 15) el.style.fontSize = "1.25rem"; // ~20px
+        else if (textLen < 18) el.style.fontSize = "1rem"; // ~16px
+        else if (textLen < 22) el.style.fontSize = "0.85rem"; // ~13.6px
+        else el.style.fontSize = "0.75rem"; // ~12px
+      };
       function updateStats(idx) {
         const { P } = appState;
         const { compound, simple } = anim.data;
 
         const curC = compound[idx];
         const curS = simple[idx];
+
+        const fullTextC = fmtFull(curC);
+        els.cNow.textContent = fullTextC;
+        autoResizeFont(els.cNow, fullTextC.length);
+
+        const fullTextS = fmtFull(curS);
+        els.sNow.textContent = fullTextS;
+        autoResizeFont(els.sNow, fullTextS.length);
+
         const prevC = idx > 0 ? compound[idx - 1] : P;
         const prevS = idx > 0 ? simple[idx - 1] : P;
 
-        els.cNow.textContent = fmtVND(curC);
-        els.sNow.textContent = fmtVND(curS);
-
         const intC = curC - prevC;
         const intS = curS - prevS;
-        els.cIntYear.textContent = (intC >= 0 ? "+" : "") + fmtVND(intC);
-        els.sIntYear.textContent = (intS >= 0 ? "+" : "") + fmtVND(intS);
+        els.cIntYear.textContent = (intC >= 0 ? "+" : "") + fmtFull(intC);
+        els.sIntYear.textContent = (intS >= 0 ? "+" : "") + fmtFull(intS);
 
         const finalC = compound[appState.t];
         const finalS = simple[appState.t];
@@ -638,25 +816,48 @@
         const pctC = finalC !== 0 ? (curC / finalC) * 100 : 0;
         const pctS = finalS !== 0 ? (curS / finalS) * 100 : 0;
 
-        els.progC.style.width = `${pctC}%`;
-        els.progS.style.width = `${pctS}%`;
-        els.progCLabel.textContent = Math.round(pctC) + "%";
-        els.progSLabel.textContent = Math.round(pctS) + "%";
+        let pct = 0; // Mặc định là 0%
+
+        if (appState.t > 0) {
+          pct = (idx / appState.t) * 100;
+        }
+
+        els.progC.style.width = `${pct}%`;
+        els.progS.style.width = `${pct}%`;
+        els.progCLabel.textContent = Math.round(pct) + "%";
+        els.progSLabel.textContent = Math.round(pct) + "%";
 
         els.curYear.textContent = idx;
+        let labelText = "";
+        if (idx === 0) {
+          labelText = "Lãi phát sinh:";
+        } else {
+          labelText = `Lãi phát sinh trong năm thứ ${idx}:`;
+        }
 
+        // 2. Gán text vào DOM
+        els.cIntLabel.textContent = labelText;
+        els.sIntLabel.textContent = labelText;
+
+        // 3. Hiển thị con số (Full số, có dấu +)
+        if (idx === 0) {
+          els.cIntYear.textContent = "—";
+          els.sIntYear.textContent = "—";
+        } else {
+          els.cIntYear.textContent = "+" + fmtFull(intC);
+          els.sIntYear.textContent = "+" + fmtFull(intS);
+        }
         const diffNow = curC - curS;
         els.explain.innerHTML = `
-            <div class="text-sm"><strong>Năm ${idx}:</strong> Tổng lãi kép = <span class='text-teal-300'>${fmtVND(
+      <div class="text-sm"><strong>Năm ${idx}:</strong> Tổng lãi kép = <span class='text-teal-300'>${fmtFull(
           curC
         )}</span>.</div>
-            <div class="text-sm mt-1 text-slate-400">
-                Chênh lệch thực tế so với lãi đơn: <span class='text-yellow-300 font-semibold'>${fmtVND(
-                  Math.abs(diffNow)
-                )}</span>.
-                ${idx > 0 ? `Năm nay tiền "đẻ" thêm được ${fmtVND(intC)}.` : ""}
-            </div>
-        `;
+      <div class="text-sm mt-1 text-slate-400">
+          Chênh lệch thực tế so với lãi đơn: <span class='text-yellow-300 font-semibold'>${fmtFull(
+            Math.abs(diffNow)
+          )}</span>.
+      </div>
+  `;
       }
 
       // --- EVENT HANDLERS (ALL TEXT) ---
